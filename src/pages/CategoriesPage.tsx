@@ -3,6 +3,7 @@ import { AlertCircle, ArrowRight, Layers, Loader2 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { TipNote } from '../components/TipNote';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function CategoriesPage() {
   const { categories, loading, error, refresh } = useCategories();
@@ -13,12 +14,7 @@ export function CategoriesPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105"
-            />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link to="/" className="inline-block py-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
             Back to Home
@@ -42,7 +38,7 @@ export function CategoriesPage() {
           </p>
           <TipNote tone="info" className="mt-6 max-w-2xl mx-auto text-left">
             Every category connects you to vetted freelancers with real ratings, verified badges and escrow-protected
-            payments — no matter which skill you need, hiring stays safe and inside Growlancer.
+            payments — no matter which skill you need, hiring stays safe and inside Growlanzo.
           </TipNote>
         </div>
       </section>

@@ -66,7 +66,7 @@ export function ContestsPage() {
             </p>
             <TipNote tone="info" compact className="max-w-2xl mx-auto mb-2 bg-white/10 border-white/20 [&_*]:!text-white">
               <strong>How contests work:</strong> clients fund the prize in escrow upfront — the winner is chosen
-              fairly from public submissions and paid in real time. No work outside Growlancer, ever.
+              fairly from public submissions and paid in real time. No work outside Growlanzo, ever.
             </TipNote>
             
             {/* Search Bar */}
@@ -258,7 +258,7 @@ export function ContestsPage() {
             Ready to Compete?
           </h2>
           <p className="text-emerald-100 mb-2 text-lg">
-            Join contests to showcase your skills, win prizes, and build your reputation on Growlancer.
+            Join contests to showcase your skills, win prizes, and build your reputation on Growlanzo.
           </p>
           <Link
             to="/signup"

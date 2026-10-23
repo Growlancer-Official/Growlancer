@@ -1,5 +1,5 @@
 /**
- * Shared AI client for Growlancer edge functions — powered by OpenRouter
+ * Shared AI client for Growlanzo edge functions — powered by OpenRouter
  * (https://openrouter.ai), an OpenAI-compatible model gateway.
  *
  * SECURITY: the API key is read from edge-function secrets ONLY (AI_API_KEY) —
@@ -49,7 +49,7 @@ export async function callAI(
   // OpenRouter best-practice attribution headers (harmless for other gateways)
   if (AI_BASE_URL.includes('openrouter.ai')) {
     headers['HTTP-Referer'] = SITE_URL;
-    headers['X-Title'] = 'Growlancer AI';
+    headers['X-Title'] = 'Growlanzo AI';
   }
 
   return await fetch(`${AI_BASE_URL}/chat/completions`, {

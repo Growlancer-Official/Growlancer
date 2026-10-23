@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
 import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, IndianRupee, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck, Cpu,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface Section {
   id: string;
@@ -18,7 +19,7 @@ const termsSections: Section[] = [
     content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Welcome to Growlancer ("Platform", "we", "us", or "our"). These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you", "User", "Client", or "Freelancer") and Growlancer, concerning your access to and use of our website, applications, and services.
+            Welcome to Growlanzo ("Platform", "we", "us", or "our"). These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you", "User", "Client", or "Freelancer") and Growlanzo, concerning your access to and use of our website, applications, and services.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             By accessing the Platform, creating an account, or clicking "Accept", you acknowledge that you have read, understood, and agree to be bound by all of these Terms. If you do not agree with all of these terms, you are expressly prohibited from using the Platform and must discontinue use immediately.
@@ -27,7 +28,7 @@ const termsSections: Section[] = [
             <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
             <div>
               <p className="font-bold">Eligibility Requirement</p>
-              <p className="text-emerald-700 text-xs mt-1">You must be at least 18 years old and capable of entering into legally binding contracts under applicable jurisdiction to register and use Growlancer.</p>
+              <p className="text-emerald-700 text-xs mt-1">You must be at least 18 years old and capable of entering into legally binding contracts under applicable jurisdiction to register and use Growlanzo.</p>
             </div>
           </div>
         </>
@@ -40,14 +41,14 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer operates as a high-fidelity workspace matching platform. We provide the infrastructure (including our real-time collaborative workspace canvases, interactive Kanban boards, focus-locked shared scratchpads, and secure escrow tools) to facilitate professional engagements.
+            Growlanzo operates as a high-fidelity workspace matching platform. We provide the infrastructure (including our real-time collaborative workspace canvases, interactive Kanban boards, focus-locked shared scratchpads, and secure escrow tools) to facilitate professional engagements.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             You explicitly acknowledge and agree that:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
-            <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlancer or the Client. Nothing in these Terms creates an employment, agency, partnership, or joint venture relationship between you and Growlancer, and no freelancer is entitled to employee benefits, withholdings, or protections provided to employees.</li>
-            <li><strong>Service Contracts:</strong> Upon a Client purchasing a Freelancer's Service or awarding a bid, a direct, legally binding contract is established between the Client and the Freelancer. Growlancer is not a party to this contract, but acts as a secure platform and escrow facilitator.</li>
+            <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlanzo or the Client. Nothing in these Terms creates an employment, agency, partnership, or joint venture relationship between you and Growlanzo, and no freelancer is entitled to employee benefits, withholdings, or protections provided to employees.</li>
+            <li><strong>Service Contracts:</strong> Upon a Client purchasing a Freelancer's Service or awarding a bid, a direct, legally binding contract is established between the Client and the Freelancer. Growlanzo is not a party to this contract, but acts as a secure platform and escrow facilitator.</li>
             <li><strong>Performance Quality:</strong> Freelancers are solely responsible for the quality, accuracy, and timely delivery of their work as agreed upon in the workspace.</li>
           </ul>
         </>
@@ -60,7 +61,7 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            To sustain our real-time synchronization servers, AI semantic matching models, and secure escrow operations, Growlancer implements a highly competitive and flat fee structure across all transactions.
+            To sustain our real-time synchronization servers, AI semantic matching models, and secure escrow operations, Growlanzo implements a highly competitive and flat fee structure across all transactions.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -68,7 +69,7 @@ const termsSections: Section[] = [
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
                 <h2 className="text-3xl font-black text-slate-900 mt-1">0%</h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  You pay the agreed project amount. Growlancer adds no commission, service charge or platform fee at checkout — escrow processing, the workspace and dispute mediation are included.
+                  You pay the agreed project amount. Growlanzo adds no commission, service charge or platform fee at checkout — escrow processing, the workspace and dispute mediation are included.
                 </p>
               </div>
             </div>
@@ -81,7 +82,7 @@ const termsSections: Section[] = [
                 </p>
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-xs text-amber-800 font-medium">
-                    <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. As of the date of these Terms, RazorpayX (India) withdrawals incur a 2% processing fee, though this rate may change from time to time. PayPal withdrawals are coming soon. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
+                    <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlanzo. As of the date of these Terms, RazorpayX (India) withdrawals incur a 2% processing fee, though this rate may change from time to time. PayPal withdrawals are coming soon. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
                   </p>
                 </div>
               </div>
@@ -100,12 +101,12 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer's proprietary <strong>Escrow Safety Protection</strong> is designed to help reduce financial risk for both parties and minimize the coordination gaps that can occur on freelancing platforms. Escrow helps protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, but it cannot eliminate every dispute.
+            Growlanzo's proprietary <strong>Escrow Safety Protection</strong> is designed to help reduce financial risk for both parties and minimize the coordination gaps that can occur on freelancing platforms. Escrow helps protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, but it cannot eliminate every dispute.
           </p>
           <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-3">
             <div>
               <h3 className="font-bold text-slate-900 text-sm">A. Contract Funding</h3>
-              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the agreed contract amount (the milestone or project total) into a secure Growlancer Escrow balance before the Freelancer starts working. No platform commission is added to this amount. This is designed to help confirm that funds are available before work begins.</p>
+              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the agreed contract amount (the milestone or project total) into a secure Growlanzo Escrow balance before the Freelancer starts working. No platform commission is added to this amount. This is designed to help confirm that funds are available before work begins.</p>
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas</h3>
@@ -117,11 +118,11 @@ const termsSections: Section[] = [
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h3>
-              <p className="text-slate-600 text-xs mt-1">Each Service listing states the number of free revisions included in the base price. Requests within the included free revisions are covered at no additional cost. If the Client requests more revisions than included, the Freelancer may charge their published extra-revision rate or a mutually agreed price; the Client's consent is required before any paid extra work begins, and any such charges are payable through Growlancer Escrow. Unaddressed delivered work follows the platform's review-window escalation process so that no party is left without a resolution. Revision disputes are governed by Section 6 (Dispute Resolution & Mediation).</p>
+              <p className="text-slate-600 text-xs mt-1">Each Service listing states the number of free revisions included in the base price. Requests within the included free revisions are covered at no additional cost. If the Client requests more revisions than included, the Freelancer may charge their published extra-revision rate or a mutually agreed price; the Client's consent is required before any paid extra work begins, and any such charges are payable through Growlanzo Escrow. Unaddressed delivered work follows the platform's review-window escalation process so that no party is left without a resolution. Revision disputes are governed by Section 6 (Dispute Resolution & Mediation).</p>
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-sm">E. Team Projects — Independent Contracts</h3>
-              <p className="text-slate-600 text-xs mt-1">When a Client hires multiple freelancers through a Team Project, each freelancer is engaged under a <strong>separate, independent contract</strong> — with its own escrow, milestones, review window and dispute process. The Client is independently contracting with each freelancer; there is no single mega-contract covering the team. Each freelancer is individually responsible for their own deliverables, and Growlancer provides no cross-freelancer coordination or delivery guarantee — only payment protection (escrow) for each individual contract. If one member of the team fails to deliver, the other contracts <strong>are not</strong> cancelled or affected; each contract is resolved on its own terms. The 5% platform fee applies to each individual contract, with no separate "team fee".</p>
+              <p className="text-slate-600 text-xs mt-1">When a Client hires multiple freelancers through a Team Project, each freelancer is engaged under a <strong>separate, independent contract</strong> — with its own escrow, milestones, review window and dispute process. The Client is independently contracting with each freelancer; there is no single mega-contract covering the team. Each freelancer is individually responsible for their own deliverables, and Growlanzo provides no cross-freelancer coordination or delivery guarantee — only payment protection (escrow) for each individual contract. If one member of the team fails to deliver, the other contracts <strong>are not</strong> cancelled or affected; each contract is resolved on its own terms. The 5% platform fee applies to each individual contract, with no separate "team fee".</p>
             </div>
           </div>
         </>
@@ -139,10 +140,10 @@ const termsSections: Section[] = [
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li><strong>Automatic Transfer:</strong> Upon the Client's final payment release of the respective project's escrow funds, all intellectual property rights, ownership, and titles in the deliverables created specifically for that project are transferred to the Client, subject to any separate written agreement between the Freelancer and Client to the contrary.</li>
             <li><strong>Pre-Existing Intellectual Property:</strong> The Freelancer retains all rights to any pre-existing code, libraries, design templates, and tools used during the project. Freelancer grants the Client a perpetual, royalty-free, worldwide license to use such pre-existing intellectual property within the deliverables, as is standard for platform-delivered work.</li>
-            <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlancer portfolios, unless the Client has purchased a "Private Work" contract that specifies confidentiality.</li>
+            <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlanzo portfolios, unless the Client has purchased a "Private Work" contract that specifies confidentiality.</li>
           </ul>
           <p className="text-slate-600 leading-relaxed mb-2">
-            <strong>Ownership Distinctions:</strong> Growlancer does not automatically own, and makes no claim to, the work product, deliverables, or content created by Freelancers or uploaded by Users. Growlancer retains ownership of the Platform itself, including its software, design, trademarks, logos, and other platform intellectual property. Users retain ownership of their user-generated content and uploaded files, and Clients retain ownership of assets they provide to a Freelancer for a project. By uploading content to the Platform, you grant Growlancer a limited, non-exclusive, worldwide, royalty-free license to host, display, and process that content solely to operate and improve the Platform.
+            <strong>Ownership Distinctions:</strong> Growlanzo does not automatically own, and makes no claim to, the work product, deliverables, or content created by Freelancers or uploaded by Users. Growlanzo retains ownership of the Platform itself, including its software, design, trademarks, logos, and other platform intellectual property. Users retain ownership of their user-generated content and uploaded files, and Clients retain ownership of assets they provide to a Freelancer for a project. By uploading content to the Platform, you grant Growlanzo a limited, non-exclusive, worldwide, royalty-free license to host, display, and process that content solely to operate and improve the Platform.
           </p>
         </>
       ),
@@ -163,8 +164,8 @@ const termsSections: Section[] = [
             </h3>
             <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-4">
               <li><strong>1. Coordination Check (48 Hours):</strong> Upon raising a dispute, the contract status is changed to "disputed". The workspace asset locker is frozen, preventing any further uploads or modifications. The client and freelancer are given 48 hours to communicate and resolve the issue mutually (e.g. adjust task requirements or agree to a partial refund).</li>
-              <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator may assist by evaluating workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution. AI assistance is provided to support, not replace, human judgment.</li>
-              <li><strong>3. Human Review & Binding Decision:</strong> A human dispute resolution specialist reviews the AI's recommendation, along with all evidence, and confirms or adjusts the proposed split. Growlancer then issues a final, binding escrow allocation decision. Both parties agree to abide by this decision. Funds are moved only after human confirmation.</li>
+              <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlanzo Dispute Center. Our AI Mediator may assist by evaluating workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution. AI assistance is provided to support, not replace, human judgment.</li>
+              <li><strong>3. Human Review & Binding Decision:</strong> A human dispute resolution specialist reviews the AI's recommendation, along with all evidence, and confirms or adjusts the proposed split. Growlanzo then issues a final, binding escrow allocation decision. Both parties agree to abide by this decision. Funds are moved only after human confirmation.</li>
             </ol>
           </div>
         </>
@@ -177,14 +178,14 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            To support a safe, fair, and reliable environment for both parties, Growlancer strictly prohibits circumvention of our system's secure escrow and project matching structures.
+            To support a safe, fair, and reliable environment for both parties, Growlanzo strictly prohibits circumvention of our system's secure escrow and project matching structures.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             Prohibited actions include:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li>Exchanging direct emails, phone numbers, MessageSquare invites, or social accounts prior to a contract being funded.</li>
-            <li>Soliciting, suggesting, or accepting direct payments outside of the Growlancer system (e.g. direct PayPal, wire transfers, crypto payments) for projects initially sourced on Growlancer.</li>
+            <li>Soliciting, suggesting, or accepting direct payments outside of the Growlanzo system (e.g. direct PayPal, wire transfers, crypto payments) for projects initially sourced on Growlanzo.</li>
             <li>Registering multiple user accounts under fake identities to game our AI matching systems or bypass platform suspension restrictions.</li>
           </ul>
           <p className="text-slate-600 text-sm">
@@ -200,13 +201,13 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT LIMITS THE LIABILITY OF GROWLANCER AND ITS AFFILIATES.</strong>
+            <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT LIMITS THE LIABILITY OF GROWLANZO AND ITS AFFILIATES.</strong>
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            To the fullest extent permitted by applicable law, in no event shall Growlancer, its officers, directors, employees, or agents be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, arising out of or in connection with your use of the Platform, whether based on warranty, contract, tort (including negligence), or any other legal theory, even if Growlancer has been advised of the possibility of such damages.
+            To the fullest extent permitted by applicable law, in no event shall Growlanzo, its officers, directors, employees, or agents be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, arising out of or in connection with your use of the Platform, whether based on warranty, contract, tort (including negligence), or any other legal theory, even if Growlanzo has been advised of the possibility of such damages.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer's total liability to you for any claims arising from or relating to these Terms or your use of the Platform shall be limited to the aggregate amount of fees paid by you to Growlancer in the twelve (12) months preceding the event giving rise to the claim.
+            Growlanzo's total liability to you for any claims arising from or relating to these Terms or your use of the Platform shall be limited to the aggregate amount of fees paid by you to Growlanzo in the twelve (12) months preceding the event giving rise to the claim.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             The limitations in this section do not apply to liability that cannot be excluded or limited by applicable law, such as liability for gross negligence, fraud, or death or personal injury caused by negligence.
@@ -224,13 +225,13 @@ const termsSections: Section[] = [
             <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT DISCLAIMS CERTAIN WARRANTIES.</strong>
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, GROWLANCER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, AND COURSE OF DEALING OR USAGE OF TRADE.
+            THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, GROWLANZO DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, AND COURSE OF DEALING OR USAGE OF TRADE.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer does not warrant that: (a) the Platform will function uninterrupted, secure, or available at any particular time or location; (b) any errors or defects will be corrected; (c) the results of using the Platform will meet your requirements or expectations; or (d) the Platform is free of viruses or other harmful components.
+            Growlanzo does not warrant that: (a) the Platform will function uninterrupted, secure, or available at any particular time or location; (b) any errors or defects will be corrected; (c) the results of using the Platform will meet your requirements or expectations; or (d) the Platform is free of viruses or other harmful components.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            No advice or information, whether oral or written, obtained by you from Growlancer or through the Platform shall create any warranty not expressly stated in these Terms.
+            No advice or information, whether oral or written, obtained by you from Growlanzo or through the Platform shall create any warranty not expressly stated in these Terms.
           </p>
         </>
       ),
@@ -242,7 +243,7 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer uses artificial intelligence ("AI") and automated systems to assist with features such as project matching, dispute analysis, workspace coordination, and AI writing (generating project titles, descriptions, service listings, and cover messages from your input). AI is intended to help improve your experience and may provide recommendations, but it does not make final or perfect decisions.
+            Growlanzo uses artificial intelligence ("AI") and automated systems to assist with features such as project matching, dispute analysis, workspace coordination, and AI writing (generating project titles, descriptions, service listings, and cover messages from your input). AI is intended to help improve your experience and may provide recommendations, but it does not make final or perfect decisions.
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li><strong>AI Assists, It Does Not Decide:</strong> AI-generated recommendations and outputs are provided to support, not replace, human judgment. Dispute resolutions and other decisions are subject to human review where applicable.</li>
@@ -260,7 +261,7 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer is a technology platform and does not provide legal, financial, tax, accounting, employment, immigration, or other professional consulting services. Content available on the Platform, including AI-generated recommendations and informational materials, is provided for general informational purposes only.
+            Growlanzo is a technology platform and does not provide legal, financial, tax, accounting, employment, immigration, or other professional consulting services. Content available on the Platform, including AI-generated recommendations and informational materials, is provided for general informational purposes only.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             You remain solely responsible for obtaining independent professional advice where required, including in relation to your contracts, taxes, employment status, intellectual property, or compliance with applicable laws.
@@ -275,14 +276,14 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer offers identity verification to strengthen trust between freelancers and clients. The platform's <strong>Verified badge</strong> indicates that a user has completed Growlancer's verification process and is in good standing.
+            Growlanzo offers identity verification to strengthen trust between freelancers and clients. The platform's <strong>Verified badge</strong> indicates that a user has completed Growlanzo's verification process and is in good standing.
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
-            <li><strong>Badge Meaning:</strong> The Verified badge reflects your verification status on the Growlancer platform. It is not a government-issued identity certification, a creditworthiness assessment, or a representation of professional qualifications. You may not represent it as such.</li>
-            <li><strong>Automated Verification & Development Mode:</strong> Verification is processed automatically by Growlancer. During the platform's pre-launch / development phase, verification may be performed through Growlancer's development verification mode, which runs automated platform checks rather than a third-party identity verification provider. Verification records from this mode are internally labelled as such.</li>
+            <li><strong>Badge Meaning:</strong> The Verified badge reflects your verification status on the Growlanzo platform. It is not a government-issued identity certification, a creditworthiness assessment, or a representation of professional qualifications. You may not represent it as such.</li>
+            <li><strong>Automated Verification & Development Mode:</strong> Verification is processed automatically by Growlanzo. During the platform's pre-launch / development phase, verification may be performed through Growlanzo's development verification mode, which runs automated platform checks rather than a third-party identity verification provider. Verification records from this mode are internally labelled as such.</li>
             <li><strong>Accurate Information Required:</strong> You agree to provide accurate, current, and complete identity information. Submitting false, fabricated, or another person's identity documents is a violation of these Terms and may result in account suspension, permanent ban, or legal action.</li>
-            <li><strong>One Identity Per Account:</strong> Each verified identity may be used on only one Growlancer account. Attempting to verify the same identity on multiple accounts is prohibited; such attempts may be rejected or result in account action.</li>
-            <li><strong>Badge Can Be Removed:</strong> Growlancer may remove, suspend, or reset a Verified badge at any time if we reasonably believe verification information is inaccurate, fraudulent, or in breach of these Terms. If your badge is removed, you may be able to re-verify by submitting accurate information again.</li>
+            <li><strong>One Identity Per Account:</strong> Each verified identity may be used on only one Growlanzo account. Attempting to verify the same identity on multiple accounts is prohibited; such attempts may be rejected or result in account action.</li>
+            <li><strong>Badge Can Be Removed:</strong> Growlanzo may remove, suspend, or reset a Verified badge at any time if we reasonably believe verification information is inaccurate, fraudulent, or in breach of these Terms. If your badge is removed, you may be able to re-verify by submitting accurate information again.</li>
             <li><strong>Consent & Data Use:</strong> By submitting verification information you consent to its processing as described in our <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>, including automated processing and, where applicable, sharing with third-party verification providers solely for verification purposes.</li>
           </ul>
         </>
@@ -295,10 +296,10 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer shall not be liable for any failure or delay in performing its obligations under these Terms caused by events beyond its reasonable control, including but not limited to natural disasters, internet or network outages, cloud provider failures, payment provider outages, cyber attacks, government actions, war, civil unrest, pandemics, power failures, and other unforeseen events.
+            Growlanzo shall not be liable for any failure or delay in performing its obligations under these Terms caused by events beyond its reasonable control, including but not limited to natural disasters, internet or network outages, cloud provider failures, payment provider outages, cyber attacks, government actions, war, civil unrest, pandemics, power failures, and other unforeseen events.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Where such an event occurs, Growlancer will use reasonable efforts to resume performance as soon as reasonably practicable. Obligations suspended by a force majeure event will resume once the event ceases to affect performance.
+            Where such an event occurs, Growlanzo will use reasonable efforts to resume performance as soon as reasonably practicable. Obligations suspended by a force majeure event will resume once the event ceases to affect performance.
           </p>
         </>
       ),
@@ -336,7 +337,7 @@ const termsSections: Section[] = [
             These Terms of Service shall be governed by and construed in accordance with the laws of India, without regard to conflict of law principles.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer is operated by <strong>Muhammad (Founder &amp; CEO)</strong>, India. For legal notices, grievances, or complaints, contact our grievance officer at <a href="mailto:support@growlancer.com" className="text-emerald-600 font-medium hover:underline">support@growlancer.com</a>. We acknowledge grievances within 24 hours and aim to resolve them within 15 days, in line with the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.
+            Growlanzo is operated by <strong>Muhammad (Founder &amp; CEO)</strong>, India. For legal notices, grievances, or complaints, contact our grievance officer at <a href="mailto:support@growlanzo.com" className="text-emerald-600 font-medium hover:underline">support@growlanzo.com</a>. We acknowledge grievances within 24 hours and aim to resolve them within 15 days, in line with the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             If any provision of these Terms is deemed invalid or unenforceable, that specific clause shall be severed, and the remaining provisions shall continue in full force and effect.
@@ -397,8 +398,7 @@ export function TermsPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 w-auto" />
           </Link>
           <Link
             to="/"

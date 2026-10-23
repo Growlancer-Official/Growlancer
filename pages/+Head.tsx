@@ -3,10 +3,11 @@ import React from 'react';
 export default function Head() {
   return (
     <>
-      {/* ── Original favicon — WebP for performance ── */}
-      <link rel="icon" type="image/webp" sizes="32x32" href="/UpdatedLogo.webp?v=3" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=2" />
-      <link rel="shortcut icon" href="/UpdatedLogo.png?v=2" />
+      {/* ── Favicon + app icon — the Growlanzo ring mark (public/UpdatedLogo.*).
+           `?v=` busts the cached copy some returning visitors still hold. ── */}
+      <link rel="icon" type="image/webp" sizes="32x32" href="/UpdatedLogo.webp?v=6" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=6" />
+      <link rel="shortcut icon" href="/UpdatedLogo.png?v=6" />
 
       {/* ── Mobile viewport — CRITICAL: without this, phones fall back to the
           980px desktop layout viewport and the whole site renders zoomed-out
@@ -15,37 +16,37 @@ export default function Head() {
       <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
       {/* ── Theme ── */}
-      <meta name="theme-color" content="#10b981" />
+      <meta name="theme-color" content="#24ba35" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="Growlancer" />
+      <meta name="apple-mobile-web-app-title" content="Growlanzo" />
       <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="application-name" content="Growlancer" />
+      <meta name="application-name" content="Growlanzo" />
 
       {/* ── Open Graph / Facebook ── */}
       <meta property="og:type" content="website" />
-      <meta property="og:url" content="https://growlancer.com/" />
-      <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace" />
+      <meta property="og:url" content="https://growlanzo.com/" />
+      <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace" />
       <meta
         property="og:description"
-        content="Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly."
+        content="Growlanzo is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly."
       />
-      <meta property="og:image" content="https://growlancer.com/og-image.png" />
+      <meta property="og:image" content="https://growlanzo.com/og-image.png" />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
 
       {/* ── Twitter ── */}
       <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content="https://growlancer.com/" />
-      <meta property="twitter:title" content="Growlancer — AI-Powered Freelancing Marketplace" />
+      <meta property="twitter:url" content="https://growlanzo.com/" />
+      <meta property="twitter:title" content="Growlanzo — AI-Powered Freelancing Marketplace" />
       <meta
         property="twitter:description"
-        content="Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients."
+        content="Growlanzo is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients."
       />
-      <meta property="twitter:image" content="https://growlancer.com/og-image.png" />
+      <meta property="twitter:image" content="https://growlanzo.com/og-image.png" />
 
       {/* ── Canonical ── */}
-      <link rel="canonical" href="https://growlancer.com/" />
+      <link rel="canonical" href="https://growlanzo.com/" />
       <link rel="manifest" href="/manifest.json" />
 
       {/* ── Resource hints ── */}

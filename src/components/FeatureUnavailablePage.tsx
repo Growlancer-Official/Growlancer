@@ -27,7 +27,7 @@ export function FeatureUnavailablePage() {
           This feature is not part of the early-access release
         </h1>
         <p className="mt-4 text-base leading-relaxed text-slate-600">
-          Growlancer is launching with the core marketplace only — hiring, contracts,
+          Growlanzo is launching with the core marketplace only — hiring, contracts,
           workspaces, payments and support. This area has been deferred so it can be
           finished properly instead of shipped half-tested. Nothing was read from or
           written to your account.

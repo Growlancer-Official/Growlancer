@@ -283,7 +283,7 @@ export function ClientFreelancerSearchPage() {
             <Search className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Find Talent <InfoTip title="Verified & Pro badges" text="Verified and Pro badges show real, checked freelancers — contact them here and hiring happens only inside Growlancer, with escrow protection on every payment." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Find Talent <InfoTip title="Verified & Pro badges" text="Verified and Pro badges show real, checked freelancers — contact them here and hiring happens only inside Growlanzo, with escrow protection on every payment." /></h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
           </div>
         </div>

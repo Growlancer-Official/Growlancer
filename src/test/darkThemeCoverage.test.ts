@@ -253,11 +253,12 @@ describe('dark theme — every light-surface utility is accounted for', () => {
     expect(stale, `EXCUSED entries nothing uses any more: ${stale.join(', ')}`).toEqual([]);
   });
 
-  it('has no light boot splash left for a dark-mode visitor', () => {
-    // Measured 2026-10-16: the built pages painted a cream #FFF8EE splash and a
-    // cream body before React applied `.dark`, because the theme guard lived in
-    // the repo-root index.html — a file Vike never uses as its document.
-    expect(readRepo('vite.config.ts')).toMatch(/html\.dark\s+#boot-overlay\s*\{[^}]*#070b14/);
+  it('has one boot splash, and it is the light one', () => {
+    // Light-only now: the splash no longer needs a dark twin, and a leftover
+    // `html.dark #boot-overlay` rule would be a stale copy of a removed theme.
+    const vite = readRepo('vite.config.ts');
+    expect(vite).toContain('#boot-overlay');
+    expect(vite).not.toMatch(/html\.dark\s+#boot-overlay/);
   });
 
   it('carries no excuse that the remap already handles', () => {
@@ -437,20 +438,17 @@ describe('theme FOUC guard — one behaviour, two build paths', () => {
     expect(buildGuard).toBe(viteGuard);
   });
 
-  it('reads the same storage key ThemeContext writes', () => {
-    const context = readRepo('src/context/ThemeContext.tsx');
-    const key = /const STORAGE_KEY = '([^']+)'/.exec(context)?.[1];
-    expect(key, 'STORAGE_KEY not found in ThemeContext.tsx').toBeTruthy();
-    // A mismatch is invisible until a user's saved choice is ignored on reload.
-    expect(viteGuard).toContain(`localStorage.getItem('${key}')`);
-    expect(buildGuard).toContain(`localStorage.getItem('${key}')`);
-  });
-
-  it('applies both the class and color-scheme, and cannot break the boot', () => {
+  it('pins the site to light on every route — the site is light-only now', () => {
     for (const guard of [viteGuard, buildGuard]) {
-      // `color-scheme` is what makes native scrollbars/controls dark.
-      expect(guard).toMatch(/root\.style\.colorScheme = dark \? 'dark' : 'light'/);
-      expect(guard).toContain("root.classList.add('dark')");
+      // A stale `.dark` class (older build, saved preference) must be removed
+      // before CSS paints, or a returning visitor sees a dark, half-themed page.
+      expect(guard).toContain("root.classList.remove('dark')");
+      expect(guard).not.toContain("classList.add('dark')");
+      // `color-scheme` is what makes native scrollbars/controls render light.
+      expect(guard).toContain("root.style.colorScheme = 'light'");
+      // The retired preference is deleted, never read back.
+      expect(guard).toContain("localStorage.removeItem('growlancer-theme')");
+      expect(guard).not.toContain('prefers-color-scheme');
       // A blocked localStorage (private mode) must not throw during boot.
       expect(guard).toMatch(/try \{[\s\S]*\} catch \(e\) \{/);
     }

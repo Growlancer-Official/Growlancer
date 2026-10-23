@@ -1,4 +1,4 @@
-// Growlancer E2E — unauthenticated auth flows
+// Growlanzo E2E — unauthenticated auth flows
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests (no account needed, safe against the real backend):
 //   1. Protected routes redirect unauthenticated users to /?modal=login
@@ -270,7 +270,7 @@ for (const vp of VIEWPORTS) {
 const ts = new Date().toISOString().replace(/[:.]/g, '-');
 const failures = results.filter((r) => !r.ok);
 const lines = [
-  '# Growlancer E2E — auth flows',
+  '# Growlanzo E2E — auth flows',
   `Base: ${BASE}`,
   `Pass: ${passCount} · Fail: ${failCount} · Total: ${results.length}`,
   '',

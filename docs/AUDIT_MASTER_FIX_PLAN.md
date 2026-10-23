@@ -1,4 +1,4 @@
-# Growlancer — Consolidated Master Fix Plan
+# Growlanzo — Consolidated Master Fix Plan
 
 **Generated:** 2026-09-11
 **Sources (4 forensic audit reports):**

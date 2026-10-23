@@ -57,7 +57,7 @@ function buildAlertHtml(count: number, alerts: Array<{ severity: string; categor
         <tr><td align="center">
           <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
             <tr>
-              <td style="background:#059669;border-radius:12px;padding:14px 32px;" bgcolor="#059669">
+              <td style="background:#14861f;border-radius:12px;padding:14px 32px;" bgcolor="#14861f">
                 <a href="${APP_URL}/admin/security" target="_blank" rel="noopener noreferrer" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Review Alerts →</a>
               </td>
             </tr>
@@ -66,7 +66,7 @@ function buildAlertHtml(count: number, alerts: Array<{ severity: string; categor
       </table>
     </div>
     <div style="padding:20px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
-      <p style="color:#94a3b8;font-size:11px;margin:0;line-height:1.5;">Growlancer — automated security monitoring. Resolve alerts in the admin dashboard or run <code>node scripts/security-audit.mjs</code>.</p>
+      <p style="color:#94a3b8;font-size:11px;margin:0;line-height:1.5;">Growlanzo — automated security monitoring. Resolve alerts in the admin dashboard or run <code>node scripts/security-audit.mjs</code>.</p>
     </div>
   </div>
 </body>
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
 
     const emailed = await sendEmail({
       to: ADMIN_EMAIL,
-      subject: `🚨 Growlancer Security: ${critical} critical / ${high} high finding(s)`,
+      subject: `🚨 Growlanzo Security: ${critical} critical / ${high} high finding(s)`,
       html: buildAlertHtml(list.length, list),
     });
 

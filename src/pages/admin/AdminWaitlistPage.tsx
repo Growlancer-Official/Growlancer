@@ -113,7 +113,7 @@ export function AdminWaitlistPage() {
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Waitlist</h1>
           <p className="text-sm text-slate-400">
-            Who's interested in Growlancer, from which country — live.
+            Who's interested in Growlanzo, from which country — live.
           </p>
         </div>
         <button

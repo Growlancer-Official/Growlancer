@@ -31,14 +31,14 @@
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(self)" />
-    <title>Growlancer</title>
-    <!-- Theme FOUC guard: NOT here. This file is not the served document —
-         Vike generates its own (verified: the built HTML carries none of the
-         markers below, so an inline script here never reached a browser). The
-         guard is injected into every built page's <head> by the
-         boot-splash-inject plugin in vite.config.ts (THEME_FOUC_GUARD), which
-         is the single source of truth. ThemeProvider
-         (src/context/ThemeContext.tsx) takes over after hydration. -->
+    <title>Growlanzo</title>
+    <!-- Light-only lock: NOT here. This file is not the served document — Vike
+         generates its own (verified: the built HTML carries none of the markers
+         below, so an inline script here never reached a browser). The lock is
+         injected into every built page's <head> by the boot-splash-inject
+         plugin in vite.config.ts (THEME_FOUC_GUARD), which is the single source
+         of truth. ThemeProvider (src/context/ThemeContext.tsx) repeats it after
+         hydration. -->
     <style>
       /* Boot splash — prevents the prerendered homepage shell from flashing on
          non-prerendered routes (dashboard, client, admin, onboarding, dynamic
@@ -61,19 +61,10 @@
       #boot-overlay .boot-spinner {
         width: 44px;
         height: 44px;
-        border: 4px solid #d1fae5;
-        border-top-color: #10b981;
+        border: 4px solid #ddf7d9;
+        border-top-color: #24ba35;
         border-radius: 50%;
         animation: boot-spin 0.8s linear infinite;
-      }
-      /* Dark theme: the splash must match the app background or the boot frame
-         flashes a cream/white sheet (set by the inline theme script above). */
-      html.dark #boot-overlay {
-        background: #070b14;
-      }
-      html.dark #boot-overlay .boot-spinner {
-        border-color: #123b31;
-        border-top-color: #10b981;
       }
       @keyframes boot-spin {
         to { transform: rotate(360deg); }

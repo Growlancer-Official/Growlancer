@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Home, Search } from 'lucide-react';
 import { ROUTES } from '../routes';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function NotFoundPage() {
   return (
@@ -9,8 +10,7 @@ export function NotFoundPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center">
           <Link to={ROUTES.HOME} className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
         </div>
       </header>
@@ -87,7 +87,7 @@ export function NotFoundPage() {
       <footer className="bg-white border-t border-slate-200 py-6">
         <div className="max-w-[100rem] mx-auto px-4 text-center">
           <p className="text-slate-400 text-sm">
-            &copy; {new Date().getFullYear()} Growlancer. All rights reserved.
+            &copy; {new Date().getFullYear()} Growlanzo. All rights reserved.
           </p>
         </div>
       </footer>

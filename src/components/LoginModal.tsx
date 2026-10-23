@@ -15,7 +15,7 @@ interface LoginModalProps {
 /**
  * LoginModal — GitHub / LinkedIn sign-in only.
  *
- * Growlancer has no email/password login: identity comes from the provider,
+ * Growlanzo has no email/password login: identity comes from the provider,
  * and the session + profile are created by the shared OAuth callback flow.
  * Removing the password form also removes that attack surface entirely —
  * there is no password to phish, spray or reset.
@@ -49,7 +49,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Welcome back">
+    <Modal isOpen={isOpen} onClose={onClose} title="Welcome back" brand>
       {/* Subtle Background Decorations */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/50 rounded-full blur-2xl -mr-12 -mt-12 opacity-60 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-100/50 rounded-full blur-2xl -ml-12 -mb-12 opacity-60 pointer-events-none"></div>
@@ -136,11 +136,11 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           onError={setError}
         />
 
-        {/* Trust note — honest, Growlancer-branded */}
+        {/* Trust note — honest, Growlanzo-branded */}
         <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-slate-50 border border-slate-100 p-3">
           <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
           <p className="text-xs text-slate-500 leading-relaxed">
-            Growlancer uses GitHub and LinkedIn for secure sign-in — we never see or store your
+            Growlanzo uses GitHub and LinkedIn for secure sign-in — we never see or store your
             password, and we never post anything to your accounts.
           </p>
         </div>
@@ -148,7 +148,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
         {/* Signup Redirect */}
         <div className="mt-5 text-center">
           <p className="text-slate-600 text-sm">
-            New to Growlancer?{' '}
+            New to Growlanzo?{' '}
             <button
               onClick={onSwitchToSignup}
               className="text-emerald-600 font-semibold hover:text-emerald-700 transition-all duration-200 hover:scale-105"

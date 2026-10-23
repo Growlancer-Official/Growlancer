@@ -123,10 +123,10 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
+      <img src="${APP_URL}/growlanzo-full.png" alt="Growlanzo" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
+    <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
       <h1 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px;">${title}</h1>
     </div>
     <!-- Body -->
@@ -138,16 +138,16 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
         <tr>
           <td style="padding-bottom: 12px;">
-            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
           </td>
         </tr>
         <tr>
           <td>
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlanzo — AI-Powered Freelancing Marketplace</p>
           </td>
         </tr>
       </table>
@@ -165,43 +165,43 @@ function buildReceivedEmailHtml(data: ApplicationData): string {
   const body = `
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      Thank you for your interest in joining <strong>Growlancer</strong> and for taking the time to apply for the
+      Thank you for your interest in joining <strong>Growlanzo</strong> and for taking the time to apply for the
       <strong>${escapedRole}</strong> position. We are truly excited to learn more about you.
     </p>
 
     <p style="font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 20px;">
-      At Growlancer, we are building the future of AI-powered freelancing — a global marketplace where talent meets opportunity.
+      At Growlanzo, we are building the future of AI-powered freelancing — a global marketplace where talent meets opportunity.
       We carefully review every application to find individuals who share our vision and passion.
     </p>
 
-    <div style="margin: 28px 0; padding: 24px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 16px;">
-      <h3 style="font-size: 15px; color: #166534; margin: 0 0 16px; font-weight: 700;">📋 Our Recruitment Process</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #166534;">
+    <div style="margin: 28px 0; padding: 24px; background: linear-gradient(135deg, #f1fcef 0%, #ddf7d9 100%); border: 1px solid #89e07f; border-radius: 16px;">
+      <h3 style="font-size: 15px; color: #10591a; margin: 0 0 16px; font-weight: 700;">📋 Our Recruitment Process</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #10591a;">
         <tr>
           <td style="padding: 8px 12px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 24px; height: 24px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">1</span>
+            <span style="display: inline-block; width: 24px; height: 24px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">1</span>
           </td>
           <td style="padding: 8px 0;">
-            <strong style="color: #065f46;">Application Review</strong>
-            <p style="margin: 2px 0 0; font-size: 13px; color: #047857;">Our team reviews your profile and credentials (within 24–48 hours)</p>
+            <strong style="color: #10591a;">Application Review</strong>
+            <p style="margin: 2px 0 0; font-size: 13px; color: #0f6f1a;">Our team reviews your profile and credentials (within 24–48 hours)</p>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 12px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 24px; height: 24px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">2</span>
+            <span style="display: inline-block; width: 24px; height: 24px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">2</span>
           </td>
           <td style="padding: 8px 0;">
-            <strong style="color: #065f46;">Interview Round</strong>
-            <p style="margin: 2px 0 0; font-size: 13px; color: #047857;">A single video call with our founding team to discuss your experience and aspirations</p>
+            <strong style="color: #10591a;">Interview Round</strong>
+            <p style="margin: 2px 0 0; font-size: 13px; color: #0f6f1a;">A single video call with our founding team to discuss your experience and aspirations</p>
           </td>
         </tr>
         <tr>
           <td style="padding: 8px 12px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 24px; height: 24px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">3</span>
+            <span style="display: inline-block; width: 24px; height: 24px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700;">3</span>
           </td>
           <td style="padding: 8px 0;">
-            <strong style="color: #065f46;">Selection &amp; Onboarding</strong>
-            <p style="margin: 2px 0 0; font-size: 13px; color: #047857;">Welcome aboard! You will receive your offer letter, NDA, and onboarding details</p>
+            <strong style="color: #10591a;">Selection &amp; Onboarding</strong>
+            <p style="margin: 2px 0 0; font-size: 13px; color: #0f6f1a;">Welcome aboard! You will receive your offer letter, NDA, and onboarding details</p>
           </td>
         </tr>
       </table>
@@ -210,21 +210,21 @@ function buildReceivedEmailHtml(data: ApplicationData): string {
     <div style="margin: 24px 0; padding: 20px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;">
       <p style="font-size: 13px; color: #92400e; margin: 0; line-height: 1.6;">
         <strong>💡 Pro Tip:</strong> While you wait, explore our platform at
-        <a href="${APP_URL}" style="color: #059669; font-weight: 600;">${APP_URL}</a> to learn more about what we do.
-        You can also follow us on <a href="${GITHUB_URL}" style="color: #059669; font-weight: 600;">GitHub</a> to stay updated!
+        <a href="${APP_URL}" style="color: #14861f; font-weight: 600;">${APP_URL}</a> to learn more about what we do.
+        You can also follow us on <a href="${GITHUB_URL}" style="color: #14861f; font-weight: 600;">GitHub</a> to stay updated!
       </p>
     </div>
 
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
       If you have any questions in the meantime, feel free to reply to this email or write to us at
-      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
+      <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f;">${ADMIN_EMAIL}</a>.
       We are happy to help!
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Best regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+      <strong style="font-size: 15px; color: #14861f;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8;">Founder & CEO, Growlanzo</span>
     </p>`
   return baseEmailHtml('Application Received Successfully', body)
 }
@@ -255,7 +255,7 @@ function buildAdminEmailHtml(data: ApplicationData): string {
       <tr><td style="padding: 8px 0; color: #64748b; width: 140px; border-bottom: 1px solid #f1f5f9;">Name</td>
           <td style="padding: 8px 0; font-weight: 600; color: #0f172a; border-bottom: 1px solid #f1f5f9;">${escapedName}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Email</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapedEmail}" style="color: #059669;">${escapedEmail}</a></td></tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><a href="mailto:${escapedEmail}" style="color: #14861f;">${escapedEmail}</a></td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Role</td>
           <td style="padding: 8px 0; font-weight: 600; color: #0f172a; border-bottom: 1px solid #f1f5f9;">${escapedRole}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Phone</td>
@@ -269,13 +269,13 @@ function buildAdminEmailHtml(data: ApplicationData): string {
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Grad Year</td>
           <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${escapedGrad}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">GitHub</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.github_url ? `<a href="${escapeHtml(data.github_url)}" style="color: #059669;">${escapedGithub}</a>` : 'Not provided'}</td></tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.github_url ? `<a href="${escapeHtml(data.github_url)}" style="color: #14861f;">${escapedGithub}</a>` : 'Not provided'}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">LinkedIn</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.linkedin_url ? `<a href="${escapeHtml(data.linkedin_url)}" style="color: #059669;">${escapedLinkedin}</a>` : 'Not provided'}</td></tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.linkedin_url ? `<a href="${escapeHtml(data.linkedin_url)}" style="color: #14861f;">${escapedLinkedin}</a>` : 'Not provided'}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Portfolio</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.portfolio_url ? `<a href="${escapeHtml(data.portfolio_url)}" style="color: #059669;">${escapedPortfolio}</a>` : 'Not provided'}</td></tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;">${data.portfolio_url ? `<a href="${escapeHtml(data.portfolio_url)}" style="color: #14861f;">${escapedPortfolio}</a>` : 'Not provided'}</td></tr>
       <tr><td style="padding: 8px 0; color: #64748b; border-bottom: 1px solid #f1f5f9;">Resume</td>
-          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><a href="${resumeLink}" style="color: #059669;">View Resume</a></td></tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #f1f5f9;"><a href="${resumeLink}" style="color: #14861f;">View Resume</a></td></tr>
       <tr><td style="padding: 8px 0; color: #64748b;">Availability</td>
           <td style="padding: 8px 0;">${escapedAvailability} hrs/week</td></tr>
     </table>
@@ -285,11 +285,11 @@ function buildAdminEmailHtml(data: ApplicationData): string {
     </div>
     ${data.why_growlancer ? `
     <div style="margin-top: 16px; padding: 16px; background: #f1f5f9; border-radius: 12px;">
-      <h3 style="font-size: 13px; color: #64748b; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Why Growlancer?</h3>
+      <h3 style="font-size: 13px; color: #64748b; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Why Growlanzo?</h3>
       <p style="font-size: 14px; color: #0f172a; line-height: 1.6; margin: 0;">${escapedWhy}</p>
     </div>` : ''}
     <div style="margin-top: 30px; text-align: center;">
-      <a href="${APP_URL}/admin/internships" style="display: inline-block; padding: 12px 32px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
+      <a href="${APP_URL}/admin/internships" style="display: inline-block; padding: 12px 32px; background: #14861f; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
         View in Admin Dashboard →
       </a>
     </div>`
@@ -304,7 +304,7 @@ function buildUnderReviewEmailHtml(name: string, roleName: string): string {
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Thank you for your patience. We wanted to provide you with a quick update regarding your application for the
-      <strong>${escapedRole}</strong> position at <strong>Growlancer</strong>.
+      <strong>${escapedRole}</strong> position at <strong>Growlanzo</strong>.
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
@@ -312,12 +312,12 @@ function buildUnderReviewEmailHtml(name: string, roleName: string): string {
       We typically complete our review within <strong>2–3 business days</strong>.
     </p>
 
-    <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 16px;">
+    <div style="margin: 28px 0; padding: 24px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 16px;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-        <div style="width: 40px; height: 40px; background: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">⏳</div>
+        <div style="width: 40px; height: 40px; background: #14861f; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">⏳</div>
         <div>
-          <h3 style="font-size: 15px; color: #065f46; margin: 0; font-weight: 700;">Application Status: Under Review</h3>
-          <p style="font-size: 13px; color: #047857; margin: 2px 0 0;">Estimated response time: 2–3 business days</p>
+          <h3 style="font-size: 15px; color: #10591a; margin: 0; font-weight: 700;">Application Status: Under Review</h3>
+          <p style="font-size: 13px; color: #0f6f1a; margin: 2px 0 0;">Estimated response time: 2–3 business days</p>
         </div>
       </div>
     </div>
@@ -327,7 +327,7 @@ function buildUnderReviewEmailHtml(name: string, roleName: string): string {
       <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1e3a5f;">
         <tr>
           <td style="padding: 4px 8px; width: 24px;">📖</td>
-          <td style="padding: 4px 0;">Learn more about Growlancer at <a href="${APP_URL}" style="color: #2563eb;">our platform</a></td>
+          <td style="padding: 4px 0;">Learn more about Growlanzo at <a href="${APP_URL}" style="color: #2563eb;">our platform</a></td>
         </tr>
         <tr>
           <td style="padding: 4px 8px; width: 24px;">💻</td>
@@ -343,13 +343,13 @@ function buildUnderReviewEmailHtml(name: string, roleName: string): string {
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
       We genuinely appreciate your interest in joining our team and will get back to you as soon as possible.
       If you have any urgent questions, please reach out to
-      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
+      <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f;">${ADMIN_EMAIL}</a>.
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Warm regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+      <strong style="font-size: 15px; color: #14861f;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8;">Founder & CEO, Growlanzo</span>
     </p>`
   return baseEmailHtml('Application Under Review', body)
 }
@@ -363,7 +363,7 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Congratulations! We are pleased to inform you that you have been <strong>shortlisted</strong> for the
-      <strong>${escapedRole}</strong> position at <strong>Growlancer</strong>.
+      <strong>${escapedRole}</strong> position at <strong>Growlanzo</strong>.
     </p>
 
     <p style="font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 20px;">
@@ -376,7 +376,7 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
         <div style="width: 44px; height: 44px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px;">⭐</div>
         <div>
           <h3 style="font-size: 16px; color: #92400e; margin: 0; font-weight: 700;">What's Next?</h3>
-          <p style="font-size: 13px; color: #b45309; margin: 2px 0 0;">Your journey to joining Growlancer continues!</p>
+          <p style="font-size: 13px; color: #b45309; margin: 2px 0 0;">Your journey to joining Growlanzo continues!</p>
         </div>
       </div>
       <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #92400e;">
@@ -400,7 +400,7 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
       <p style="font-size: 13px; color: #64748b; margin: 0; line-height: 1.6;">
         Keep an eye on your inbox (and spam folder) for the interview invitation.
         If you don't hear from us within 48 hours, please reach out to
-        <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
+        <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f;">${ADMIN_EMAIL}</a>.
       </p>
     </div>
 
@@ -410,8 +410,8 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Warm regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+      <strong style="font-size: 15px; color: #14861f;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8;">Founder & CEO, Growlanzo</span>
     </p>`
   return baseEmailHtml('Congratulations — You\'re Shortlisted!', body)
 }
@@ -466,7 +466,7 @@ function buildInterviewEmailHtml(
       <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 24px 28px; text-align: center;">
         <div style="font-size: 40px; margin-bottom: 8px;">🎥</div>
         <h2 style="font-size: 22px; color: white; margin: 0; font-weight: 700;">Interview Invitation</h2>
-        <p style="font-size: 14px; color: #d8b4fe; margin: 6px 0 0;">You have been invited for a video interview with the Growlancer team</p>
+        <p style="font-size: 14px; color: #d8b4fe; margin: 6px 0 0;">You have been invited for a video interview with the Growlanzo team</p>
       </div>
       <div style="padding: 28px;">
         ${formattedTime ? `
@@ -513,7 +513,7 @@ function buildInterviewEmailHtml(
           <a href="${googleMeetLink}"
              target="_blank"
              rel="noopener noreferrer"
-             style="display: inline-block; padding: 18px 48px; background: #059669; color: white; text-decoration: none; border-radius: 14px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);">
+             style="display: inline-block; padding: 18px 48px; background: #14861f; color: white; text-decoration: none; border-radius: 14px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);">
             🔗 Join Google Meet Now
           </a>
         </div>
@@ -530,7 +530,7 @@ function buildInterviewEmailHtml(
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td align="center" style="padding: 4px;">
-              <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Interview+${encodeURIComponent(rawRole)}+at+Growlancer&dates=${icsDtStart}/${icsDtEnd}&details=Video+interview+for+${encodeURIComponent(rawRole)}+position+at+Growlancer%0D%0A%0D%0AMeet+Link:+${encodeURIComponent(googleMeetLink!)}&location=${encodeURIComponent(googleMeetLink!)}"
+              <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Interview+${encodeURIComponent(rawRole)}+at+Growlanzo&dates=${icsDtStart}/${icsDtEnd}&details=Video+interview+for+${encodeURIComponent(rawRole)}+position+at+Growlanzo%0D%0A%0D%0AMeet+Link:+${encodeURIComponent(googleMeetLink!)}&location=${encodeURIComponent(googleMeetLink!)}"
                  target="_blank"
                  rel="noopener noreferrer"
                  style="display: inline-block; padding: 12px 24px; background: #7c3aed; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">
@@ -582,7 +582,7 @@ function buildInterviewEmailHtml(
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      <strong>Congratulations!</strong> You have been invited for an interview for the <strong>${escapedRole}</strong> position at <strong>Growlancer</strong>.
+      <strong>Congratulations!</strong> You have been invited for an interview for the <strong>${escapedRole}</strong> position at <strong>Growlanzo</strong>.
     </p>
 
     <p style="font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 24px;">
@@ -597,7 +597,7 @@ function buildInterviewEmailHtml(
       <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
         <tr>
           <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">🔍</td>
-          <td style="padding: 8px 0 8px 4px;">Research Growlancer — explore <a href="${APP_URL}" style="color: #059669;">our platform</a> and understand what we're building</td>
+          <td style="padding: 8px 0 8px 4px;">Research Growlanzo — explore <a href="${APP_URL}" style="color: #14861f;">our platform</a> and understand what we're building</td>
         </tr>
         <tr>
           <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">🎯</td>
@@ -620,7 +620,7 @@ function buildInterviewEmailHtml(
 
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
       If you have any questions before the interview or need to reschedule, simply reply to this email or reach out to
-      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a>.
+      <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f; font-weight: 600;">${ADMIN_EMAIL}</a>.
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
@@ -629,8 +629,8 @@ function buildInterviewEmailHtml(
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Warm regards,<br/>
-      <strong style="font-size: 16px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8; font-size: 13px;">Founder & CEO, Growlancer</span>
+      <strong style="font-size: 16px; color: #14861f;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8; font-size: 13px;">Founder & CEO, Growlanzo</span>
     </p>`
 
   return baseEmailHtml('Interview Invitation — ' + roleName, body)
@@ -657,7 +657,7 @@ function buildSelectedEmailHtml(
     { label: 'Internship Letter', icon: '🎓', url: internshipLetterUrl, desc: 'Official confirmation of internship terms' },
   ].map((doc) => `
     <tr>
-      <td style="padding: 16px 20px; background: ${doc.url ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${doc.url ? '#86efac' : '#e2e8f0'}; border-radius: 12px;">
+      <td style="padding: 16px 20px; background: ${doc.url ? '#f1fcef' : '#f8fafc'}; border: 1px solid ${doc.url ? '#89e07f' : '#e2e8f0'}; border-radius: 12px;">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td width="52" style="text-align: center; font-size: 32px; line-height: 1; vertical-align: middle;" valign="middle">${doc.icon}</td>
@@ -667,7 +667,7 @@ function buildSelectedEmailHtml(
             </td>
             <td width="140" style="text-align: right; vertical-align: middle;" valign="middle">
               ${doc.url
-                ? `<a href="${doc.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 16px; background: #059669; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; white-space: nowrap;">📥 Download PDF</a>`
+                ? `<a href="${doc.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 16px; background: #14861f; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; white-space: nowrap;">📥 Download PDF</a>`
                 : `<span style="display: inline-block; padding: 10px 16px; background: #e2e8f0; color: #94a3b8; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap;">⏳ Awaiting</span>`
               }
             </td>
@@ -679,10 +679,10 @@ function buildSelectedEmailHtml(
 
   const docSection = hasAnyDoc ? `
     <!-- ─── DOCUMENTS SECTION ────────────────────────────────────────── -->
-    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 20px; text-align: center;">
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #14861f; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); padding: 20px; text-align: center;">
         <h2 style="font-size: 18px; color: #ffffff; margin: 0; font-weight: 700;">📄 Your Internship Documents</h2>
-        <p style="font-size: 13px; color: #a7f3d0; margin: 6px 0 0;">Please download, sign, and return all documents below</p>
+        <p style="font-size: 13px; color: #bbefb4; margin: 6px 0 0;">Please download, sign, and return all documents below</p>
       </div>
       <div style="padding: 20px;">
         <!-- ⚠️ ACTION REQUIRED BANNER -->
@@ -693,8 +693,8 @@ function buildSelectedEmailHtml(
           </p>
           <table style="margin: 0 auto;" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="background: #059669; border-radius: 8px; padding: 0;">
-                <a href="mailto:${ADMIN_EMAIL}?subject=Signed%20Documents%20-%20${encodeURIComponent(rawName)}&body=Dear%20Growlancer%20Team%2C%0D%0A%0D%0APlease%20find%20attached%20my%20signed%20documents%20for%20the%20${encodeURIComponent(rawRole)}%20position.%0D%0A%0D%0AThanks%2C%0D%0A${encodeURIComponent(rawName)}"
+              <td style="background: #14861f; border-radius: 8px; padding: 0;">
+                <a href="mailto:${ADMIN_EMAIL}?subject=Signed%20Documents%20-%20${encodeURIComponent(rawName)}&body=Dear%20Growlanzo%20Team%2C%0D%0A%0D%0APlease%20find%20attached%20my%20signed%20documents%20for%20the%20${encodeURIComponent(rawRole)}%20position.%0D%0A%0D%0AThanks%2C%0D%0A${encodeURIComponent(rawName)}"
                    style="display: block; padding: 10px 20px; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700;">📧 Email Signed Copies →</a>
               </td>
             </tr>
@@ -709,8 +709,8 @@ function buildSelectedEmailHtml(
 
         <!-- Status Summary -->
         ${offerLetterUrl && ndaUrl && internshipLetterUrl
-          ? `<div style="padding: 14px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; text-align: center;">
-              <p style="font-size: 14px; color: #166534; margin: 0; font-weight: 600;">✅ All 3 documents ready! Download each, sign, and email back.</p>
+          ? `<div style="padding: 14px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 10px; text-align: center;">
+              <p style="font-size: 14px; color: #10591a; margin: 0; font-weight: 600;">✅ All 3 documents ready! Download each, sign, and email back.</p>
             </div>`
           : `<div style="padding: 12px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
               <p style="font-size: 13px; color: #92400e; margin: 0;">⏳ Some documents pending. You will receive notification when ready.</p>
@@ -732,17 +732,17 @@ function buildSelectedEmailHtml(
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      On behalf of the entire team at <strong>Growlancer</strong>, I am absolutely delighted to inform you that
-      you have been <strong style="color: #059669;">selected</strong> for the
+      On behalf of the entire team at <strong>Growlanzo</strong>, I am absolutely delighted to inform you that
+      you have been <strong style="color: #14861f;">selected</strong> for the
       <strong>${escapedRole}</strong> internship position.
     </p>
 
     <!-- CONGRATULATIONS BANNER -->
-    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #14861f; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); padding: 32px; text-align: center;">
         <p style="font-size: 48px; margin: 0 0 12px; line-height: 1;">🎉</p>
         <h2 style="font-size: 26px; color: white; margin: 0 0 10px; font-weight: 800;">Congratulations!</h2>
-        <p style="font-size: 15px; color: #a7f3d0; margin: 0; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto;">
+        <p style="font-size: 15px; color: #bbefb4; margin: 0; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto;">
           We were truly impressed by your skills, enthusiasm, and potential. We believe you will be a valuable addition to our team!
         </p>
       </div>
@@ -772,33 +772,33 @@ function buildSelectedEmailHtml(
       <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
         <tr>
           <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">1</span>
+            <span style="display: inline-block; width: 28px; height: 28px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">1</span>
           </td>
           <td style="padding: 8px 0;"><strong style="color: #0f172a;">Download & Review</strong> — Read all documents carefully to understand the terms</td>
         </tr>
         <tr>
           <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">2</span>
+            <span style="display: inline-block; width: 28px; height: 28px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">2</span>
           </td>
           <td style="padding: 8px 0;"><strong style="color: #0f172a;">Sign All Documents</strong> — Electronically sign or print, sign & scan each document</td>
         </tr>
         <tr>
           <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">3</span>
+            <span style="display: inline-block; width: 28px; height: 28px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">3</span>
           </td>
-          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Email Signed Copies</strong> — Attach all signed PDFs and reply to this email or send to <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a></td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Email Signed Copies</strong> — Attach all signed PDFs and reply to this email or send to <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f; font-weight: 600;">${ADMIN_EMAIL}</a></td>
         </tr>
         <tr>
           <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">4</span>
+            <span style="display: inline-block; width: 28px; height: 28px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">4</span>
           </td>
           <td style="padding: 8px 0;"><strong style="color: #0f172a;">Onboarding Call</strong> — Our team will reach out within 3 business days to schedule your kickoff</td>
         </tr>
         <tr>
           <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
-            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">5</span>
+            <span style="display: inline-block; width: 28px; height: 28px; background: #14861f; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">5</span>
           </td>
-          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Welcome to Growlancer!</strong> 🚀 Begin your internship journey and contribute to our mission</td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Welcome to Growlanzo!</strong> 🚀 Begin your internship journey and contribute to our mission</td>
         </tr>
       </table>
     </div>
@@ -808,18 +808,18 @@ function buildSelectedEmailHtml(
       <h3 style="font-size: 14px; color: #0f172a; margin: 0 0 14px; font-weight: 700;">🔗 Useful Links</h3>
       <table style="font-size: 13px; width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 6px 0; width: 50%;">🌐 <a href="${APP_URL}" style="color: #059669; text-decoration: none;">Growlancer Platform</a></td>
-          <td style="padding: 6px 0; width: 50%;">💻 <a href="${GITHUB_URL}" style="color: #059669; text-decoration: none;">GitHub Organization</a></td>
+          <td style="padding: 6px 0; width: 50%;">🌐 <a href="${APP_URL}" style="color: #14861f; text-decoration: none;">Growlanzo Platform</a></td>
+          <td style="padding: 6px 0; width: 50%;">💻 <a href="${GITHUB_URL}" style="color: #14861f; text-decoration: none;">GitHub Organization</a></td>
         </tr>
         <tr>
-          <td style="padding: 6px 0;">📧 <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; text-decoration: none;">Contact HR</a></td>
-          <td style="padding: 6px 0;">📖 <a href="${APP_URL}/internships" style="color: #059669; text-decoration: none;">Internship Program</a></td>
+          <td style="padding: 6px 0;">📧 <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f; text-decoration: none;">Contact HR</a></td>
+          <td style="padding: 6px 0;">📖 <a href="${APP_URL}/internships" style="color: #14861f; text-decoration: none;">Internship Program</a></td>
         </tr>
       </table>
     </div>
 
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      If you have any questions about the documents, the signing process, or what to expect next, please don't hesitate to reach out to us at <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a>. We're here to help!
+      If you have any questions about the documents, the signing process, or what to expect next, please don't hesitate to reach out to us at <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f; font-weight: 600;">${ADMIN_EMAIL}</a>. We're here to help!
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
@@ -831,16 +831,16 @@ function buildSelectedEmailHtml(
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 4px;">
         With warm regards,
       </p>
-      <p style="font-size: 16px; color: #059669; margin: 0 0 2px; font-weight: 700;">
+      <p style="font-size: 16px; color: #14861f; margin: 0 0 2px; font-weight: 700;">
         Mohammad Miran Khan
       </p>
       <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">
-        Founder & CEO, Growlancer
+        Founder & CEO, Growlanzo
       </p>
       <table style="border-collapse: collapse;">
         <tr>
-          <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
-            <p style="font-size: 11px; color: #166534; margin: 0;">
+          <td style="padding: 8px 16px; background: #f1fcef; border-radius: 8px;">
+            <p style="font-size: 11px; color: #10591a; margin: 0;">
               🌐 ${APP_URL} &nbsp;|&nbsp; 📧 ${ADMIN_EMAIL}
             </p>
           </td>
@@ -863,7 +863,7 @@ function buildRejectedEmailHtml(name: string, roleName: string): string {
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       Thank you for taking the time and effort to apply for the <strong>${escapedRole}</strong> position at
-      <strong>Growlancer</strong>. We truly appreciate your interest in being part of our journey.
+      <strong>Growlanzo</strong>. We truly appreciate your interest in being part of our journey.
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
@@ -894,11 +894,11 @@ function buildRejectedEmailHtml(name: string, roleName: string): string {
         </tr>
         <tr>
           <td style="padding: 5px 10px; width: 24px; vertical-align: top;">📌</td>
-          <td style="padding: 5px 0;">Follow us on <a href="${APP_URL}" style="color: #059669;">Growlancer</a> for future opportunities and updates</td>
+          <td style="padding: 5px 0;">Follow us on <a href="${APP_URL}" style="color: #14861f;">Growlanzo</a> for future opportunities and updates</td>
         </tr>
         <tr>
           <td style="padding: 5px 10px; width: 24px; vertical-align: top;">📌</td>
-          <td style="padding: 5px 0;">Contribute to our open-source projects on <a href="${GITHUB_URL}" style="color: #059669;">GitHub</a> to showcase your skills</td>
+          <td style="padding: 5px 0;">Contribute to our open-source projects on <a href="${GITHUB_URL}" style="color: #14861f;">GitHub</a> to showcase your skills</td>
         </tr>
       </table>
     </div>
@@ -913,8 +913,8 @@ function buildRejectedEmailHtml(name: string, roleName: string): string {
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       With warm regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+      <strong style="font-size: 15px; color: #14861f;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8;">Founder & CEO, Growlanzo</span>
     </p>`
   return baseEmailHtml('Application Update', body)
 }
@@ -1159,7 +1159,7 @@ Deno.serve(async (req) => {
 
       // 1. Send admin notification email
       const adminEmailSent = await sendNotificationEmail(
-        ADMIN_EMAIL, 'Growlancer Admin',
+        ADMIN_EMAIL, 'Growlanzo Admin',
         `[New Application] ${role_name} - ${full_name}`,
         buildAdminEmailHtml(appData)
       )
@@ -1167,14 +1167,14 @@ Deno.serve(async (req) => {
       // 2. Send confirmation email to applicant (with immediate "Under Review" status)
       const applicantEmailSent = await sendNotificationEmail(
         email, full_name,
-        `Application Received — ${role_name} at Growlancer`,
+        `Application Received — ${role_name} at Growlanzo`,
         buildReceivedEmailHtml(appData)
       )
 
       // 3. Send "Under Review" email immediately (no need to wait 24 hours)
       const underReviewSent = await sendNotificationEmail(
         email, full_name,
-        `Application Under Review — ${role_name} at Growlancer`,
+        `Application Under Review — ${role_name} at Growlanzo`,
         buildUnderReviewEmailHtml(full_name, role_name)
       )
 

@@ -2,7 +2,7 @@
  * Referral code — one canonical format for the whole product.
  *
  * Format: `GRW-XXXX-XXXX`
- *   • `GRW` is the Growlancer prefix, so a code reads as ours even when it is
+ *   • `GRW` is the Growlanzo prefix, so a code reads as ours even when it is
  *     pasted into a chat with no context.
  *   • 8 random characters from a 32-symbol alphabet, shown in two groups of
  *     four. The alphabet drops 0/O, 1/I/L and U, the characters people mistype
@@ -36,7 +36,7 @@ export const LEGACY_REFERRAL_CODE_PATTERN = /^GRW-[A-Z]{2}-[0-9A-Z]{4,8}$/;
  * Strip everything that is not part of the code itself.
  *
  * Accepts a bare code (`grw 7k2m 9qxt`), a dashed code, or a full invite URL
- * (`https://growlancer.com/signup?ref=GRW-7K2M-9QXT`) and always returns the
+ * (`https://growlanzo.com/signup?ref=GRW-7K2M-9QXT`) and always returns the
  * canonical dash-free `uppercase` form. Returns `''` for empty input.
  */
 export function normalizeReferralCode(input: string | null | undefined): string {
@@ -126,7 +126,7 @@ export function buildReferralLink(
 ): string {
   const formatted = formatReferralCode(code);
   if (!formatted) return '';
-  const base = (origin || (typeof window !== 'undefined' ? window.location.origin : '') || 'https://growlancer.com')
+  const base = (origin || (typeof window !== 'undefined' ? window.location.origin : '') || 'https://growlanzo.com')
     .replace(/\/+$/, '');
   return `${base}/signup?ref=${encodeURIComponent(formatted)}`;
 }

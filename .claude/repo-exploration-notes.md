@@ -1,4 +1,4 @@
-# Growlancer Repo Exploration Notes
+# Growlanzo Repo Exploration Notes
 **Generated:** 2026-08-24
 **Purpose:** Internal mental model for future sessions
 

@@ -1,4 +1,4 @@
-// Date and Time Utilities for Growlancer
+// Date and Time Utilities for Growlanzo
 
 /**
  * Format a date safely — never throws on null/undefined/invalid input.
@@ -233,7 +233,7 @@ import { formatCurrency } from '../lib/currency';
 export { formatCurrency };
 
 /**
- * Format a project budget. Growlancer uses a single-budget model where
+ * Format a project budget. Growlanzo uses a single-budget model where
  * budget_min === budget_max — such projects render as one amount ("₹10,000")
  * instead of an odd "₹10,000 - ₹10,000" range. Legacy range projects still
  * render as a range.

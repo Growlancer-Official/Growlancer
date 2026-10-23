@@ -16,6 +16,7 @@
  */
 import { useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 /** Single z-index constant for ALL modals. Change here → propagates everywhere. */
 export const Z_MODAL = 100;
@@ -29,6 +30,12 @@ interface ModalShellProps {
   children: React.ReactNode;
   /** Optional title rendered at the top of the scrollable area. */
   title?: string;
+  /**
+   * Show the brand wordmark above the title (theme-aware). Used by the auth
+   * modals, where the wordmark is the first thing a visitor sees; other modals
+   * (confirmations, editors) stay logo-free on purpose.
+   */
+  brand?: boolean;
   /** Show the × close button (default true). Set false for irreversible actions. */
   showClose?: boolean;
   /** Close when clicking the backdrop overlay (default true). */
@@ -46,6 +53,7 @@ export function ModalShell({
   onClose,
   children,
   title,
+  brand = false,
   showClose = true,
   closeOnBackdrop = true,
   closeOnEscape = true,
@@ -108,6 +116,11 @@ export function ModalShell({
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
           <div className="p-5 sm:p-6 pt-7 pb-7">
+            {brand && (
+              <div className="mb-5">
+                <BrandLogo variant="wordmark" className="h-8 w-auto" />
+              </div>
+            )}
             {title && (
               <div className="mb-4">
                 <h2 className="font-display text-lg sm:text-xl font-bold tracking-tight text-slate-900">

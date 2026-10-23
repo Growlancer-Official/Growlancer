@@ -31,7 +31,7 @@ interface EarningsChartProps {
 // A coherent multi-hue ramp — each month gets its own colour but the set still
 // reads as one family (colourful without looking like a random rainbow).
 const BAR_PALETTE: Array<{ from: string; to: string; line: string }> = [
-  { from: '#34d399', to: '#047857', line: '#10b981' },
+  { from: '#4fcb45', to: '#0f6f1a', line: '#24ba35' },
   { from: '#2dd4bf', to: '#0f766e', line: '#14b8a6' },
   { from: '#38bdf8', to: '#0e7490', line: '#06b6d4' },
   { from: '#60a5fa', to: '#1d4ed8', line: '#3b82f6' },
@@ -245,12 +245,12 @@ export function EarningsChart({ data }: EarningsChartProps) {
         >
           <defs>
             <linearGradient id={`area-${uid}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.34" />
+              <stop offset="0%" stopColor="#24ba35" stopOpacity="0.34" />
               <stop offset="55%" stopColor="#14b8a6" stopOpacity="0.14" />
               <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
             </linearGradient>
             <linearGradient id={`stroke-${uid}`} x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="0%" stopColor="#24ba35" />
               <stop offset="50%" stopColor="#06b6d4" />
               <stop offset="100%" stopColor="#8b5cf6" />
             </linearGradient>
@@ -268,7 +268,7 @@ export function EarningsChart({ data }: EarningsChartProps) {
               </linearGradient>
             ))}
             <filter id={`barGlow-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
-              <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#10b981" floodOpacity="0.28" />
+              <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#24ba35" floodOpacity="0.28" />
             </filter>
           </defs>
 
@@ -425,13 +425,13 @@ export function EarningsChart({ data }: EarningsChartProps) {
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: '#10b981' }} />
+          <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ background: '#24ba35' }} />
           Monthly earnings
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span
             className="inline-block h-0.5 w-4 rounded-full"
-            style={{ background: 'linear-gradient(90deg,#10b981,#06b6d4,#8b5cf6)' }}
+            style={{ background: 'linear-gradient(90deg,#24ba35,#06b6d4,#8b5cf6)' }}
           />
           Trend
         </span>

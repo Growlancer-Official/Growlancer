@@ -1,4 +1,4 @@
-// Growlancer E2E — navigation & interactive components
+// Growlanzo E2E — navigation & interactive components
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests the shell users touch constantly (no account needed):
 //   1. Desktop header: nav links navigate to correct routes
@@ -233,7 +233,7 @@ for (const vp of [MOBILE, DESKTOP]) {
     if (await switchBtn.isVisible().catch(() => false)) {
       await switchBtn.click();
       await sleep(1000);
-      const signupVisible = await page.locator('text=/Create your account|Join Growlancer|Get started/i').first().isVisible({ timeout: 3000 }).catch(() => false);
+      const signupVisible = await page.locator('text=/Create your account|Join Growlanzo|Get started/i').first().isVisible({ timeout: 3000 }).catch(() => false);
       record('login→signup switch works', DESKTOP.name, signupVisible);
       // switch back
       const backBtn = modalScope.locator('button:has-text("Log in here"), button:has-text("Login here"), button:has-text("Sign in")').first();
@@ -274,7 +274,7 @@ for (const vp of [MOBILE, DESKTOP]) {
 const ts = new Date().toISOString().replace(/[:.]/g, '-');
 const failures = results.filter((r) => !r.ok);
 const lines = [
-  '# Growlancer E2E — nav & interactive flows',
+  '# Growlanzo E2E — nav & interactive flows',
   `Base: ${BASE}`,
   `Pass: ${passCount} · Fail: ${failCount} · Total: ${results.length}`,
   '',

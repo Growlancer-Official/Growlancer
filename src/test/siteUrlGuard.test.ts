@@ -11,9 +11,9 @@ import { fileURLToPath } from 'node:url';
  * `supabase/functions/_shared/site.ts`, which reads the `APP_URL` secret.
  *
  * Why this matters: switching to the custom domain (growlancer.vercel.app ->
- * growlancer.com) must be a SECRET change, not a hunt through 12 functions.
+ * growlanzo.com) must be a SECRET change, not a hunt through 12 functions.
  * Before this guard the origin was hardcoded in 12 files, the two crons sent
- * users to `growlancer.com` while everyone else sent them to the Vercel origin,
+ * users to `growlanzo.com` while everyone else sent them to the Vercel origin,
  * and a missed site silently kept leaking the old domain into customer emails.
  *
  * The scan is a pure function over a path->content map so the negative controls
@@ -34,7 +34,7 @@ const EDGE_FUNCTIONS = 'supabase/functions';
 const RESOLVER = `${EDGE_FUNCTIONS}/_shared/site.ts`;
 
 /**
- * Files that may legitimately contain a literal growlancer origin.
+ * Files that may legitimately contain a literal growlancer/growlanzo origin.
  *  - `_shared/cors.ts` is a *multi*-domain allow-list by design: the Vercel
  *    origin, the apex and www all have to be accepted at once while the custom
  *    domain rolls out. That list is not "the site URL" and must not be reduced
@@ -43,8 +43,12 @@ const RESOLVER = `${EDGE_FUNCTIONS}/_shared/site.ts`;
  */
 const ALLOWED_HARDCODED = new Set([`${EDGE_FUNCTIONS}/_shared/cors.ts`, RESOLVER]);
 
-/** A site URL — deliberately NOT matching an email address (mailto:, admin@…). */
-const SITE_URL_RE = /https:\/\/(?:www\.)?growlancer\.(?:com|vercel\.app)/;
+/**
+ * A site URL — deliberately NOT matching an email address (mailto:, admin@…).
+ * Covers both the Growlanzo domain and the legacy growlancer one: a hardcoded
+ * origin is a bug whichever brand it carries.
+ */
+const SITE_URL_RE = /https:\/\/(?:www\.)?growl(?:ancer|anzo)\.(?:com|vercel\.app)/;
 const APP_URL_ENV_RE = /Deno\.env\.get\(\s*'APP_URL'\s*\)/;
 
 /** Every .ts file under supabase/functions, keyed by repo-relative path. */
@@ -63,7 +67,7 @@ function readEdgeFunctions(): Record<string, string> {
 
 const edgeFiles = readEdgeFunctions();
 
-/** Pure scan: which files still hardcode a growlancer site URL. */
+/** Pure scan: which files still hardcode a brand site URL. */
 function findHardcodedSiteUrls(files: Record<string, string>): string[] {
   return Object.entries(files)
     .filter(([rel]) => !ALLOWED_HARDCODED.has(rel))
@@ -97,22 +101,22 @@ afterEach(() => {
 describe('shared site-URL resolver', () => {
   it('uses the APP_URL secret and strips a trailing slash', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const site = await loadResolver({ APP_URL: 'https://growlancer.com/' });
+    const site = await loadResolver({ APP_URL: 'https://growlanzo.com/' });
 
-    expect(site.SITE_URL).toBe('https://growlancer.com');
+    expect(site.SITE_URL).toBe('https://growlanzo.com');
     expect(warn).not.toHaveBeenCalled();
   });
 
   it('builds absolute URLs for relative paths', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const site = await loadResolver({ APP_URL: 'https://growlancer.com' });
+    const site = await loadResolver({ APP_URL: 'https://growlanzo.com' });
 
-    expect(site.siteUrl('')).toBe('https://growlancer.com');
+    expect(site.siteUrl('')).toBe('https://growlanzo.com');
     expect(site.siteUrl('/dashboard/subscription')).toBe(
-      'https://growlancer.com/dashboard/subscription',
+      'https://growlanzo.com/dashboard/subscription',
     );
     // A missing leading slash must not produce `https://hostpath`.
-    expect(site.siteUrl('payment/success')).toBe('https://growlancer.com/payment/success');
+    expect(site.siteUrl('payment/success')).toBe('https://growlanzo.com/payment/success');
   });
 
   it('falls back to the exported origin AND warns loudly when APP_URL is unset', async () => {
@@ -132,7 +136,7 @@ describe('site-URL single source of truth (source level)', () => {
     expect(findDirectAppUrlReads(edgeFiles)).toEqual([]);
   });
 
-  it('no edge function hardcodes a growlancer site URL outside the allow-list', () => {
+  it('no edge function hardcodes a brand site URL outside the allow-list', () => {
     expect(findHardcodedSiteUrls(edgeFiles)).toEqual([]);
   });
 
@@ -166,25 +170,25 @@ describe('the scan itself (negative + positive controls)', () => {
   it('flags a hardcoded site URL', () => {
     const planted = {
       'x/index.ts': `const APP_URL = 'https://growlancer.vercel.app';`,
-      'y/index.ts': `<a href="https://www.growlancer.com/contact">Contact</a>`,
+      'y/index.ts': `<a href="https://www.growlanzo.com/contact">Contact</a>`,
     };
     expect(findHardcodedSiteUrls(planted)).toEqual(['x/index.ts', 'y/index.ts']);
   });
 
   it('does NOT flag the allow-listed files', () => {
     const allowListed = {
-      [`${EDGE_FUNCTIONS}/_shared/cors.ts`]: `'https://growlancer.com',`,
+      [`${EDGE_FUNCTIONS}/_shared/cors.ts`]: `'https://growlanzo.com',`,
       [RESOLVER]: `export const FALLBACK_SITE_URL = 'https://growlancer.vercel.app';`,
     };
     expect(findHardcodedSiteUrls(allowListed)).toEqual([]);
   });
 
   it('does NOT flag an email address at the same domain', () => {
-    // `support@growlancer.com` / `admin@growlancer.com` are mailboxes, not site
+    // `support@growlanzo.com` / `admin@growlanzo.com` are mailboxes, not site
     // URLs. An over-broad pattern would flag them and train people to ignore it.
     const emails = {
-      'notify/index.ts': `<a href="mailto:support@growlancer.com">support</a>`,
-      'admin/index.ts': `const ADMIN_EMAIL = 'admin@growlancer.com';`,
+      'notify/index.ts': `<a href="mailto:support@growlanzo.com">support</a>`,
+      'admin/index.ts': `const ADMIN_EMAIL = 'admin@growlanzo.com';`,
     };
     expect(findHardcodedSiteUrls(emails)).toEqual([]);
   });

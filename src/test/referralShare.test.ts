@@ -7,7 +7,7 @@ import {
 } from '../lib/referralShare';
 
 const CODE = 'GRW-7K2M-9QXT';
-const LINK = 'https://growlancer.com/signup?ref=GRW-7K2M-9QXT';
+const LINK = 'https://growlanzo.com/signup?ref=GRW-7K2M-9QXT';
 
 describe('buildReferralShareMessage', () => {
   it('contains the formatted code, the link and the sender', () => {
@@ -22,7 +22,7 @@ describe('buildReferralShareMessage', () => {
     expect(message).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/u);
     expect(message.toLowerCase()).not.toContain('hey!');
     expect(message.toLowerCase()).not.toContain('🚀');
-    expect(message).toContain("You're invited to Growlancer.");
+    expect(message).toContain("You're invited to Growlanzo.");
   });
 
   it('tails the pitch to the sender role', () => {
@@ -45,7 +45,7 @@ describe('buildReferralShareMessage', () => {
 describe('buildReferralShareSubject', () => {
   it('names the code so inboxes can be searched', () => {
     expect(buildReferralShareSubject({ code: CODE, link: LINK })).toBe(
-      `You're invited to Growlancer — invite code ${CODE}`
+      `You're invited to Growlanzo — invite code ${CODE}`
     );
   });
 });
@@ -79,7 +79,7 @@ describe('buildReferralShareIntent', () => {
 
 describe('referralCardFileName', () => {
   it('produces a safe PNG filename', () => {
-    expect(referralCardFileName(CODE)).toBe(`growlancer-invite-${CODE}.png`);
-    expect(referralCardFileName('grw/7k2m/9qxt')).toBe('growlancer-invite-GRW-7K2M-9QXT.png');
+    expect(referralCardFileName(CODE)).toBe(`growlanzo-invite-${CODE}.png`);
+    expect(referralCardFileName('grw/7k2m/9qxt')).toBe('growlanzo-invite-GRW-7K2M-9QXT.png');
   });
 });

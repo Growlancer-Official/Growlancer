@@ -1,4 +1,4 @@
-# Growlancer — QA Sign-Off Report
+# Growlanzo — QA Sign-Off Report
 **Date:** August 30, 2026
 **Cycle:** Phase 1 (UI Consistency) + Phase 2 (E2E Workflow) + Phase 3 (Reporting)
 

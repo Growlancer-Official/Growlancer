@@ -880,7 +880,7 @@ export function CreateServicePage() {
               <strong>Professional note:</strong> Package prices are locked into escrow when a client orders — the client
               pays exactly the published price, plus a flat 5% platform fee. You receive 100% of the package price. If a
               client requests more revisions than included, you may charge your extra-revision rate (or a mutually agreed
-              price) — agreed before it starts, protected by Growlancer's Refund & Dispute Policy.
+              price) — agreed before it starts, protected by Growlanzo's Refund & Dispute Policy.
             </p>
           </div>
 

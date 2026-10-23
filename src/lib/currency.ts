@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────────────────────
-// GROWLANCER — centralized currency formatting + country→currency resolution
+// GROWLANZO — centralized currency formatting + country→currency resolution
 //
 // India-first platform: money is INR for India. As users arrive from other
 // countries we switch the *display* currency to their country's currency, in

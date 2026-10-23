@@ -1,6 +1,6 @@
 # FORENSIC DATABASE + RLS + STORAGE SECURITY AUDIT
 
-**Application:** Growlancer
+**Application:** Growlanzo
 **Document:** `docs/AUDIT_FINDINGS_DATABASE.md`
 **Scope:** Database schema integrity, Row Level Security, financial correctness, indexing, migration hygiene, storage/file-upload security
 **Audit type:** Findings only — **no source code was modified** during this audit

@@ -1,4 +1,4 @@
-# Growlancer — Phase 2: E2E Workflow Test Cases
+# Growlanzo — Phase 2: E2E Workflow Test Cases
 
 ## Test Case Format
 | Field | Description |
@@ -34,7 +34,7 @@
 - **Status:** ⬜
 
 ### TC-AUTH-03: OAuth Signup — GitHub (Freelancer)
-- **Preconditions:** GitHub account not linked to Growlancer
+- **Preconditions:** GitHub account not linked to Growlanzo
 - **Steps:**
   1. Click "Continue with GitHub" on signup
   2. Authorize on GitHub → Redirect back to /auth/callback

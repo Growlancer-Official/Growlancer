@@ -303,7 +303,7 @@ This will remove the QR code permanently with NO WAY TO RECOVER! The credential 
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `growlancer-qr-${verificationCode}.png`;
+      a.download = `growlanzo-qr-${verificationCode}.png`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Downloaded', 'QR code image downloaded');
@@ -591,7 +591,7 @@ This will remove the QR code permanently with NO WAY TO RECOVER! The credential 
           <div className="bg-slate-900 rounded-2xl p-8 border border-white/10 shadow-2xl max-w-sm"
             onClick={e => e.stopPropagation()}>
             <img src={previewUrl} alt="QR Preview" className="w-full rounded-xl" />
-            <p className="text-center text-xs text-slate-400 mt-4">Growlancer Credential Verification QR</p>
+            <p className="text-center text-xs text-slate-400 mt-4">Growlanzo Credential Verification QR</p>
             <button onClick={() => setPreviewUrl(null)}
               className="w-full mt-4 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm font-bold hover:bg-slate-700 transition-colors">
               Close

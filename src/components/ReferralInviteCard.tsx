@@ -76,7 +76,7 @@ const SHARE_TARGETS: {
  *   • Copy code  — the human-readable `GRW-XXXX-XXXX` to paste by hand.
  *   • Copy link  — the tracked signup URL to paste anywhere.
  *   • Share invite — the native share sheet with the professional message AND
- *     the branded 1200×630 Growlancer card attached.
+ *     the branded 1200×630 Growlanzo card attached.
  *
  * `live` reflects the realtime subscription that keeps the code and stats fresh
  * on both dashboards without a reload.
@@ -157,7 +157,7 @@ export function ReferralInviteCard({ code, link, name, role, live = false, class
     try {
       const result = await shareReferralInvite(shareContext, cardBlob);
       if (result === 'shared') {
-        toast.success('Invite shared', 'Your message and Growlancer invite card were sent.');
+        toast.success('Invite shared', 'Your message and Growlanzo invite card were sent.');
       } else if (result === 'downloaded') {
         toast.info(
           'Invite ready to send',
@@ -179,7 +179,7 @@ export function ReferralInviteCard({ code, link, name, role, live = false, class
     try {
       const ok = await downloadReferralInviteCard(shareContext);
       if (ok) {
-        toast.success('Invite card downloaded', 'A 1200×630 PNG with your code and Growlancer branding.');
+        toast.success('Invite card downloaded', 'A 1200×630 PNG with your code and Growlanzo branding.');
       } else {
         toast.error('Could not build the card', 'Try again from a supported browser.');
       }
@@ -265,7 +265,7 @@ export function ReferralInviteCard({ code, link, name, role, live = false, class
           type="button"
           onClick={handleDownload}
           disabled={!ready || downloading}
-          aria-label="Download the Growlancer invite card as a PNG"
+          aria-label="Download the Growlanzo invite card as a PNG"
           className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:border-emerald-200 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
           <Download className="h-4 w-4" />
@@ -281,7 +281,7 @@ export function ReferralInviteCard({ code, link, name, role, live = false, class
             type="button"
             onClick={() => openPlatform(target.platform)}
             disabled={!ready}
-            aria-label={`Share your Growlancer invite on ${target.label}`}
+            aria-label={`Share your Growlanzo invite on ${target.label}`}
             className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${target.className}`}
           >
             {target.icon}

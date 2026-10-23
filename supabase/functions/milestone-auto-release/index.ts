@@ -232,7 +232,7 @@ serve(async (req: Request) => {
             <p>The freelancer delivered the full project on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>
-            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
+            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
             <p style="color:#94a3b8;font-size:12px">You can adjust the auto-release window (24h–7 days) anytime in the contract workspace.</p>`,
         });
       }
@@ -287,7 +287,7 @@ serve(async (req: Request) => {
             <p>The freelancer delivered <strong>"${escapeHtml(r.title)}"</strong> on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>
-            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
+            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
             <p style="color:#94a3b8;font-size:12px">You can adjust the auto-release window (24h–7 days) anytime in the contract workspace.</p>`,
         });
       }

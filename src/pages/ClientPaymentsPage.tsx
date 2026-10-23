@@ -398,7 +398,7 @@ export function ClientPaymentsPage() {
             <Wallet className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">Payments <InfoTip title="How your money moves on Growlancer" text="Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">Payments <InfoTip title="How your money moves on Growlanzo" text="Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released." /></h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
           </div>
         </div>
@@ -424,7 +424,7 @@ export function ClientPaymentsPage() {
               <p className="text-emerald-100 text-xs font-medium uppercase tracking-widest flex items-center gap-1.5">
                 Wallet Balance
                 <InfoTip
-                  text="Money you've added to your Growlancer wallet. Use it to fund escrow instantly — funds never expire and are fully refundable if no work has started."
+                  text="Money you've added to your Growlanzo wallet. Use it to fund escrow instantly — funds never expire and are fully refundable if no work has started."
                   title="Wallet Balance"
                   align="left"
                   tone="emerald"
@@ -488,7 +488,7 @@ export function ClientPaymentsPage() {
             </div>
             <div className="p-3">
               <p className="text-sm text-slate-500 mb-2">
-                Add money to your Growlancer wallet, then fund escrow instantly from it.
+                Add money to your Growlanzo wallet, then fund escrow instantly from it.
               </p>
 
               {addFundsError && (
@@ -555,7 +555,7 @@ export function ClientPaymentsPage() {
                       order_type: 'wallet_topup',
                       amount: amtNum,
                       currency: 'INR',
-                      description: 'Growlancer wallet top-up',
+                      description: 'Growlanzo wallet top-up',
                     }}
                     onSuccess={() => {
                       setTopupSuccess('Funds added! Your wallet has been credited.');

@@ -13,18 +13,38 @@ export default {
         cream: '#FFF8EE',
         ink: '#0F172A',
         muted: '#475569',
+        // Growlanzo brand scale — sampled directly from the "zo" of the final
+        // wordmark (public/growlanzo-wordmark-*.png): median #24ba35, deep
+        // #008623, highlight #c2e30c. Overriding Tailwind's built-in `emerald`
+        // here re-skins every `emerald-*` class in the app from this one
+        // source, so the whole UI tracks the logo.
+        // 600/700 are one step darker than the logo mid-tone on purpose: they
+        // carry white button text and body links, and keep >=4.5:1 on white.
+        emerald: {
+          50: '#f1fcef',
+          100: '#ddf7d9',
+          200: '#bbefb4',
+          300: '#89e07f',
+          400: '#4fcb45',
+          500: '#24ba35',
+          600: '#14861f',
+          700: '#0f6f1a',
+          800: '#10591a',
+          900: '#104a1a',
+          950: '#04270c',
+        },
         primary: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-          950: '#022c22',
+          50: '#f1fcef',
+          100: '#ddf7d9',
+          200: '#bbefb4',
+          300: '#89e07f',
+          400: '#4fcb45',
+          500: '#24ba35',
+          600: '#14861f',
+          700: '#0f6f1a',
+          800: '#10591a',
+          900: '#104a1a',
+          950: '#04270c',
         },
         secondary: {
           50: '#fff7ed',

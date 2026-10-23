@@ -63,7 +63,7 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
         role="tooltip"
         className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-lg bg-slate-900 text-white font-semibold normal-case tracking-normal shadow-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${below ? 'right-0 top-full mt-1.5 text-right' : 'left-1/2 -translate-x-1/2 -top-1 -translate-y-full text-center'} ${sizes.tooltip}`}
       >
-        {tone === 'blue' ? 'Verified Client' : 'Verified on Growlancer'}
+        {tone === 'blue' ? 'Verified Client' : 'Verified on Growlanzo'}
         <span className="block text-[10px] font-medium opacity-80 normal-case tracking-normal">platform verification · not a government-issued ID</span>
         <span className={`absolute border-4 border-transparent ${below ? 'right-2 bottom-full border-b-slate-900' : 'left-1/2 -translate-x-1/2 top-full border-t-slate-900'}`} />
       </span>

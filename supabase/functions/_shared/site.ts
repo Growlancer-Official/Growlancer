@@ -6,10 +6,10 @@
  *   - payment redirect URLs (PayPal return_url / cancel_url)
  *   - AI gateway attribution headers (OpenRouter HTTP-Referer)
  *
- * Switching the production domain (e.g. growlancer.vercel.app -> growlancer.com)
+ * Switching the production domain (e.g. growlancer.vercel.app -> growlanzo.com)
  * is then a SECRET change, not a code change:
  *
- *   npx supabase secrets set APP_URL=https://growlancer.com --project-ref <ref>
+ *   npx supabase secrets set APP_URL=https://growlanzo.com --project-ref <ref>
  *
  * The fallback below exists only so a missing secret degrades to a WORKING
  * origin instead of an empty string (which would emit broken links like

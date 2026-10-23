@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Growlancer",
+    "appName": "Growlanzo",
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",
@@ -64,7 +64,7 @@
     "feedback": "Feedback",
     "about": "About",
     "version": "Version",
-    "poweredBy": "Powered by Growlancer"
+    "poweredBy": "Powered by Growlanzo"
   },
   "nav": {
     "home": "Home",
@@ -109,7 +109,7 @@
   },
   "auth": {
     "welcomeBack": "Welcome Back",
-    "joinUs": "Join Growlancer",
+    "joinUs": "Join Growlanzo",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",

@@ -88,9 +88,9 @@ export function ClientReferralsPage() {
             Use coins at checkout
           </Link>
         </div>
-        <p className="relative mt-3 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">You earn <span className="font-bold">10 Grow Coins</span> when a freelancer you referred completes their first project (or passes identity verification) — never at signup. Your own milestones pay too: 10 coins when your identity is verified and 20 coins when your first project completes (once each). At checkout you can apply coins as a ₹1-per-coin discount on a contract or package payment, from {GROW_COIN.minRedemption} coins upward.
-<p className="mt-1 text-xs text-amber-900/70">{getReferralBonusDescription(user?.role ?? 'freelancer')}</p>
-        </p>
+        <div className="relative mt-3 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">You earn <span className="font-bold">10 Grow Coins</span> when a client you referred passes identity verification — never at signup. Referral codes are same-side: clients refer clients, freelancers refer freelancers. Your own milestones pay too: 10 coins when your identity is verified and 20 coins when your first project completes (once each). At checkout you can apply coins as a ₹1-per-coin discount on a contract or package payment, from {GROW_COIN.minRedemption} coins upward.
+          <p className="mt-1 text-xs text-amber-900/70">{getReferralBonusDescription(user?.role ?? 'freelancer')}</p>
+        </div>
       </section>
 
       {loading && (
@@ -102,7 +102,7 @@ export function ClientReferralsPage() {
 
       {/* Hero: Referral Link & Tier */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
-        <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.12)] relative overflow-hidden">
+        <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(36,186,53,0.12)] relative overflow-hidden">
           <div className="relative z-10">
             <ReferralInviteCard
               code={referralCode}
@@ -224,7 +224,7 @@ export function ClientReferralsPage() {
                 <div>
                   <p className="text-sm font-bold">Post First Project</p>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Referral only counts once the new client posts a valid project with defined budget. For clients, referral rewards apply when the referred client passes KYC verification.
+                    Referral only counts once the new client posts a valid project with defined budget. For clients, referral rewards apply when the referred client passes KYC verification. Codes are same-side — a client code can only refer other clients.
                   </p>
                 </div>
               </li>

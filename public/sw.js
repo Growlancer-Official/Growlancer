@@ -1,6 +1,6 @@
-// Growlancer Service Worker
+// Growlanzo Service Worker
 // Cache-first for static assets, network-first for API requests
-const CACHE_NAME = 'growlancer-v2';
+const CACHE_NAME = 'growlanzo-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -213,7 +213,7 @@ async function networkFirstWithOfflineFallback(request) {
     if (root) return root;
     // Minimum viable offline page
     return new Response(
-      '<!doctype html><html><head><title>Offline - Growlancer</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0F172A;color:#E2E8F0;text-align:center;padding:2rem}h1{font-size:1.5rem;margin-bottom:0.5rem}p{color:#94A3B8}</style></head><body><div><h1>You\'re offline</h1><p>Please check your internet connection and try again.</p></div></body></html>',
+      '<!doctype html><html><head><title>Offline - Growlanzo</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#0F172A;color:#E2E8F0;text-align:center;padding:2rem}h1{font-size:1.5rem;margin-bottom:0.5rem}p{color:#94A3B8}</style></head><body><div><h1>You\'re offline</h1><p>Please check your internet connection and try again.</p></div></body></html>',
       {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },

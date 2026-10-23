@@ -183,7 +183,7 @@ export function ReferralsPage() {
 
       {/* Hero: Referral Stats & Code */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="lg:col-span-2 bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.15)] relative overflow-hidden">
+        <div className="lg:col-span-2 bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(36,186,53,0.15)] relative overflow-hidden">
           <div className="relative z-10">
             <ReferralInviteCard
               code={referralCode}
@@ -401,6 +401,13 @@ export function ReferralsPage() {
             <div className="bg-white p-4 rounded-[2.5rem] border border-slate-100">
               <h3 className="font-display text-lg font-bold mb-3">Validation Rules</h3>
               <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-sm">
+                  <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
+                  <div>
+                    <p className="font-bold">Same Side Only</p>
+                    <p className="text-xs text-slate-400">Your code is for other freelancers — a client account using it won't count.</p>
+                  </div>
+                </li>
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>

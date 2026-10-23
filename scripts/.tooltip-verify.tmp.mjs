@@ -25,7 +25,7 @@ await page.goto(`${APP_URL}/dashboard`, { waitUntil: 'domcontentloaded', timeout
 await page.waitForTimeout(2500);
 
 // Find the header badge (the one nearest the right edge) and hover it.
-const badge = page.locator('[role="img"][aria-label="KYC Verified"], [role="img"][aria-label="Growlancer Pro Member"]').last();
+const badge = page.locator('[role="img"][aria-label="KYC Verified"], [role="img"][aria-label="Growlanzo Pro Member"]').last();
 const count = await badge.count();
 console.log('badges found:', count);
 if (count > 0) {

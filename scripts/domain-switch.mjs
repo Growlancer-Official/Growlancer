@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Guarded custom-domain switch for Growlancer.
+ * Guarded custom-domain switch for Growlanzo.
  *
  * WHY THIS EXISTS
  * ---------------
@@ -39,7 +39,7 @@ const resolveCname = promisify(dns.resolveCname);
 
 const PROJECT_REF = 'zttwsjehcgaicziqyxpq';
 const OLD_ORIGIN = 'https://growlancer.vercel.app'; // must keep working throughout
-const APP_NAME_HINT = 'Growlancer';
+const APP_NAME_HINT = 'Growlanzo';
 
 const [, , rawDomain, mode = '--check'] = process.argv;
 if (!rawDomain || rawDomain.startsWith('--')) {

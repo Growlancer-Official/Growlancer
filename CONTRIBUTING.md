@@ -1,20 +1,20 @@
-# Contributing to Growlancer
+# Contributing to Growlanzo
 
-Thank you for your interest in contributing to **Growlancer**.
+Thank you for your interest in contributing to **Growlanzo**.
 
-Growlancer is an AI-powered freelancing marketplace designed to connect businesses with skilled professionals through intelligent matching, secure transactions, structured project workflows, and real-time collaboration.
+Growlanzo is an AI-powered freelancing marketplace designed to connect businesses with skilled professionals through intelligent matching, secure transactions, structured project workflows, and real-time collaboration.
 
-This document defines the engineering standards, contribution workflow, review expectations, and development practices required for contributing to the Growlancer codebase.
+This document defines the engineering standards, contribution workflow, review expectations, and development practices required for contributing to the Growlanzo codebase.
 
 > **Repository Status:** Proprietary / Controlled Contribution
-> **Project:** Growlancer
+> **Project:** Growlanzo
 > **Website:** https://growlancer.vercel.app
 
 ---
 
 ## 1. Contribution Policy
 
-Growlancer is currently under active product development.
+Growlanzo is currently under active product development.
 
 The repository contains proprietary application logic, business workflows, database structures, payment integrations, security controls, and platform infrastructure.
 
@@ -22,7 +22,7 @@ Contributions are therefore accepted on a controlled basis.
 
 Before making substantial changes, contributors should ensure that the proposed change:
 
-* Aligns with Growlancer's product direction.
+* Aligns with Growlanzo's product direction.
 * Preserves existing platform workflows.
 * Follows the project's engineering standards.
 * Does not introduce unnecessary dependencies.
@@ -70,7 +70,7 @@ Important production workflows should provide sufficient logging, error handling
 
 # 3. Technology Stack
 
-Growlancer currently uses the following primary technologies:
+Growlanzo currently uses the following primary technologies:
 
 | Layer          | Technology               |
 | -------------- | ------------------------ |
@@ -96,7 +96,7 @@ Growlancer currently uses the following primary technologies:
 
 # 4. Core Marketplace Workflow
 
-Growlancer's marketplace architecture follows a structured lifecycle:
+Growlanzo's marketplace architecture follows a structured lifecycle:
 
 ```text
 PROJECT
@@ -241,8 +241,8 @@ npm --version
 Clone the repository:
 
 ```bash
-git clone https://github.com/Growlancer-Official/Growlancer.git
-cd Growlancer
+git clone https://github.com/Growlanzo-Official/Growlanzo.git
+cd Growlanzo
 ```
 
 Install dependencies:

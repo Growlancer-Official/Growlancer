@@ -216,7 +216,7 @@ export function CountrySelect({
       }));
       toast.success(
         result.already_exists ? 'Already on the list' : `You're on the ${countryName} list`,
-        `We'll email you as soon as Growlancer launches in ${countryName}.`,
+        `We'll email you as soon as Growlanzo launches in ${countryName}.`,
       );
     },
     [isAuthenticated, pending, requested, toast],

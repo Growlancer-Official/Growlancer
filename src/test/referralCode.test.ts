@@ -19,8 +19,8 @@ describe('normalizeReferralCode', () => {
   });
 
   it('reads the code out of a pasted invite link', () => {
-    expect(normalizeReferralCode('https://growlancer.com/signup?ref=GRW-7K2M-9QXT')).toBe('GRW7K2M9QXT');
-    expect(normalizeReferralCode('https://growlancer.com/signup?ref=grw7k2m9qxt&utm=x')).toBe('GRW7K2M9QXT');
+    expect(normalizeReferralCode('https://growlanzo.com/signup?ref=GRW-7K2M-9QXT')).toBe('GRW7K2M9QXT');
+    expect(normalizeReferralCode('https://growlanzo.com/signup?ref=grw7k2m9qxt&utm=x')).toBe('GRW7K2M9QXT');
   });
 
   it('returns an empty string for empty input', () => {
@@ -90,19 +90,19 @@ describe('generateReferralCode', () => {
 
 describe('buildReferralLink', () => {
   it('builds the signup URL with the formatted code', () => {
-    expect(buildReferralLink('GRW7K2M9QXT', 'https://growlancer.com')).toBe(
-      'https://growlancer.com/signup?ref=GRW-7K2M-9QXT'
+    expect(buildReferralLink('GRW7K2M9QXT', 'https://growlanzo.com')).toBe(
+      'https://growlanzo.com/signup?ref=GRW-7K2M-9QXT'
     );
   });
 
   it('tolerates a trailing slash on the origin', () => {
-    expect(buildReferralLink(MODERN_CODE, 'https://growlancer.com/')).toBe(
-      'https://growlancer.com/signup?ref=GRW-7K2M-9QXT'
+    expect(buildReferralLink(MODERN_CODE, 'https://growlanzo.com/')).toBe(
+      'https://growlanzo.com/signup?ref=GRW-7K2M-9QXT'
     );
   });
 
   it('returns an empty string when there is no code', () => {
-    expect(buildReferralLink('', 'https://growlancer.com')).toBe('');
+    expect(buildReferralLink('', 'https://growlanzo.com')).toBe('');
   });
 });
 

@@ -5,9 +5,9 @@ import { buildReferralLink, formatReferralCode } from './referralCode';
  *
  * Rules this file enforces:
  *   • The message is written like a person inviting a colleague: no emoji, no
- *     "Hey! 👋", no marketing shout. It states what Growlancer is, shows the
+ *     "Hey! 👋", no marketing shout. It states what Growlanzo is, shows the
  *     code, and gives one link.
- *   • Every share carries the Growlancer brand: platform links preview with
+ *   • Every share carries the Growlanzo brand: platform links preview with
  *     /og-image.png, and native shares attach a generated 1200×630 invite card
  *     (the same canvas layout, so the card is always on-brand and current).
  *   • Sharing never silently does nothing. If the browser cannot share files,
@@ -27,10 +27,11 @@ export type ReferralShareContext = {
 
 export type ReferralShareResult = 'shared' | 'copied' | 'downloaded' | 'cancelled' | 'failed';
 
-const SITE_URL = 'https://growlancer.com';
+const SITE_URL = 'https://growlanzo.com';
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
-const LOGO_SOURCES = ['/UpdatedLogo.webp', '/UpdatedLogo.png'];
+// The Growlanzo mark, square — it lands inside the white tile the card draws.
+const LOGO_SOURCES = ['/UpdatedLogo.png'];
 
 function resolvedLink(ctx: ReferralShareContext): string {
   const code = formatReferralCode(ctx.code);
@@ -48,14 +49,24 @@ export function buildReferralShareMessage(ctx: ReferralShareContext): string {
   const link = resolvedLink(ctx);
   const pitch =
     ctx.role === 'client'
-      ? 'Growlancer is an AI-powered freelancing marketplace: verified freelancers, escrow-protected payments, and matching that fits the brief you post.'
+      ? 'Growlanzo is an AI-powered freelancing marketplace: verified freelancers, escrow-protected payments, and matching that fits the brief you post.'
       : ctx.role === 'freelancer'
-        ? 'Growlancer is an AI-powered freelancing marketplace: real client work, escrow-protected payments, and projects matched to your skills.'
-        : 'Growlancer is an AI-powered freelancing marketplace: verified talent, escrow-protected payments, and matching that fits the brief.';
+        ? 'Growlanzo is an AI-powered freelancing marketplace: real client work, escrow-protected payments, and projects matched to your skills.'
+        : 'Growlanzo is an AI-powered freelancing marketplace: verified talent, escrow-protected payments, and matching that fits the brief.';
+  // Referral codes are same-side: a client's code only works for clients and a
+  // freelancer's for freelancers (enforced in process_referral). Saying so in
+  // the invite keeps the recipient from hitting that rejection at signup.
+  const audience =
+    ctx.role === 'client'
+      ? 'Growlanzo clients only — I run my projects here and you should too.'
+      : ctx.role === 'freelancer'
+        ? 'Growlanzo freelancers only — I find my projects here and you should too.'
+        : null;
   const lines = [
-    "You're invited to Growlancer.",
+    "You're invited to Growlanzo.",
     '',
     pitch,
+    ...(audience ? ['', audience] : []),
     '',
     'Use my invite code when you sign up:',
     code,
@@ -73,7 +84,7 @@ export function buildReferralShareMessage(ctx: ReferralShareContext): string {
 
 export function buildReferralShareSubject(ctx: ReferralShareContext): string {
   const code = formatReferralCode(ctx.code);
-  return code ? `You're invited to Growlancer — invite code ${code}` : "You're invited to Growlancer";
+  return code ? `You're invited to Growlanzo — invite code ${code}` : "You're invited to Growlanzo";
 }
 
 /** Platform share intent. LinkedIn only accepts a URL; the rest take the text. */
@@ -164,7 +175,7 @@ async function loadBrandLogo(): Promise<HTMLImageElement | null> {
 }
 
 /**
- * Render the Growlancer invite card (1200×630 PNG).
+ * Render the Growlanzo invite card (1200×630 PNG).
  *
  * Everything is drawn from primitives + the shipped logo, so the card needs no
  * network round-trip beyond the logo and never goes stale relative to the
@@ -189,8 +200,8 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   ctx2d.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
 
   const glow = ctx2d.createRadialGradient(980, 90, 0, 980, 90, 620);
-  glow.addColorStop(0, 'rgba(16, 185, 129, 0.30)');
-  glow.addColorStop(1, 'rgba(16, 185, 129, 0)');
+  glow.addColorStop(0, 'rgba(36, 186, 53, 0.30)');
+  glow.addColorStop(1, 'rgba(36, 186, 53, 0)');
   ctx2d.fillStyle = glow;
   ctx2d.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
 
@@ -221,7 +232,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
     );
     ctx2d.restore();
   } else {
-    ctx2d.fillStyle = '#059669';
+    ctx2d.fillStyle = '#14861f';
     ctx2d.font = 'bold 56px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
     ctx2d.textAlign = 'center';
     ctx2d.textBaseline = 'middle';
@@ -232,7 +243,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
 
   ctx2d.fillStyle = '#FFFFFF';
   ctx2d.font = 'bold 38px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  ctx2d.fillText('Growlancer', 196, 108);
+  ctx2d.fillText('Growlanzo', 196, 108);
 
   ctx2d.fillStyle = 'rgba(167, 243, 208, 0.85)';
   ctx2d.font = '20px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -248,7 +259,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
 
   ctx2d.fillStyle = '#FFFFFF';
   ctx2d.font = 'bold 54px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  ctx2d.fillText("You're invited to Growlancer", 72, 288);
+  ctx2d.fillText("You're invited to Growlanzo", 72, 288);
 
   ctx2d.fillStyle = 'rgba(209, 250, 229, 0.78)';
   ctx2d.font = '24px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -260,9 +271,9 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   const panelWidth = 640;
   const panelHeight = 148;
   roundedRect(ctx2d, panelX, panelY, panelWidth, panelHeight, 24);
-  ctx2d.fillStyle = 'rgba(16, 185, 129, 0.14)';
+  ctx2d.fillStyle = 'rgba(36, 186, 53, 0.14)';
   ctx2d.fill();
-  ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.75)';
+  ctx2d.strokeStyle = 'rgba(36, 186, 53, 0.75)';
   ctx2d.lineWidth = 2;
   ctx2d.stroke();
 
@@ -279,7 +290,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   ctx2d.font = '22px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
   bullets.forEach((line, index) => {
     const y = 420 + index * 44;
-    ctx2d.fillStyle = '#10B981';
+    ctx2d.fillStyle = '#24ba35';
     ctx2d.beginPath();
     ctx2d.arc(788, y - 7, 7, 0, Math.PI * 2);
     ctx2d.fill();
@@ -296,7 +307,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
 
   ctx2d.fillStyle = 'rgba(148, 163, 184, 0.95)';
   ctx2d.font = '20px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  ctx2d.fillText('growlancer.com/signup', 72, 606);
+  ctx2d.fillText('growlanzo.com/signup', 72, 606);
 
   const name = (ctx.name || '').trim();
   if (name) {
@@ -313,7 +324,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
 
 export function referralCardFileName(code: string): string {
   const safe = formatReferralCode(code).replace(/[^0-9A-Z-]/gi, '') || 'invite';
-  return `growlancer-invite-${safe}.png`;
+  return `growlanzo-invite-${safe}.png`;
 }
 
 function triggerDownload(blob: Blob, fileName: string) {

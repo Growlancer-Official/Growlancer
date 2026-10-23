@@ -6,6 +6,7 @@ import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/
 import type { UserRole } from '../types/auth';
 import { captureInfo, captureError } from '../lib/telemetry';
 import { LayoutSkeleton } from './LayoutSkeleton';
+import { BrandLogo } from './BrandLogo';
 
 // ── Email Verification Page ──
 function EmailNotVerifiedPage() {
@@ -41,7 +42,7 @@ function EmailNotVerifiedPage() {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 text-center">
           <div className="flex justify-center mb-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-12 w-12 rounded-xl" />
+            <BrandLogo variant="full" className="h-14 w-auto" />
           </div>
 
           <div className="flex justify-center mb-2">

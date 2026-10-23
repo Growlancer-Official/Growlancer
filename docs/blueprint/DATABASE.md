@@ -1,4 +1,4 @@
-# DATABASE — Growlancer Postgres / Supabase layer
+# DATABASE — Growlanzo Postgres / Supabase layer
 
 **Last verified:** 2026-10-20 · **Scope:** `supabase/migrations/**` (296 files, `20240511_*` → `20270201000000_*`),
 `supabase/seed_01_financial.sql`, `supabase/seed_02_invites_proposals.sql`, `.github/workflows/backend-deploy.yml`,

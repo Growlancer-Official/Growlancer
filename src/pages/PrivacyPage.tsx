@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
 import { ArrowLeft, ChevronRight, Cookie, Database, Eye, Globe, HelpCircle, History, Lock, Shield, ShieldAlert,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface Section {
   id: string;
@@ -18,7 +19,7 @@ const privacySections: Section[] = [
     content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            At Growlancer ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlancer is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
+            At Growlanzo ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlanzo is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the security measures we employ to safeguard it, and your rights under applicable data protection laws, including the Indian Digital Personal Data Protection (DPDP) Act, 2023 where applicable.
@@ -119,7 +120,7 @@ const privacySections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer verifies the identity of freelancers and clients to build trust, prevent fraud and duplicate accounts, and satisfy applicable anti-money-laundering (AML) obligations. This section explains exactly what we collect, why, how it is processed, and what the Verified badge means.
+            Growlanzo verifies the identity of freelancers and clients to build trust, prevent fraud and duplicate accounts, and satisfy applicable anti-money-laundering (AML) obligations. This section explains exactly what we collect, why, how it is processed, and what the Verified badge means.
           </p>
           <div className="space-y-4">
             <div>
@@ -133,10 +134,10 @@ const privacySections: Section[] = [
             <div>
               <h3 className="font-bold text-slate-900 text-sm">B. Automated Processing &amp; Development Mode</h3>
               <p className="text-slate-600 text-xs mt-1">
-                Verification is processed automatically by our systems. During Growlancer's pre-launch / development phase, verification may be performed through our <strong>development verification mode</strong>, which runs automated platform checks instead of a third-party identity verification provider. Verification records produced this way are clearly labelled internally as such.
+                Verification is processed automatically by our systems. During Growlanzo's pre-launch / development phase, verification may be performed through our <strong>development verification mode</strong>, which runs automated platform checks instead of a third-party identity verification provider. Verification records produced this way are clearly labelled internally as such.
               </p>
               <p className="text-slate-600 text-xs mt-2">
-                <strong>The Verified badge indicates your verification status on the Growlancer platform. It is not a government-issued identity certification and should not be represented as one.</strong> Once a third-party verification provider is configured, new verifications run against that provider, and we may re-verify previously automated records.
+                <strong>The Verified badge indicates your verification status on the Growlanzo platform. It is not a government-issued identity certification and should not be represented as one.</strong> Once a third-party verification provider is configured, new verifications run against that provider, and we may re-verify previously automated records.
               </p>
             </div>
             <div>
@@ -165,7 +166,7 @@ const privacySections: Section[] = [
             To preserve a clean and premium user experience, we keep cookies strictly functional.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
-            Growlancer uses cookies to:
+            Growlanzo uses cookies to:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li>Keep you securely authenticated in your active session.</li>
@@ -188,7 +189,7 @@ const privacySections: Section[] = [
     content: (
       <>
         <p className="text-slate-600 leading-relaxed mb-2">
-          Growlancer is an India-first platform, and your data is protected in accordance with applicable Indian data protection law, including the Digital Personal Data Protection (DPDP) Act, 2023. We extend the following rights to all users regardless of location:
+          Growlanzo is an India-first platform, and your data is protected in accordance with applicable Indian data protection law, including the Digital Personal Data Protection (DPDP) Act, 2023. We extend the following rights to all users regardless of location:
         </p>
         <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
           <li><strong>Right to Access:</strong> You may request a copy of the personal data we hold about you in a structured, portable format.</li>
@@ -197,7 +198,7 @@ const privacySections: Section[] = [
           <li><strong>Right to Withdraw Consent:</strong> You may withdraw consent for data processing at any time, though this may affect your ability to use certain platform features.</li>
         </ul>
         <p className="text-slate-600 text-sm">
-          As Growlancer expands to other regions, we will extend equivalent rights to users in those jurisdictions in accordance with local law (e.g., GDPR for EU users, CCPA for California users).
+          As Growlanzo expands to other regions, we will extend equivalent rights to users in those jurisdictions in accordance with local law (e.g., GDPR for EU users, CCPA for California users).
         </p>
         <p className="text-slate-600 text-sm mt-4">
           <strong>International Transfers:</strong> Where we process or transfer personal data to jurisdictions outside your country of residence, we take steps intended to help ensure that such transfers are subject to appropriate safeguards where required by applicable law.
@@ -215,7 +216,7 @@ const privacySections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            If you have questions, comments, or seek to file an appeal regarding the processing of data in a disputed contract workspace, please contact our designated Data Protection Officer (DPO): <strong>Muhammad (Founder &amp; CEO)</strong> at <a href="mailto:support@growlancer.com" className="text-emerald-600 font-medium hover:underline">support@growlancer.com</a>. We acknowledge privacy requests within 24 hours and aim to resolve them within 15 days.
+            If you have questions, comments, or seek to file an appeal regarding the processing of data in a disputed contract workspace, please contact our designated Data Protection Officer (DPO): <strong>Muhammad (Founder &amp; CEO)</strong> at <a href="mailto:support@growlanzo.com" className="text-emerald-600 font-medium hover:underline">support@growlanzo.com</a>. We acknowledge privacy requests within 24 hours and aim to resolve them within 15 days.
           </p>
           <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
             <div>
@@ -273,8 +274,7 @@ export function PrivacyPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 w-auto" />
           </Link>
           <Link
             to="/"

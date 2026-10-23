@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "b8f3c9a1-4d5e-4f6a-9b2c-3d4e5f6a7b8c",
-    "name": "Growlancer Backend",
-    "description": "Complete Growlancer backend collection — Supabase Auth, REST API (PostgREST), Storage, Realtime, and all 24 Edge Functions.\n\n## Setup\n1. Open the collection → Variables tab.\n2. Set `SUPABASE_URL` = https://zttwsjehcgaicziqyxpq.supabase.co (already filled)\n3. Set `ANON_KEY` = your Supabase anon public key (Project Settings → API → anon public)\n4. Run the **Auth → Login** request first — it auto-saves the access token to `AUTH_TOKEN` via a test script.\n5. Auth-required edge functions use `Authorization: Bearer {{AUTH_TOKEN}}`.\n\n## Notes\n- Public functions (newsletter-subscribe, webhooks, cron) use the anon key as Bearer.\n- Auth-required functions will return 401 if `AUTH_TOKEN` is empty/expired.\n- Webhooks (paypal-webhook, razorpay-payout-webhook) are called by external providers — use the provided sample payloads for manual testing.",
+    "name": "Growlanzo Backend",
+    "description": "Complete Growlanzo backend collection — Supabase Auth, REST API (PostgREST), Storage, Realtime, and all 24 Edge Functions.\n\n## Setup\n1. Open the collection → Variables tab.\n2. Set `SUPABASE_URL` = https://zttwsjehcgaicziqyxpq.supabase.co (already filled)\n3. Set `ANON_KEY` = your Supabase anon public key (Project Settings → API → anon public)\n4. Run the **Auth → Login** request first — it auto-saves the access token to `AUTH_TOKEN` via a test script.\n5. Auth-required edge functions use `Authorization: Bearer {{AUTH_TOKEN}}`.\n\n## Notes\n- Public functions (newsletter-subscribe, webhooks, cron) use the anon key as Bearer.\n- Auth-required functions will return 401 if `AUTH_TOKEN` is empty/expired.\n- Webhooks (paypal-webhook, razorpay-payout-webhook) are called by external providers — use the provided sample payloads for manual testing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -703,7 +703,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"full_name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"+91 9876543210\",\n  \"country\": \"India\",\n  \"portfolio_url\": \"https://example.com\",\n  \"cover_letter\": \"I am excited to join Growlancer's internship program...\"\n}",
+              "raw": "{\n  \"full_name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"+91 9876543210\",\n  \"country\": \"India\",\n  \"portfolio_url\": \"https://example.com\",\n  \"cover_letter\": \"I am excited to join Growlanzo's internship program...\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {

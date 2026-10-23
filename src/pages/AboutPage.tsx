@@ -5,6 +5,7 @@ import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTermin
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 import { formatCurrency } from '@/lib/currency';
 import { isFeatureEnabled } from '@/lib/featureFlags';
+import { BrandLogo } from '../components/BrandLogo';
 
 function formatInrFull(inr: number): string {
   if (!Number.isFinite(inr) || inr < 0) return formatCurrency(0);
@@ -36,7 +37,7 @@ export function AboutPage() {
     return [
       [{ text: `// Real-Time Canvas Synced Init · live DB @ ${syncedAt}`, className: 'text-emerald-600' }],
       [
-        { text: 'const workspace = await Growlancer.createWorkspace(contractId);' },
+        { text: 'const workspace = await Growlanzo.createWorkspace(contractId);' },
         { text: `  // ${members} registered members · ${countries} countries`, className: 'text-slate-400' },
       ],
       [
@@ -82,7 +83,7 @@ export function AboutPage() {
     {
       icon: Users,
       title: 'Active Community',
-      desc: 'Growlancer treats freelancers and clients as mutual stakeholders. Symmetrical platform fees and verified expert badges empower sustainable careers.',
+      desc: 'Growlanzo treats freelancers and clients as mutual stakeholders. Symmetrical platform fees and verified expert badges empower sustainable careers.',
       color: 'from-orange-500/10 to-amber-500/10',
       iconColor: 'text-orange-600 bg-orange-100',
     },
@@ -94,8 +95,7 @@ export function AboutPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/UpdatedLogo.png" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 w-auto" />
           </Link>
           <Link
             to="/"
@@ -122,7 +122,7 @@ export function AboutPage() {
             <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Future of Professional Work</span>
           </h1>
           <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto font-medium leading-relaxed">
-            Growlancer eliminates the coordination gaps that plague legacy platforms. By combining intelligent semantic matching with integrated, real-time workspace canvases, we make remote collaboration direct, secure, and delightful.
+            Growlanzo eliminates the coordination gaps that plague legacy platforms. By combining intelligent semantic matching with integrated, real-time workspace canvases, we make remote collaboration direct, secure, and delightful.
           </p>
         </div>
       </section>
@@ -169,13 +169,13 @@ export function AboutPage() {
               <Zap className="w-4 h-4" /> Bridging the Gaps
             </span>
             <h3 className="font-display text-3xl font-black text-slate-900 leading-tight">
-              Why we started Growlancer
+              Why we started Growlanzo
             </h3>
             <p className="text-slate-600 text-sm leading-relaxed">
               Traditional freelancing platforms like Upwork and Fiverr have failed to adapt. They force clients and freelancers to coordinate across fragmented third-party tools—bumping from static chat screens to external Kanban boards, separate scratchpads, and disconnected asset storage lockers.
             </p>
             <p className="text-slate-600 text-sm leading-relaxed">
-              We built Growlancer to consolidate this flow. In our system, the contract dashboard <strong>is</strong> the collaborative workspace. When a service is purchased or a milestone funds, a gorgeous glassmorphic canvas instantly spins up with multi-second syncing, task controls, welcome templates, and structured escrow release locks.
+              We built Growlanzo to consolidate this flow. In our system, the contract dashboard <strong>is</strong> the collaborative workspace. When a service is purchased or a milestone funds, a gorgeous glassmorphic canvas instantly spins up with multi-second syncing, task controls, welcome templates, and structured escrow release locks.
             </p>
           </div>
           <div className="relative overflow-hidden">
@@ -217,7 +217,7 @@ export function AboutPage() {
             Meet the Founder
           </h2>
           <p className="text-slate-500 text-sm max-w-lg mx-auto">
-            The driving force behind Growlancer's mission to transform how the world works.
+            The driving force behind Growlanzo's mission to transform how the world works.
           </p>
         </div>
 
@@ -236,7 +236,7 @@ export function AboutPage() {
                   <div className="w-56 h-64 sm:w-60 sm:h-72 md:w-72 md:h-80 rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 bg-slate-800/30">
                     <img 
                       src="/Founder.png" 
-                      alt="MOHAMMAD MIRAN KHAN — Founder & CEO of Growlancer"
+                      alt="MOHAMMAD MIRAN KHAN — Founder & CEO of Growlanzo"
                       className="w-full h-full object-contain"
                       loading="lazy"
                     />
@@ -255,7 +255,7 @@ export function AboutPage() {
                     MOHAMMAD MIRAN KHAN
                   </h2>
                   <p className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-                    Founder &amp; CEO Of Growlancer
+                    Founder &amp; CEO Of Growlanzo
                   </p>
                 </div>
 
@@ -270,7 +270,7 @@ export function AboutPage() {
                     payment insecurity, and disconnected workflows — and set out to build something better.
                   </p>
                   <p className="text-slate-400 text-sm leading-relaxed">
-                    Under his leadership, Growlancer has emerged as a groundbreaking platform that combines 
+                    Under his leadership, Growlanzo has emerged as a groundbreaking platform that combines 
                     <span className="text-slate-200 font-semibold"> AI-powered semantic matching</span>, 
                     <span className="text-slate-200 font-semibold"> real-time collaborative workspaces</span>, and 
                     <span className="text-slate-200 font-semibold"> escrow-backed payment protection</span> — 
@@ -283,7 +283,7 @@ export function AboutPage() {
                   <Quote className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" />
                   <p className="text-xs text-slate-400 italic leading-relaxed">
                     "We're not just building a marketplace — we're engineering the infrastructure for the future of work. 
-                    Every feature at Growlancer is designed with one question in mind: does this make collaboration 
+                    Every feature at Growlanzo is designed with one question in mind: does this make collaboration 
                     simpler, safer, and more human?"
                   </p>
                 </div>
@@ -296,7 +296,7 @@ export function AboutPage() {
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
-                      <p className="text-xs text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
+                      <p className="text-xs text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlanzo</p>
                     </div>
                   </div>
                   <div className="flex items-center sm:ml-auto">

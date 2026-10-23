@@ -5,7 +5,7 @@ import { getCorsHeaders } from '../_shared/cors.ts'
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// ─── Growlancer AI Writer ────────────────────────────────────────────────────
+// ─── Growlanzo AI Writer ────────────────────────────────────────────────────
 // Generates professional text (project title, project description, cover
 // letter, service title/description) from a short "what do you want" input.
 // - Requires an authenticated user (JWT)
@@ -77,7 +77,7 @@ function buildPrompt(field: Field, input: string, context: WriterContext = {}): 
   switch (field) {
     case 'project_title': {
       system = [
-        'You are Growlancer AI, an expert at writing project titles for a freelancing marketplace.',
+        'You are Growlanzo AI, an expert at writing project titles for a freelancing marketplace.',
         'Write ONE catchy, professional, keyword-rich project title (max 80 characters).',
         'Make it instantly clear what the client wants to build.',
         'Do not use quotes, trailing punctuation or emojis.',
@@ -88,7 +88,7 @@ function buildPrompt(field: Field, input: string, context: WriterContext = {}): 
     }
     case 'project_description': {
       system = [
-        'You are Growlancer AI, an expert at writing project descriptions for a freelancing marketplace.',
+        'You are Growlanzo AI, an expert at writing project descriptions for a freelancing marketplace.',
         'Write a clear, professional project description (3-6 short paragraphs) that freelancers can immediately understand and bid on.',
         'Cover: the goal/what to build, key requirements and deliverables, any specific skills needed, and a short closing line inviting proposals.',
         'Keep it concise — a freelancer should grasp the whole scope in under 30 seconds.',
@@ -99,7 +99,7 @@ function buildPrompt(field: Field, input: string, context: WriterContext = {}): 
     }
     case 'cover_letter': {
       system = [
-        'You are Growlancer AI, an expert freelance proposal writer.',
+        'You are Growlanzo AI, an expert freelance proposal writer.',
         'Write ONE persuasive, professional cover message (2-4 short paragraphs) that a freelancer sends to a client when applying for a project.',
         'Make it personal and confident: quickly show understanding of the project, mention how the freelancer is a great fit, and end with a clear, friendly call to action.',
         'Never over-promise or invent skills the freelancer does not have.',
@@ -110,7 +110,7 @@ function buildPrompt(field: Field, input: string, context: WriterContext = {}): 
     }
     case 'service_title': {
       system = [
-        'You are Growlancer AI, an expert at writing service titles for freelancers on a marketplace.',
+        'You are Growlanzo AI, an expert at writing service titles for freelancers on a marketplace.',
         'Write ONE catchy, professional, keyword-rich service title (max 80 characters) starting with "I will" (e.g. "I will design a modern logo for your brand").',
         'Make it clear what the freelancer delivers and for whom.',
         'Do not use quotes, trailing punctuation or emojis.',
@@ -121,7 +121,7 @@ function buildPrompt(field: Field, input: string, context: WriterContext = {}): 
     }
     case 'service_description': {
       system = [
-        'You are Growlancer AI, an expert at writing service descriptions for freelancers on a marketplace.',
+        'You are Growlanzo AI, an expert at writing service descriptions for freelancers on a marketplace.',
         'Write a clear, professional service description (3-5 short paragraphs) that makes clients want to buy.',
         'Cover: what the freelancer delivers, what the client will receive (the outcome), how the freelancer works, and a short closing line inviting the client to place an order.',
         'Keep it concise and benefit-focused.',

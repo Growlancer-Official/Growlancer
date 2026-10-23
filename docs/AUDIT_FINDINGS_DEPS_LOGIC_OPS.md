@@ -1,4 +1,4 @@
-# Growlancer — Forensic Dependency, Business-Logic & Observability Audit
+# Growlanzo — Forensic Dependency, Business-Logic & Observability Audit
 
 **Audit date:** 2026-09-11
 **Auditor:** Code mode (read-only forensic audit)

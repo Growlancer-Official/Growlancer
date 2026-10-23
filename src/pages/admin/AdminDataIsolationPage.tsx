@@ -130,7 +130,7 @@ export function AdminDataIsolationPage() {
           <div className="text-sm text-rose-200 leading-relaxed">
             <p className="font-semibold mb-1">What this does</p>
             <p>
-              When a user is deleted, Growlancer wipes every trace of their data automatically. If any deletion
+              When a user is deleted, Growlanzo wipes every trace of their data automatically. If any deletion
               was interrupted (rare), an <strong>orphan profile</strong> can remain — a profile row whose auth
               account no longer exists. Orphan data is invisible to other users but pollutes the database and
               could block re-signup with the same email. <strong>Run Orphan Purge</strong> finds and completely

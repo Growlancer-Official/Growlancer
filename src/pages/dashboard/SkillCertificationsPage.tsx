@@ -97,7 +97,7 @@ export function SkillCertificationsPage() {
           <div className="space-y-1">
             <p className="font-bold text-sm">Learn. Get Certified. Earn More.</p>
             <p className="text-xs text-emerald-50 leading-relaxed">
-              Growlancer is a mature, trusted marketplace. Pass our skill assessments to earn verified badges that
+              Growlanzo is a mature, trusted marketplace. Pass our skill assessments to earn verified badges that
               appear next to your name and in your workspace — clients see your proven expertise, trust grows, and
               quality work means fewer disputes and refunds for everyone. Real skills. Verified badges. Fair work.
             </p>

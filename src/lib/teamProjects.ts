@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────────────────────
-// GROWLANCER — TEAM PROJECTS (multi-freelancer) service
+// GROWLANZO — TEAM PROJECTS (multi-freelancer) service
 // A team project = 1 client + N independent contracts (one per role). Each
 // contract is a NORMAL contract (own escrow / milestones / dispute) linked via
 // contracts.team_project_id + team_project_role_id. All existing flows are

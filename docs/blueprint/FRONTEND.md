@@ -1,4 +1,4 @@
-# Growlancer — Frontend Blueprint
+# Growlanzo — Frontend Blueprint
 
 **Last verified: 2026-10-20** (working tree `main` @ `59be15a` + uncommitted referral work)
 **Scope:** everything a browser runs: `src/**`, `pages/**`, `index.html`, `vite.config.ts`, `scripts/build.mjs`, `server.js`, `vercel.json`, `public/_redirects`, `tailwind.config.js`, `vitest.config.ts`, `src/test/**`.

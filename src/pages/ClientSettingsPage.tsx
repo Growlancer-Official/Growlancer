@@ -952,11 +952,11 @@ export function ClientSettingsPage() {
         key: razorpay_key_id,
         amount: 100, // ₹1 in paise
         currency,
-        name: 'Growlancer',
+        name: 'Growlanzo',
         description: `Card verification — ${formatCurrency(1)} will be refunded`,
         order_id: order.razorpay_order_id,
         prefill: { name: user.name || '', email: user.email || '' },
-        theme: { color: '#059669' },
+        theme: { color: '#14861f' },
         card: { save: true },
         handler: async (response) => {
           // Server-side signature verification
@@ -1448,7 +1448,7 @@ export function ClientSettingsPage() {
                   <UserPlus className="w-5 h-5 text-emerald-600" /> Invite User
                 </h2>
                 <p className="text-sm text-slate-500 mb-5">
-                  Invite a freelancer or client to join Growlancer. They'll receive an email with a secure invite link.
+                  Invite a freelancer or client to join Growlanzo. They'll receive an email with a secure invite link.
                 </p>
 
                 <form onSubmit={handleInviteUser} className="space-y-4">

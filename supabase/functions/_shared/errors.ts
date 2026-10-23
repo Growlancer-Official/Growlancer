@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// Shared client error sanitizer for Growlancer edge functions.
+// Shared client error sanitizer for Growlanzo edge functions.
 //
 // MR-17 (original findings SEC-010 / ERR-04 / AI-001(leak) / API-007(leak)).
 // Raw `error.message` values were being returned verbatim in HTTP response

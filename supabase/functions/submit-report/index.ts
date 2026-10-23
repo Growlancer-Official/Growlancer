@@ -55,9 +55,9 @@ async function sendReportEmail(payload: {
   const html = `<!DOCTYPE html>
 <html><body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:640px;margin:24px auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
-    <div style="background:linear-gradient(135deg,#059669,#0d9488);padding:24px 32px;">
-      <h1 style="margin:0;color:#ffffff;font-size:20px;">New User Report — Growlancer</h1>
-      <p style="margin:6px 0 0;color:#d1fae5;font-size:13px;">Report ID: <strong>${escapeHtml(payload.reportId.slice(0, 8))}</strong></p>
+    <div style="background:linear-gradient(135deg,#14861f,#0d9488);padding:24px 32px;">
+      <h1 style="margin:0;color:#ffffff;font-size:20px;">New User Report — Growlanzo</h1>
+      <p style="margin:6px 0 0;color:#ddf7d9;font-size:13px;">Report ID: <strong>${escapeHtml(payload.reportId.slice(0, 8))}</strong></p>
     </div>
     <div style="padding:32px;">
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
@@ -65,7 +65,7 @@ async function sendReportEmail(payload: {
         <tr><td style="padding:8px 0;color:#64748b;">Priority</td><td style="padding:8px 0;"><span style="display:inline-block;padding:2px 10px;border-radius:999px;color:#fff;background:${priorityColors[payload.priority] || '#94a3b8'};font-weight:600;font-size:12px;text-transform:uppercase;">${escapeHtml(payload.priority)}</span></td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Category</td><td style="padding:8px 0;font-weight:600;color:#0f172a;">${escapeHtml(payload.category || '—')}</td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Submitted by</td><td style="padding:8px 0;color:#0f172a;">${escapeHtml(payload.name || 'Guest')}${payload.email ? ` &lt;${escapeHtml(payload.email)}&gt;` : ''}${payload.userId ? ` (user: ${escapeHtml(payload.userId.slice(0, 8))})` : ''}</td></tr>
-        <tr><td style="padding:8px 0;color:#64748b;">Page</td><td style="padding:8px 0;"><a href="${escapeHtml(payload.pageUrl)}" style="color:#059669;">${escapeHtml(payload.pageUrl || '—')}</a></td></tr>
+        <tr><td style="padding:8px 0;color:#64748b;">Page</td><td style="padding:8px 0;"><a href="${escapeHtml(payload.pageUrl)}" style="color:#14861f;">${escapeHtml(payload.pageUrl || '—')}</a></td></tr>
         <tr><td style="padding:8px 0;color:#64748b;">Browser</td><td style="padding:8px 0;color:#0f172a;word-break:break-all;">${escapeHtml(payload.browserInfo || '—')}</td></tr>
       </table>
       <div style="margin-top:20px;padding:16px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">

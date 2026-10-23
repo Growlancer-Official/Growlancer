@@ -14,11 +14,11 @@ import { useLocation } from 'react-router-dom';
  * baseline; this only refines it after navigation.
  */
 
-const SITE_URL = 'https://growlancer.com';
-const SITE_NAME = 'Growlancer';
-const DEFAULT_TITLE = 'Growlancer — AI-Powered Freelancing Marketplace';
+const SITE_URL = 'https://growlanzo.com';
+const SITE_NAME = 'Growlanzo';
+const DEFAULT_TITLE = 'Growlanzo — AI-Powered Freelancing Marketplace';
 const DEFAULT_DESCRIPTION =
-    'Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly.';
+    'Growlanzo is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly.';
 
 interface RouteMeta {
     title: string;
@@ -54,39 +54,39 @@ const ROUTE_RULES: RouteRule[] = [
     // ── Private / authenticated surfaces (noindex) ─────────────────────
     {
         test: isPath('/admin'),
-        meta: { title: `Admin · ${SITE_NAME}`, description: 'Growlancer administration console.', noindex: true },
+        meta: { title: `Admin · ${SITE_NAME}`, description: 'Growlanzo administration console.', noindex: true },
     },
     {
         test: isPath('/dashboard'),
-        meta: { title: `Dashboard · ${SITE_NAME}`, description: 'Your Growlancer workspace.', noindex: true },
+        meta: { title: `Dashboard · ${SITE_NAME}`, description: 'Your Growlanzo workspace.', noindex: true },
     },
     {
         test: isPath('/client'),
-        meta: { title: `Client Dashboard · ${SITE_NAME}`, description: 'Manage your projects on Growlancer.', noindex: true },
+        meta: { title: `Client Dashboard · ${SITE_NAME}`, description: 'Manage your projects on Growlanzo.', noindex: true },
     },
     {
         test: isPath('/onboarding'),
-        meta: { title: `Get Started · ${SITE_NAME}`, description: 'Set up your Growlancer account.', noindex: true },
+        meta: { title: `Get Started · ${SITE_NAME}`, description: 'Set up your Growlanzo account.', noindex: true },
     },
     {
         test: isPath('/settings'),
-        meta: { title: `Settings · ${SITE_NAME}`, description: 'Manage your Growlancer settings.', noindex: true },
+        meta: { title: `Settings · ${SITE_NAME}`, description: 'Manage your Growlanzo settings.', noindex: true },
     },
     {
         test: isPath('/messages'),
-        meta: { title: `Messages · ${SITE_NAME}`, description: 'Your Growlancer messages.', noindex: true },
+        meta: { title: `Messages · ${SITE_NAME}`, description: 'Your Growlanzo messages.', noindex: true },
     },
     {
         test: isPath('/wallet'),
-        meta: { title: `Wallet · ${SITE_NAME}`, description: 'Your Growlancer wallet.', noindex: true },
+        meta: { title: `Wallet · ${SITE_NAME}`, description: 'Your Growlanzo wallet.', noindex: true },
     },
     {
         test: isPath('/notifications'),
-        meta: { title: `Notifications · ${SITE_NAME}`, description: 'Your Growlancer notifications.', noindex: true },
+        meta: { title: `Notifications · ${SITE_NAME}`, description: 'Your Growlanzo notifications.', noindex: true },
     },
     {
         test: isPath('/checkout'),
-        meta: { title: `Checkout · ${SITE_NAME}`, description: 'Complete your Growlancer checkout.', noindex: true },
+        meta: { title: `Checkout · ${SITE_NAME}`, description: 'Complete your Growlanzo checkout.', noindex: true },
     },
     {
         test: isPath('/payment'),
@@ -94,21 +94,21 @@ const ROUTE_RULES: RouteRule[] = [
     },
     {
         test: isPath('/report'),
-        meta: { title: `Report · ${SITE_NAME}`, description: 'Report an issue to Growlancer.', noindex: true },
+        meta: { title: `Report · ${SITE_NAME}`, description: 'Report an issue to Growlanzo.', noindex: true },
     },
 
     // ── Auth action routes (noindex) ───────────────────────────────────
     {
         test: isPath('/auth/forgot-password'),
-        meta: { title: `Reset Your Password · ${SITE_NAME}`, description: 'Reset your Growlancer password.', noindex: true },
+        meta: { title: `Reset Your Password · ${SITE_NAME}`, description: 'Reset your Growlanzo password.', noindex: true },
     },
     {
         test: isPath('/auth/reset-password'),
-        meta: { title: `Set a New Password · ${SITE_NAME}`, description: 'Choose a new Growlancer password.', noindex: true },
+        meta: { title: `Set a New Password · ${SITE_NAME}`, description: 'Choose a new Growlanzo password.', noindex: true },
     },
     {
         test: isPath('/auth/magic-link'),
-        meta: { title: `Sign In · ${SITE_NAME}`, description: 'Sign in to Growlancer.', noindex: true },
+        meta: { title: `Sign In · ${SITE_NAME}`, description: 'Sign in to Growlanzo.', noindex: true },
     },
     {
         test: isPath('/auth/otp'),
@@ -116,7 +116,7 @@ const ROUTE_RULES: RouteRule[] = [
     },
     {
         test: isPath('/auth/email-confirm') || isPath('/auth/verify-email'),
-        meta: { title: `Confirm Your Email · ${SITE_NAME}`, description: 'Confirm your Growlancer email address.', noindex: true },
+        meta: { title: `Confirm Your Email · ${SITE_NAME}`, description: 'Confirm your Growlanzo email address.', noindex: true },
     },
     {
         test: isPath('/auth/callback'),
@@ -124,29 +124,29 @@ const ROUTE_RULES: RouteRule[] = [
     },
     {
         test: isPath('/auth'),
-        meta: { title: `Sign In · ${SITE_NAME}`, description: 'Sign in to Growlancer.', noindex: true },
+        meta: { title: `Sign In · ${SITE_NAME}`, description: 'Sign in to Growlanzo.', noindex: true },
     },
 
     // ── Dynamic public routes ──────────────────────────────────────────
     {
         test: dynamic('/projects'),
-        meta: { title: `Project Details · ${SITE_NAME}`, description: 'View project details on Growlancer.' },
+        meta: { title: `Project Details · ${SITE_NAME}`, description: 'View project details on Growlanzo.' },
     },
     {
         test: dynamic('/freelancer'),
-        meta: { title: `Freelancer Profile · ${SITE_NAME}`, description: 'View a freelancer profile on Growlancer.' },
+        meta: { title: `Freelancer Profile · ${SITE_NAME}`, description: 'View a freelancer profile on Growlanzo.' },
     },
     {
         test: dynamic('/services'),
-        meta: { title: `Service Details · ${SITE_NAME}`, description: 'View a service on Growlancer.' },
+        meta: { title: `Service Details · ${SITE_NAME}`, description: 'View a service on Growlanzo.' },
     },
     {
         test: dynamic('/contests'),
-        meta: { title: `Contest Details · ${SITE_NAME}`, description: 'View a design contest on Growlancer.' },
+        meta: { title: `Contest Details · ${SITE_NAME}`, description: 'View a design contest on Growlanzo.' },
     },
     {
         test: dynamic('/certificate') || dynamic('/verify-certificate'),
-        meta: { title: `Certificate Verification · ${SITE_NAME}`, description: 'Verify a Growlancer certificate.' },
+        meta: { title: `Certificate Verification · ${SITE_NAME}`, description: 'Verify a Growlanzo certificate.' },
     },
 
     // ── Static public routes ───────────────────────────────────────────
@@ -159,87 +159,87 @@ const ROUTE_RULES: RouteRule[] = [
     },
     {
         test: exact('/how-it-works'),
-        meta: { title: `How It Works · ${SITE_NAME}`, description: 'Learn how Growlancer connects freelancers and clients.' },
+        meta: { title: `How It Works · ${SITE_NAME}`, description: 'Learn how Growlanzo connects freelancers and clients.' },
     },
     {
         test: exact('/features'),
-        meta: { title: `Features · ${SITE_NAME}`, description: 'Explore Growlancer features for freelancers and clients.' },
+        meta: { title: `Features · ${SITE_NAME}`, description: 'Explore Growlanzo features for freelancers and clients.' },
     },
     {
         test: exact('/categories'),
-        meta: { title: `Categories · ${SITE_NAME}`, description: 'Browse freelancing categories on Growlancer.' },
+        meta: { title: `Categories · ${SITE_NAME}`, description: 'Browse freelancing categories on Growlanzo.' },
     },
     {
         test: exact('/pricing'),
-        meta: { title: `Pricing · ${SITE_NAME}`, description: 'Growlancer pricing and plans.' },
+        meta: { title: `Pricing · ${SITE_NAME}`, description: 'Growlanzo pricing and plans.' },
     },
     {
         test: exact('/about'),
-        meta: { title: `About · ${SITE_NAME}`, description: 'About Growlancer and our mission.' },
+        meta: { title: `About · ${SITE_NAME}`, description: 'About Growlanzo and our mission.' },
     },
     {
         test: exact('/philosophy'),
-        meta: { title: `Our Philosophy · ${SITE_NAME}`, description: 'The philosophy behind Growlancer.' },
+        meta: { title: `Our Philosophy · ${SITE_NAME}`, description: 'The philosophy behind Growlanzo.' },
     },
     {
         test: exact('/internships') || exact('/careers'),
-        meta: { title: `Internships & Careers · ${SITE_NAME}`, description: 'Internship and career opportunities at Growlancer.' },
+        meta: { title: `Internships & Careers · ${SITE_NAME}`, description: 'Internship and career opportunities at Growlanzo.' },
     },
     {
         test: exact('/contact'),
-        meta: { title: `Contact · ${SITE_NAME}`, description: 'Get in touch with the Growlancer team.' },
+        meta: { title: `Contact · ${SITE_NAME}`, description: 'Get in touch with the Growlanzo team.' },
     },
     {
         test: exact('/help-center'),
-        meta: { title: `Help Center · ${SITE_NAME}`, description: 'Help and support for Growlancer users.' },
+        meta: { title: `Help Center · ${SITE_NAME}`, description: 'Help and support for Growlanzo users.' },
     },
     {
         test: exact('/safety'),
-        meta: { title: `Safety · ${SITE_NAME}`, description: 'Trust and safety on Growlancer.' },
+        meta: { title: `Safety · ${SITE_NAME}`, description: 'Trust and safety on Growlanzo.' },
     },
     {
         test: exact('/guidelines'),
-        meta: { title: `Community Guidelines · ${SITE_NAME}`, description: 'Growlancer community guidelines.' },
+        meta: { title: `Community Guidelines · ${SITE_NAME}`, description: 'Growlanzo community guidelines.' },
     },
     {
         test: exact('/status'),
-        meta: { title: `System Status · ${SITE_NAME}`, description: 'Growlancer platform status and uptime.' },
+        meta: { title: `System Status · ${SITE_NAME}`, description: 'Growlanzo platform status and uptime.' },
     },
     {
         test: exact('/terms'),
-        meta: { title: `Terms of Service · ${SITE_NAME}`, description: 'Growlancer terms of service.' },
+        meta: { title: `Terms of Service · ${SITE_NAME}`, description: 'Growlanzo terms of service.' },
     },
     {
         test: exact('/privacy'),
-        meta: { title: `Privacy Policy · ${SITE_NAME}`, description: 'Growlancer privacy policy.' },
+        meta: { title: `Privacy Policy · ${SITE_NAME}`, description: 'Growlanzo privacy policy.' },
     },
     {
         test: exact('/escrow-policy'),
-        meta: { title: `Escrow Policy · ${SITE_NAME}`, description: 'How Growlancer escrow works.' },
+        meta: { title: `Escrow Policy · ${SITE_NAME}`, description: 'How Growlanzo escrow works.' },
     },
     {
         test: exact('/refund-policy'),
-        meta: { title: `Refund Policy · ${SITE_NAME}`, description: 'Growlancer refund policy.' },
+        meta: { title: `Refund Policy · ${SITE_NAME}`, description: 'Growlanzo refund policy.' },
     },
     {
         test: exact('/cookies'),
-        meta: { title: `Cookie Policy · ${SITE_NAME}`, description: 'Growlancer cookie policy.' },
+        meta: { title: `Cookie Policy · ${SITE_NAME}`, description: 'Growlanzo cookie policy.' },
     },
     {
         test: exact('/freelancers'),
-        meta: { title: `Find Freelancers · ${SITE_NAME}`, description: 'Search and hire talented freelancers on Growlancer.' },
+        meta: { title: `Find Freelancers · ${SITE_NAME}`, description: 'Search and hire talented freelancers on Growlanzo.' },
     },
     {
         test: exact('/services'),
-        meta: { title: `Browse Services · ${SITE_NAME}`, description: 'Browse professional services on Growlancer.' },
+        meta: { title: `Browse Services · ${SITE_NAME}`, description: 'Browse professional services on Growlanzo.' },
     },
     {
         test: exact('/contests'),
-        meta: { title: `Design Contests · ${SITE_NAME}`, description: 'Run or join design contests on Growlancer.' },
+        meta: { title: `Design Contests · ${SITE_NAME}`, description: 'Run or join design contests on Growlanzo.' },
     },
     {
         test: exact('/waitlist'),
-        meta: { title: `Join the Waitlist · ${SITE_NAME}`, description: 'Join the Growlancer waitlist.' },
+        meta: { title: `Join the Waitlist · ${SITE_NAME}`, description: 'Join the Growlanzo waitlist.' },
     },
 ];
 

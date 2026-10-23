@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
 
     const currency: string = invoice.currency || 'INR'
     const statusBadge = invoice.status === 'paid'
-      ? '<span style="background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase">Paid</span>'
+      ? '<span style="background:#ddf7d9;color:#10591a;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase">Paid</span>'
       : `<span style="background:#fef3c7;color:#92400e;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase">${esc(invoice.status)}</span>`
 
     const html = `<!DOCTYPE html>
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Invoice ${esc(invoice.invoice_number)} — Growlancer</title>
+<title>Invoice ${esc(invoice.invoice_number)} — Growlanzo</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   @page { size: A4; margin: 0; }
@@ -95,15 +95,15 @@ Deno.serve(async (req) => {
   .sheet { max-width: 780px; margin: 0 auto; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 36px rgba(15,23,42,.10); }
   /* Brand header band */
   .head { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 36px 40px 22px; color: #fff; }
-  .head::before { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, #0f172a 0%, #14532d 60%, #059669 100%); }
+  .head::before { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, #0f172a 0%, #104a1a 60%, #14861f 100%); }
   .head > * { position: relative; z-index: 1; }
   .brand { font-size: 24px; font-weight: 800; letter-spacing: -.5px; }
-  .brand span { color: #34d399; }
-  .brand-tag { font-size: 11px; color: #a7f3d0; opacity: .85; margin-top: 2px; letter-spacing: .02em; }
+  .brand span { color: #4fcb45; }
+  .brand-tag { font-size: 11px; color: #bbefb4; opacity: .85; margin-top: 2px; letter-spacing: .02em; }
   .inv-block { text-align: right; }
-  .inv-label { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #a7f3d0; }
+  .inv-label { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #bbefb4; }
   .inv-no { font-size: 18px; font-weight: 800; margin-top: 2px; }
-  .inv-date { font-size: 11px; color: #d1fae5; opacity: .9; margin-top: 4px; }
+  .inv-date { font-size: 11px; color: #ddf7d9; opacity: .9; margin-top: 4px; }
   .body { padding: 28px 40px 32px; }
   .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
   .meta h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin-bottom: 6px; }
@@ -115,13 +115,13 @@ Deno.serve(async (req) => {
   td.num, th.num { text-align: right; }
   .totals { margin-left: auto; width: 320px; }
   .totals .row { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 14px; color: #475569; }
-  .totals .row.total { border-top: 2px solid #059669; margin-top: 8px; padding-top: 14px; font-weight: 800; font-size: 17px; color: #0f172a; }
-  .totals .row.fee { color: #059669; font-weight: 600; }
+  .totals .row.total { border-top: 2px solid #14861f; margin-top: 8px; padding-top: 14px; font-weight: 800; font-size: 17px; color: #0f172a; }
+  .totals .row.fee { color: #14861f; font-weight: 600; }
   .foot { padding: 18px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
   .foot .row1 { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .foot .row2 { margin-top: 8px; padding-top: 10px; border-top: 1px dashed #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8; }
-  .print-btn { position: fixed; bottom: 24px; right: 24px; background: #059669; color: #fff; border: 0; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 8px 20px rgba(5,150,105,.35); }
-  .print-btn:hover { background: #047857; }
+  .print-btn { position: fixed; bottom: 24px; right: 24px; background: #14861f; color: #fff; border: 0; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 8px 20px rgba(5,150,105,.35); }
+  .print-btn:hover { background: #0f6f1a; }
   @media print { body { background: #fff; padding: 0; } .sheet { box-shadow: none; border-radius: 0; max-width: 100%; } .print-btn { display: none; } .head { padding: 28px 34px 18px; } .body { padding: 24px 34px 26px; } .foot { padding: 14px 34px; } }
 </style>
 </head>
@@ -171,14 +171,14 @@ Deno.serve(async (req) => {
 
       <div class="totals">
         <div class="row"><span>Subtotal</span><span>${fmt(invoice.subtotal, currency)}</span></div>
-        <div class="row fee"><span>Growlancer Platform Fee (5%)</span><span>- ${fmt(invoice.platform_fee, currency)}</span></div>
+        <div class="row fee"><span>Growlanzo Platform Fee (5%)</span><span>- ${fmt(invoice.platform_fee, currency)}</span></div>
         <div class="row"><span>Freelancer Net</span><span>${fmt(invoice.freelancer_amount, currency)}</span></div>
         <div class="row total"><span>Total Billed</span><span>${fmt(invoice.total, currency)}</span></div>
       </div>
     </div>
     <div class="foot">
       <div class="row1">
-        <span><strong>Growlancer</strong> — AI-Powered Freelancing Marketplace</span>
+        <span><strong>Growlanzo</strong> — AI-Powered Freelancing Marketplace</span>
         <span>Invoice ${esc(invoice.invoice_number)} · ${esc(new Date(invoice.issued_at).getFullYear())}</span>
       </div>
       <div class="row2">

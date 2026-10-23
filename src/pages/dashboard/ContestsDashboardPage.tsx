@@ -60,7 +60,7 @@ export function ContestsDashboardPage() {
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Contests <InfoTip title="How contests work" text="Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlancer, ever. Browse active contests below and submit before the deadline." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Contests <InfoTip title="How contests work" text="Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlanzo, ever. Browse active contests below and submit before the deadline." /></h1>
             <p className="text-slate-500 text-xs">Compete in design and development contests to win prizes</p>
           </div>
         </div>

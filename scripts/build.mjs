@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Build script for Growlancer.
+ * Build script for Growlanzo.
  *
  * 1. Runs Vite build (with Vike prerender + copy plugin)
  * 2. Deterministically copies dist/client/ → dist/
@@ -93,16 +93,13 @@ const start = Date.now();
 const THEME_FOUC_GUARD = `<!-- __theme_guard_marker__ -->
 <script>
   (function () {
+    var root = document.documentElement;
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
     try {
-      var stored = localStorage.getItem('growlancer-theme');
-      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var dark = stored === 'dark' || ((stored === 'system' || !stored) && systemDark);
-      var root = document.documentElement;
-      if (dark) root.classList.add('dark');
-      root.style.colorScheme = dark ? 'dark' : 'light';
+      localStorage.removeItem('growlancer-theme');
     } catch (e) {
-      // localStorage blocked (private mode) — fall back to the light theme
-      // rather than failing to boot.
+      // Storage blocked (private mode) — nothing to clean up.
     }
   })();
 </script>`;
@@ -308,14 +305,14 @@ function generateFallbackIndexHtml() {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growlancer — AI-Powered Freelancing Marketplace</title>
-    <meta name="description" content="Growlancer is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
-    <link rel="icon" href="/UpdatedLogo.webp?v=3" type="image/webp">
-    <link rel="icon" href="/UpdatedLogo.png?v=2" type="image/png">
-    <meta name="theme-color" content="#10b981">
+    <title>Growlanzo — AI-Powered Freelancing Marketplace</title>
+    <meta name="description" content="Growlanzo is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
+    <link rel="icon" href="/UpdatedLogo.webp?v=6" type="image/webp">
+    <link rel="apple-touch-icon" href="/UpdatedLogo.png?v=6" type="image/png">
+    <meta name="theme-color" content="#24ba35">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace">
-    <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlancer.">
+    <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace">
+    <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlanzo.">
     <meta name="twitter:card" content="summary_large_image">
     <!-- Design fonts (Cabinet Grotesk + Satoshi) — must stay identical to
          pages/+Head.tsx and index.html, or fallback-shell routes (served when the
@@ -348,8 +345,8 @@ ${THEME_FOUC_GUARD}
         background: #070b14;
       }
       html.dark #boot-overlay .boot-spinner {
-        border-color: #123b31;
-        border-top-color: #10b981;
+        border-color: #123b20;
+        border-top-color: #24ba35;
       }
     </style>
   </head>

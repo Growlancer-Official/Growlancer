@@ -275,7 +275,7 @@ export const CERT_LEVEL_STYLES: Record<string, { label: string; color: string; b
  */
 export function getCertificateTitle(cert: Certificate): string {
   const prefixMap: Record<string, string> = {
-    platform: 'Growlancer Platform Certificate',
+    platform: 'Growlanzo Platform Certificate',
     skill_test: 'Skill Certification',
     internship: 'Internship Completion Certificate',
     achievement: 'Achievement Badge',

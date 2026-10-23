@@ -1063,7 +1063,7 @@ export function ProfessionalProfilePage() {
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Categories & Skills</h3>
                     <p className="text-xs text-slate-500 mb-2">
-                      Pick up to 3 categories — Growlancer matches you to projects by category. Add your own skills freely.
+                      Pick up to 3 categories — Growlanzo matches you to projects by category. Add your own skills freely.
                     </p>
 
                     {/* Category → Skills picker (145 categories, no subcategory/skill hierarchy) */}

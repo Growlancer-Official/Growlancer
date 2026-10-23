@@ -368,7 +368,7 @@ export function DisputeResolutionPage() {
             )}
             {(selectedDispute as any).resolved_at && (
               <p className="text-xs text-slate-400 mt-1">
-                Decided on {formatDateFull((selectedDispute as any).resolved_at)} by Growlancer Admin Team
+                Decided on {formatDateFull((selectedDispute as any).resolved_at)} by Growlanzo Admin Team
               </p>
             )}
           </div>

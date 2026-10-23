@@ -1,4 +1,4 @@
-# Growlancer — Release Readiness Report
+# Growlanzo — Release Readiness Report
 
 Date: 2026-10-21 · Branch: `launch/mvp-hardening` · Baseline commit: `2011d7f`
 Audience: founder / release owner
@@ -9,7 +9,7 @@ Status vocabulary: **PASS** (ran, output read), **FAIL** (ran, wrong result),
 
 ## 1. Verdict
 
-**Growlancer is not launch-ready yet.** It is materially closer than it was:
+**Growlanzo is not launch-ready yet.** It is materially closer than it was:
 five confirmed security defects are closed and guarded by tests, the deferred
 modules now fail closed at the API instead of leaking data, and the full local
 quality gate is green.

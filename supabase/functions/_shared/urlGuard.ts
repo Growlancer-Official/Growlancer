@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// Shared outbound-URL guard (SSRF defense) for Growlancer edge functions.
+// Shared outbound-URL guard (SSRF defense) for Growlanzo edge functions.
 //
 // MR-16 (original findings SEC-013 / STORAGE-003 / API-007).
 // Several edge functions fetch URLs that are ultimately influenced by user

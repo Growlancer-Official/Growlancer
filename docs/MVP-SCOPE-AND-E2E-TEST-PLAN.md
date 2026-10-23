@@ -1,4 +1,4 @@
-# Growlancer — MVP Scope and End-to-End Test Plan
+# Growlanzo — MVP Scope and End-to-End Test Plan
 
 Status: **draft for owner approval** · Owner: founder · Last updated: 2026-10-21
 

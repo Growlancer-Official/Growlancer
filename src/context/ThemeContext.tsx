@@ -1,123 +1,66 @@
-import React, { createContext, useContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 
 // ────────────────────────────────────────────────────────────────────────────
-// ThemeProvider — light / dark / system, applied as a `.dark` class on <html>.
+// ThemeProvider — light only.
 //
-// The first paint is handled by a tiny inline script in index.html so a
-// dark-mode user never sees a light flash (see the FOUC guard there). This
-// provider then owns the live state: it reads what that script decided,
-// follows the OS when the preference is "system", and persists changes.
+// Growlanzo is a light-only product: the cream/white surface IS the brand, and
+// a half-themed dark variant read as a different site. Dark mode was removed
+// outright rather than left switchable, so there is exactly one appearance on
+// every device, in every OS setting, for every returning visitor.
+//
+// Two jobs remain:
+//   1. strip any stale `.dark` class a previous build left on <html> (the class
+//      was set by the old pre-paint guard and is persisted in the DOM until the
+//      next full navigation);
+//   2. pin `color-scheme: light` so native controls (scrollbars, date pickers,
+//      autofill) never render dark inside a light page.
+//
+// The pre-paint half of the same guarantee lives in the THEME_FOUC_GUARD
+// injected by vite.config.ts, so there is no flash before React hydrates.
 // ────────────────────────────────────────────────────────────────────────────
 
-export type ThemePreference = 'light' | 'dark' | 'system';
-export type ResolvedTheme = 'light' | 'dark';
-
-const STORAGE_KEY = 'growlancer-theme';
+export type ThemePreference = 'light';
+export type ResolvedTheme = 'light';
 
 interface ThemeContextValue {
-  /** What the user chose (may be 'system'). */
+  /** Kept for API compatibility with older call sites; always 'light'. */
   preference: ThemePreference;
-  /** What is actually applied right now. */
+  /** Always 'light'. */
   resolved: ResolvedTheme;
-  /** Cycle light → dark → system. */
+  /** No-op: there is no second theme to switch to. */
+  setPreference: () => void;
+  /** No-op: there is no second theme to cycle to. */
   cyclePreference: () => void;
-  setPreference: (preference: ThemePreference) => void;
 }
 
-const DEFAULT_CONTEXT: ThemeContextValue = {
-  preference: 'system',
+const LIGHT_ONLY: ThemeContextValue = {
+  preference: 'light',
   resolved: 'light',
-  cyclePreference: () => {},
   setPreference: () => {},
+  cyclePreference: () => {},
 };
 
-const ThemeContext = createContext<ThemeContextValue>(DEFAULT_CONTEXT);
+const ThemeContext = createContext<ThemeContextValue>(LIGHT_ONLY);
 
-/** Read the saved preference (client only, storage-access safe). */
-function readStoredPreference(): ThemePreference {
-  if (typeof window === 'undefined') return 'system';
+/** Remove the retired theme preference so stale clients stop re-applying it. */
+function clearStoredPreference() {
+  if (typeof window === 'undefined') return;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
-  } catch (err) {
-    console.warn('[theme] Could not read saved preference:', err);
+    localStorage.removeItem('growlancer-theme');
+  } catch {
+    // Storage blocked (private mode) — nothing to clean up.
   }
-  return 'system';
-}
-
-function systemPrefersDark(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-function resolveTheme(preference: ThemePreference): ResolvedTheme {
-  if (preference === 'system') return systemPrefersDark() ? 'dark' : 'light';
-  return preference;
-}
-
-/** Apply the resolved theme to <html> so CSS (.dark …) and `dark:` variants match. */
-function applyTheme(resolved: ResolvedTheme) {
-  if (typeof document === 'undefined') return;
-  const root = document.documentElement;
-  root.classList.toggle('dark', resolved === 'dark');
-  root.style.colorScheme = resolved;
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>(() => readStoredPreference());
-  const [resolved, setResolved] = useState<ResolvedTheme>(() => resolveTheme(readStoredPreference()));
-
-  // Apply on every change (and once after hydration, so SSR-rendered markup
-  // gets the class even if the inline script was blocked by a strict CSP).
   useEffect(() => {
-    const next = resolveTheme(preference);
-    setResolved(next);
-    applyTheme(next);
-  }, [preference]);
-
-  // Follow the OS while the preference is "system".
-  useEffect(() => {
-    if (preference !== 'system') return;
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => {
-      const next: ResolvedTheme = media.matches ? 'dark' : 'light';
-      setResolved(next);
-      applyTheme(next);
-    };
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, [preference]);
-
-  const setPreference = useCallback((next: ThemePreference) => {
-    setPreferenceState(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch (err) {
-      // Private browsing / storage disabled — the theme still applies for this
-      // session, it just will not be remembered.
-      console.warn('[theme] Could not persist preference:', err);
-    }
+    const root = document.documentElement;
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+    clearStoredPreference();
   }, []);
 
-  const cyclePreference = useCallback(() => {
-    setPreferenceState((prev) => {
-      const next: ThemePreference = prev === 'light' ? 'dark' : prev === 'dark' ? 'system' : 'light';
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch (err) {
-        console.warn('[theme] Could not persist preference:', err);
-      }
-      return next;
-    });
-  }, []);
-
-  return (
-    <ThemeContext.Provider value={{ preference, resolved, cyclePreference, setPreference }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={LIGHT_ONLY}>{children}</ThemeContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

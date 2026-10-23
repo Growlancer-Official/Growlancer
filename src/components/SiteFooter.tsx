@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 import { isFeatureEnabled } from '../lib/featureFlags';
+import { BrandLogo } from './BrandLogo';
 
 type SiteFooterProps = {
   onOpenSignup?: (role?: 'freelancer' | 'client') => void;
@@ -15,13 +16,8 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <img 
-                src="/UpdatedLogo.webp" 
-                alt="Growlancer" 
-                className="h-11 w-11 rounded-xl group-hover:scale-105 transition-transform duration-300"
-              />
-              <div>
-                <div className="font-semibold tracking-tight text-slate-900 font-display text-lg">Growlancer</div>
+              <BrandLogo variant="wordmark" className="h-10 sm:h-12 group-hover:scale-105 transition-transform duration-300 w-auto" />
+              <div className="hidden sm:block">
                 <div className="text-xs text-slate-500">AI-Powered Freelancing Marketplace</div>
               </div>
             </Link>
@@ -98,13 +94,13 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             {/* Copyright + legal contact */}
             <div className="text-sm text-slate-500 text-center lg:text-left">
               <div>
-                &copy; {new Date().getFullYear()} <span className="font-semibold text-slate-800">Growlancer</span>. 
+                &copy; {new Date().getFullYear()} <span className="font-semibold text-slate-800">Growlanzo</span>. 
                 Built for clarity, speed, and trust. All rights reserved.
               </div>
               <div className="mt-1 text-xs text-slate-400">
                 Operated from India · Grievances:{' '}
-                <a href="mailto:support@growlancer.com" className="text-slate-500 hover:text-emerald-600 transition-colors">
-                  support@growlancer.com
+                <a href="mailto:support@growlanzo.com" className="text-slate-500 hover:text-emerald-600 transition-colors">
+                  support@growlanzo.com
                 </a>
                 {' '}— acknowledged within 24 hours, resolved within 15 days.
               </div>
@@ -150,7 +146,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                   <span className="text-slate-300 text-xs">|</span>
                   <span className="inline-flex items-center gap-1 text-xs text-slate-500"><ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> SSL Secured</span>
                 </div>
-                <span className="text-xs text-slate-400">Payments processed by Razorpay · contract funds held in Growlancer escrow</span>
+                <span className="text-xs text-slate-400">Payments processed by Razorpay · contract funds held in Growlanzo escrow</span>
               </div>
 
               {/* CTA Buttons */}

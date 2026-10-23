@@ -391,7 +391,7 @@ serve(async req => {
           // stored. No contract/subscription/service involvement.
           serverAmount = 1;
         } else if (validOrderType === 'wallet_topup') {
-          // Client adds funds to their Growlancer wallet (used to fund escrow
+          // Client adds funds to their Growlanzo wallet (used to fund escrow
           // or pay for Pro). The amount is client-chosen but validated strictly
           // server-side: positive number, bounded to a sane range so nobody
           // can mint wallet credit for free or create absurd orders.
@@ -501,7 +501,7 @@ serve(async req => {
               order_type: validOrderType,
               contract_id: contract_id || '',
               subscription_id: subscription_id || '',
-              description: description || 'Growlancer Payment',
+              description: description || 'Growlanzo Payment',
             },
           }),
         });
@@ -599,7 +599,7 @@ serve(async req => {
       }
 
       // ─── WALLET SUBSCRIPTION PAY ──────────────────────
-      // Pay for a Pro subscription using the Growlancer wallet. Every amount is
+      // Pay for a Pro subscription using the Growlanzo wallet. Every amount is
       // recomputed server-side from the plan (never trusted from the client).
       // The whole financial operation runs inside ONE SECURITY DEFINER
       // transaction (pay_subscription_with_wallet): ownership check → plan
@@ -1099,7 +1099,7 @@ serve(async req => {
 
         // Create (or reuse) the RazorpayX contact for this user.
         const contactPayload: Record<string, unknown> = {
-          name: name || method.account_holder_name || 'Growlancer User',
+          name: name || method.account_holder_name || 'Growlanzo User',
           type: 'customer',
           reference_id: `user_${user.id.slice(0, 20)}`,
         };
@@ -1124,7 +1124,7 @@ serve(async req => {
             contact_id: contactRes.id,
             account_type: 'bank_account',
             bank_account: {
-              name: method.account_holder_name || contactRes.name || 'Growlancer User',
+              name: method.account_holder_name || contactRes.name || 'Growlanzo User',
               ifsc: method.ifsc_code || '',
               account_number: method.account_number || '',
             },

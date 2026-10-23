@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 /**
  * Locks the OAuth-only auth surface.
  *
- * Growlancer signs every user in through GitHub or LinkedIn. The email/password
+ * Growlanzo signs every user in through GitHub or LinkedIn. The email/password
  * UI (signup form, password login, magic link, OTP, forgot/reset password) was
  * removed deliberately, on the founder's instruction, so the product has:
  *   - no password to phish, spray, crack or reset,
@@ -131,7 +131,7 @@ describe('the removed email-auth surface stays removed', () => {
 
   it('password recovery no longer dead-ends — old links get a clear message', () => {
     const callback = readSource('src/pages/AuthCallbackPage.tsx');
-    expect(callback).toContain('Password reset is no longer available on Growlancer');
+    expect(callback).toContain('Password reset is no longer available on Growlanzo');
   });
 });
 

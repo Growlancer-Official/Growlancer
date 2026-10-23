@@ -8,7 +8,7 @@ interface ProBadgeProps {
 }
 
 /**
- * Professional PRO badge for Growlancer Pro members.
+ * Professional PRO badge for Growlanzo Pro members.
  * Always shows a premium "PRO" text pill (not a blue check icon) so it reads
  * clearly next to the green KYC verified badge — no more two identical check
  * circles. Hovering reveals a polished tooltip ("Pro Freelancer").
@@ -28,7 +28,7 @@ export function ProBadge({ size = 'sm', className = '', placement = 'top' }: Pro
     <span
       className={base}
       role="img"
-      aria-label="Growlancer Pro Member"
+      aria-label="Growlanzo Pro Member"
     >
       <Crown className={`${sizes.icon} fill-amber-300/90 text-amber-300`} strokeWidth={2} />
       <span className="leading-none">PRO</span>

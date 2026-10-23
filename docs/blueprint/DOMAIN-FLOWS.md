@@ -1,4 +1,4 @@
-# Growlancer — Domain Flows (product map)
+# Growlanzo — Domain Flows (product map)
 
 **Last verified: 2026-10-20.** **Scope:** every product journey that moves a user, a contract or money — page → action → client service → RPC / edge function → table, with the states, fees and failure modes the code actually has. **Documentation only:** this file describes the tree; it changes nothing. **Launch blockers are tracked in [`../LAUNCH-READINESS.md`](../LAUNCH-READINESS.md), not here.** Read it with `CLAUDE.md` §Business Model (the FINAL rules) and [`INVENTORY.md`](INVENTORY.md) (generated file list). Where this document and the code disagree, the code wins and this file is the bug.
 

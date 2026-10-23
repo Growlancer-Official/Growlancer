@@ -1,6 +1,6 @@
 # Launch gate — 21 Oct 2026 (live verification)
 
-Branch `launch/mvp-hardening`. Project `zttwsjehcgaicziqyxpq` (Growlancer, Singapore).
+Branch `launch/mvp-hardening`. Project `zttwsjehcgaicziqyxpq` (Growlanzo, Singapore).
 Everything below was run in this session; **PASS** means observed, not inferred.
 
 ## 1. Backend — applied and deployed

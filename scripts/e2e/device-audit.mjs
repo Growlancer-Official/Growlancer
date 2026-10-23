@@ -1,4 +1,4 @@
-// Growlancer E2E device-matrix audit
+// Growlanzo E2E device-matrix audit
 // ─────────────────────────────────────────────────────────────────────────────
 // Drives a REAL Chromium (playwright-core + the locally installed Chrome)
 // through every route at every device profile and reports objective,
@@ -579,7 +579,7 @@ async function main() {
 
   // ── Text summary ─────────────────────────────────────────────────────────
   const lines = [];
-  lines.push(`# Growlancer E2E device audit — ${MODE}`);
+  lines.push(`# Growlanzo E2E device audit — ${MODE}`);
   lines.push(`Base: ${BASE}`);
   lines.push(`Routes: ${routes.length} · Devices: ${devices.length} · Page loads: ${results.length}`);
   lines.push('');

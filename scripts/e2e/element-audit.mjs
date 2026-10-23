@@ -1,4 +1,4 @@
-// Growlancer ELEMENT-LEVEL UI audit (Section-1 universal checklist)
+// Growlanzo ELEMENT-LEVEL UI audit (Section-1 universal checklist)
 // ─────────────────────────────────────────────────────────────────────────────
 // Unlike device-audit.mjs (which checks "does the page load without errors"),
 // this harness checks "is everything ON the page correct":
@@ -875,7 +875,7 @@ async function main() {
   fs.writeFileSync(jsonPath, JSON.stringify({ base: BASE, group: GROUP, generatedAt: new Date().toISOString(), summary, results }, null, 2));
 
   const lines = [
-    `# Growlancer element audit — ${GROUP}`,
+    `# Growlanzo element audit — ${GROUP}`,
     `Base: ${BASE} · ${summary.routes} routes × ${VIEWPORTS.length} viewports = ${summary.loads} loads`,
     `Authenticated run: ${STORAGE ? `yes (${STORAGE})` : 'no (anonymous)'}`,
     '',

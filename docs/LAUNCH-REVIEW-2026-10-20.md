@@ -1,4 +1,4 @@
-# Growlancer — Launch Review
+# Growlanzo — Launch Review
 
 **Date:** 20 October 2026 · **Scope:** whole public site, legal/policy pages, uncommitted Grow Coin work, live configuration.
 **Measured, not assumed:** every live number below comes from `npm run preflight` and read-only SQL against production (`zttwsjehcgaicziqyxpq`) on this date.
@@ -78,7 +78,7 @@ Verified by **rolled-back transactions on the live database**: the premium path 
 | Home features | "**Instant** wallet payouts" | "Released funds land in your wallet, then withdraw to your bank or UPI" |
 | Pricing | "full refund before work is **delivered**" (refund policy says *before work begins*) | "before escrow-funded work begins" |
 | Refund policy | "**Fraud-proof** delivery checks" | "Fraud checks on delivery" |
-| Refund policy | "disputes and refunds are **rare on Growlancer**" (no completed contract exists) | describes the verification process instead of a track record |
+| Refund policy | "disputes and refunds are **rare on Growlanzo**" (no completed contract exists) | describes the verification process instead of a track record |
 | Profile builder | "100% complete profile gets **5x** more client invitations" | "A complete profile gives clients more reasons to invite you" |
 | Cookies | listed "Analytics Cookies" | cookieless analytics (Vercel aggregate + Sentry errors), matching what actually runs |
 

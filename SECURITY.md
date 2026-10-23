@@ -2,9 +2,9 @@
 
 ## Overview
 
-Security is a core priority at **Growlancer**.
+Security is a core priority at **Growlanzo**.
 
-Growlancer handles user accounts, identity verification, project data, contracts, workspaces, payments, withdrawals, notifications, and other sensitive information. We take the security of the platform, its users, and its infrastructure seriously.
+Growlanzo handles user accounts, identity verification, project data, contracts, workspaces, payments, withdrawals, notifications, and other sensitive information. We take the security of the platform, its users, and its infrastructure seriously.
 
 We appreciate responsible security research and encourage security researchers, developers, and users to report vulnerabilities privately so they can be investigated and addressed appropriately.
 
@@ -12,7 +12,7 @@ We appreciate responsible security research and encourage security researchers, 
 
 ## Supported Versions
 
-Growlancer actively supports the current production version and the primary development branch with security updates.
+Growlanzo actively supports the current production version and the primary development branch with security updates.
 
 | Version / Branch             | Security Support   |
 | ---------------------------- | ------------------ |
@@ -31,7 +31,7 @@ For critical vulnerabilities, maintainers may provide security fixes outside the
 
 Please **do not report security vulnerabilities through public GitHub Issues, Pull Requests, Discussions, or other public channels**.
 
-Public disclosure before a vulnerability has been investigated and remediated may expose Growlancer users and systems to unnecessary risk.
+Public disclosure before a vulnerability has been investigated and remediated may expose Growlanzo users and systems to unnecessary risk.
 
 ### Preferred Reporting Method
 
@@ -39,7 +39,7 @@ Report security vulnerabilities privately through the repository's **GitHub Secu
 
 **GitHub → Security → Advisories → Report a vulnerability**
 
-This allows the Growlancer maintainers to review and coordinate remediation securely.
+This allows the Growlanzo maintainers to review and coordinate remediation securely.
 
 When submitting a report, please provide as much of the following information as possible:
 
@@ -120,7 +120,7 @@ Security reports are particularly valuable for issues involving:
 
 # Response Timeline
 
-Growlancer aims to acknowledge valid security reports as follows:
+Growlanzo aims to acknowledge valid security reports as follows:
 
 | Stage                      | Target                              |
 | -------------------------- | ----------------------------------- |
@@ -146,13 +146,13 @@ Each submitted vulnerability will be evaluated based on factors including:
 * Availability and integrity impact
 * Whether the issue affects production systems
 
-The severity assigned by the Growlancer security or engineering team may differ from the researcher's initial assessment.
+The severity assigned by the Growlanzo security or engineering team may differ from the researcher's initial assessment.
 
 ---
 
 # What Happens After a Report
 
-After receiving a vulnerability report, the Growlancer maintainers will generally:
+After receiving a vulnerability report, the Growlanzo maintainers will generally:
 
 1. Acknowledge receipt of the report.
 2. Validate and reproduce the reported behavior.
@@ -168,7 +168,7 @@ When necessary, additional information may be requested from the researcher duri
 
 # Accepted Reports
 
-For confirmed vulnerabilities, Growlancer may:
+For confirmed vulnerabilities, Growlanzo may:
 
 * Develop and deploy a security fix.
 * Apply temporary mitigations.
@@ -189,11 +189,11 @@ The following generally do not qualify as security vulnerabilities unless they d
 
 * Missing security headers without an exploitable impact.
 * Self-XSS that cannot affect another user.
-* Social engineering attacks against Growlancer employees or users.
+* Social engineering attacks against Growlanzo employees or users.
 * Spam or content moderation issues without a security impact.
 * Denial-of-service testing against production infrastructure without prior authorization.
 * Automated scanning that creates significant traffic or service disruption.
-* Vulnerabilities in third-party services that are outside Growlancer's control.
+* Vulnerabilities in third-party services that are outside Growlanzo's control.
 * Reports relying entirely on outdated or unsupported software versions where the issue is already addressed in supported versions.
 
 Reports are evaluated individually.
@@ -202,7 +202,7 @@ Reports are evaluated individually.
 
 # Responsible Disclosure
 
-Growlancer requests that security researchers:
+Growlanzo requests that security researchers:
 
 * Act in good faith.
 * Avoid accessing, modifying, deleting, or exposing other users' data.
@@ -235,7 +235,7 @@ For vulnerabilities involving payment, KYC, authentication, or financial workflo
 
 # Security Disclosure
 
-Growlancer may coordinate public disclosure of confirmed vulnerabilities with the reporter.
+Growlanzo may coordinate public disclosure of confirmed vulnerabilities with the reporter.
 
 A public security advisory may include:
 
@@ -254,7 +254,7 @@ Researchers who would like to remain anonymous should state this clearly in thei
 
 # Security Best Practices for Contributors
 
-All Growlancer contributors are expected to:
+All Growlanzo contributors are expected to:
 
 * Never commit secrets or credentials.
 * Never expose Supabase service-role keys to client-side code.
@@ -273,7 +273,7 @@ All Growlancer contributors are expected to:
 
 # Dependency & Supply Chain Security
 
-Dependencies are part of Growlancer's security posture.
+Dependencies are part of Growlanzo's security posture.
 
 Contributors should:
 
@@ -298,16 +298,16 @@ For general bugs, product issues, or feature requests, use the project's normal 
 
 # Acknowledgements
 
-Growlancer appreciates the security community and responsible researchers who help identify weaknesses and improve the safety of the platform.
+Growlanzo appreciates the security community and responsible researchers who help identify weaknesses and improve the safety of the platform.
 
-Researchers who responsibly report valid vulnerabilities may be acknowledged in Growlancer's security records or future advisories, subject to their preference.
+Researchers who responsibly report valid vulnerabilities may be acknowledged in Growlanzo's security records or future advisories, subject to their preference.
 
 ---
 
 ## Final Note
 
-The goal of this policy is to ensure that security vulnerabilities are reported, investigated, and remediated responsibly while protecting Growlancer users, contributors, and infrastructure.
+The goal of this policy is to ensure that security vulnerabilities are reported, investigated, and remediated responsibly while protecting Growlanzo users, contributors, and infrastructure.
 
-**Growlancer Security Team**
+**Growlanzo Security Team**
 
 > **Security is everyone's responsibility.**

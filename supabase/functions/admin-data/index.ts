@@ -160,7 +160,7 @@ async function sendNotificationEmail(
 // ─── Shared Email Template Wrapper ───────────────────────────────────────
 // Professional, responsive email template with consistent design system
 function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string): string {
-  const bg = headerGradient || '#059669 0%, #047857 100%';
+  const bg = headerGradient || '#14861f 0%, #0f6f1a 100%';
   return `
 <!DOCTYPE html>
 <html>
@@ -171,7 +171,7 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
     
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
+      <img src="${APP_URL}/growlanzo-full.png" alt="Growlanzo" style="height: 40px; width: auto; border-radius: 10px;" />
     </div>
 
     <!-- Header -->
@@ -189,17 +189,17 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
         <tr>
           <td style="padding-bottom: 12px;">
-            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
           </td>
         </tr>
         <tr>
           <td>
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
-            <p style="color: #cbd5e1; font-size: 10px; margin: 4px 0 0; line-height: 1.5;">© 2026 Growlancer. All rights reserved.</p>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlanzo — AI-Powered Freelancing Marketplace</p>
+            <p style="color: #cbd5e1; font-size: 10px; margin: 4px 0 0; line-height: 1.5;">© 2026 Growlanzo. All rights reserved.</p>
           </td>
         </tr>
       </table>
@@ -315,7 +315,7 @@ Deno.serve(async (req) => {
 
     // ─── POST: send_welcome_email (AUTHENTICATED — own verified email only) ─
     // Was PUBLIC with an arbitrary recipient → anyone could spam any address
-    // with branded Growlancer emails (phishing + Brevo quota abuse). Now the
+    // with branded Growlanzo emails (phishing + Brevo quota abuse). Now the
     // caller must be signed in AND the recipient must be their own verified
     // email; IP rate-limited to prevent abuse.
     if (req.method === 'POST' && action === 'send_welcome_email') {
@@ -366,22 +366,22 @@ Deno.serve(async (req) => {
       const recipient_name = _eh(rawRecipientName);
 
       const rawName = rawRecipientName;
-      const subject = `Welcome to Growlancer, ${rawName}! Your AI-powered journey begins now 🚀`;
+      const subject = `Welcome to Growlanzo, ${rawName}! Your AI-powered journey begins now 🚀`;
 
       const bodyContent = `
-        <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 6px;">Hey <strong style="color: #059669;">${recipient_name}</strong> 👋</p>
-        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 28px;">Welcome to <strong>Growlancer</strong> — India's first AI-powered freelancing marketplace. We're thrilled to have you on board!</p>
+        <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 6px;">Hey <strong style="color: #14861f;">${recipient_name}</strong> 👋</p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 28px;">Welcome to <strong>Growlanzo</strong> — India's first AI-powered freelancing marketplace. We're thrilled to have you on board!</p>
         <div style="margin-bottom: 28px;">
           ${[
             { emoji: '🔍', title: 'Explore Top Projects', desc: 'Discover freelance opportunities tailored to your unique skills and expertise from top clients worldwide.' },
             { emoji: '🤖', title: 'AI-Powered Matching', desc: 'Our intelligent AI connects you with the perfect projects — no more endless scrolling through irrelevant listings.' },
             { emoji: '🛡️', title: 'Secure Payments', desc: 'Built-in escrow and milestone tracking ensure you get paid reliably and on time, every time.' },
             { emoji: '📈', title: 'Grow Your Career', desc: 'Build your portfolio, earn certifications, and access exclusive resources to advance your freelance career.' },
-          ].map((f, i) => `<div style="margin-bottom: ${i < 3 ? '10px' : '0'}; padding: 16px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+          ].map((f, i) => `<div style="margin-bottom: ${i < 3 ? '10px' : '0'}; padding: 16px 18px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px;">
             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
               <tr><td width="40" style="vertical-align: top; font-size: 22px; text-align: center; padding-right: 12px;">${f.emoji}</td>
                 <td style="vertical-align: top;">
-                  <h3 style="font-size: 14px; color: #065f46; font-weight: 700; margin: 0 0 2px;">${f.title}</h3>
+                  <h3 style="font-size: 14px; color: #10591a; font-weight: 700; margin: 0 0 2px;">${f.title}</h3>
                   <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">${f.desc}</p>
                 </td>
               </tr>
@@ -392,7 +392,7 @@ Deno.serve(async (req) => {
           <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
             <tr><td align="center" style="padding: 0;">
               <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-                <tr><td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+                <tr><td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
                   <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700; letter-spacing: 0.3px;">Go to Dashboard →</a>
                 </td></tr>
               </table>
@@ -409,15 +409,15 @@ Deno.serve(async (req) => {
           </table>
         </div>
         <div style="width: 100%; height: 1px; background: #e2e8f0; margin-bottom: 24px;"></div>
-        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 24px;">If you have any questions, simply reply to this email or visit our <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; text-decoration: underline;">Help Center</a>. We're always here to support you!</p>
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 24px;">If you have any questions, simply reply to this email or visit our <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #14861f; text-decoration: underline;">Help Center</a>. We're always here to support you!</p>
         <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 28px;">Welcome aboard, and here's to your success! 🚀</p>
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">Warm regards,</p>
-          <p style="font-size: 15px; color: #059669; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 15px; color: #14861f; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
         </div>`;
 
-      const bodyHtml = baseEmailHtml('Welcome to Growlancer! 🎉', bodyContent);
+      const bodyHtml = baseEmailHtml('Welcome to Growlanzo! 🎉', bodyContent);
       const emailResult = await sendNotificationEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
 
       if (!emailResult.success) {
@@ -659,8 +659,8 @@ Deno.serve(async (req) => {
 
     // ─── POST: test_email — sends a live Brevo test email ──
     if (req.method === 'POST' && action === 'test_email') {
-      const testTo = body?.to || 'admin@growlancer.com'
-      const sent = await sendNotificationEmail('Growlancer Test Email ✅', '<p>This is a test email from Growlancer via Brevo.</p>', { email: testTo, name: 'Test' })
+      const testTo = body?.to || 'admin@growlanzo.com'
+      const sent = await sendNotificationEmail('Growlanzo Test Email ✅', '<p>This is a test email from Growlanzo via Brevo.</p>', { email: testTo, name: 'Test' })
       return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Brevo not configured or API error)' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -702,12 +702,12 @@ Deno.serve(async (req) => {
             <tr><td style="padding:6px 12px;color:#64748b;border-bottom:1px solid #f1f5f9;font-weight:600;">From</td>
                 <td style="padding:6px 0;color:#0f172a;border-bottom:1px solid #f1f5f9;">${_eh(requester_name || 'Unknown')}</td></tr>
             <tr><td style="padding:6px 12px;color:#64748b;border-bottom:1px solid #f1f5f9;font-weight:600;">Email</td>
-                <td style="padding:6px 0;color:#0f172a;border-bottom:1px solid #f1f5f9;"><a href="mailto:${_eh(requester_email || '')}" style="color:#059669;">${_eh(requester_email || '—')}</a></td></tr>
+                <td style="padding:6px 0;color:#0f172a;border-bottom:1px solid #f1f5f9;"><a href="mailto:${_eh(requester_email || '')}" style="color:#14861f;">${_eh(requester_email || '—')}</a></td></tr>
           </table>
           ${detailsHtml}
         </div>
         <div style="text-align:center;margin-top:24px;">
-          <a href="${APP_URL}/admin" style="display:inline-block;padding:12px 32px;background:#059669;color:white;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px;">
+          <a href="${APP_URL}/admin" style="display:inline-block;padding:12px 32px;background:#14861f;color:white;text-decoration:none;border-radius:10px;font-weight:600;font-size:14px;">
             Go to Admin Dashboard →
           </a>
         </div>`;
@@ -715,7 +715,7 @@ Deno.serve(async (req) => {
       const emailResult = await sendNotificationEmail(
         subject,
         bodyContent,
-        { email: ADMIN_EMAIL, name: 'Growlancer Admin' }
+        { email: ADMIN_EMAIL, name: 'Growlanzo Admin' }
       );
 
       if (!emailResult.success) {
@@ -747,16 +747,16 @@ Deno.serve(async (req) => {
       const isLOR = certificate_type === 'lor';
 
       const pdfDocSection = certificate_url ? `
-      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 16px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, ${isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%'}); padding: 20px 24px; text-align: center;">
+      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid ${isLOR ? '#7c3aed' : '#14861f'}; border-radius: 16px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, ${isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#14861f 0%, #0f6f1a 100%'}); padding: 20px 24px; text-align: center;">
           <div style="font-size: 32px; margin-bottom: 4px;">📄</div>
           <h3 style="font-size: 17px; color: white; margin: 0; font-weight: 700; word-break: break-word;">Your ${isLOR ? 'Recommendation Letter' : 'Certificate'} Document</h3>
-          <p style="font-size: 12px; color: ${isLOR ? '#c4b5fd' : '#a7f3d0'}; margin: 6px 0 0; word-break: break-word;">Official PDF — Download for your records</p>
+          <p style="font-size: 12px; color: ${isLOR ? '#c4b5fd' : '#bbefb4'}; margin: 6px 0 0; word-break: break-word;">Official PDF — Download for your records</p>
         </div>
         <div style="padding: 20px 24px;">
           <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
             <tr>
-              <td style="background: ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 12px; padding: 0;">
+              <td style="background: ${isLOR ? '#7c3aed' : '#14861f'}; border-radius: 12px; padding: 0;">
                 <a href="${certificate_url}" target="_blank" rel="noopener noreferrer"
                    style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
                   📥 Download ${isLOR ? 'LOR' : 'Certificate'} PDF
@@ -771,8 +771,8 @@ Deno.serve(async (req) => {
       </div>` : '';
 
       const subject = isLOR
-        ? `Letter of Recommendation — ${role_name || 'Internship'} at Growlancer`
-        : `Internship Completion Certificate — ${role_name || 'Internship'} at Growlancer`;
+        ? `Letter of Recommendation — ${role_name || 'Internship'} at Growlanzo`
+        : `Internship Completion Certificate — ${role_name || 'Internship'} at Growlanzo`;
 
       const bodyContent = isLOR ? `
         <!-- LOR Content -->
@@ -783,7 +783,7 @@ Deno.serve(async (req) => {
         <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 6px;">Dear ${recipient_name},</p>
 
         <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 18px;">
-          On behalf of the entire team at <strong>Growlancer</strong>, it is my distinct privilege to provide you with this
+          On behalf of the entire team at <strong>Growlanzo</strong>, it is my distinct privilege to provide you with this
           <strong style="color: #7c3aed;">Letter of Recommendation</strong> in recognition of your exceptional performance during your
           <strong>${role_name || 'Internship'}</strong> with us.
         </p>
@@ -827,7 +827,7 @@ Deno.serve(async (req) => {
         </div>
 
         <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 24px;">
-          We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlancer has been truly valued, and we are confident you will achieve great things ahead.
+          We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlanzo has been truly valued, and we are confident you will achieve great things ahead.
         </p>
 
         <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 28px;">
@@ -838,7 +838,7 @@ Deno.serve(async (req) => {
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">With warm regards,</p>
           <p style="font-size: 15px; color: #7c3aed; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
           <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding: 8px 16px; background: #faf5ff; border-radius: 8px;">
@@ -856,10 +856,10 @@ Deno.serve(async (req) => {
         </div>
 
         <!-- Congratulations Banner -->
-        <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 14px; text-align: center;">
-          <h2 style="font-size: 18px; color: #065f46; margin: 0 0 6px; font-weight: 800;">Congratulations, ${recipient_name}! 🎉</h2>
-          <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5;">
-            You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlancer</strong>.
+        <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f1fcef 0%, #ddf7d9 100%); border: 1px solid #bbefb4; border-radius: 14px; text-align: center;">
+          <h2 style="font-size: 18px; color: #10591a; margin: 0 0 6px; font-weight: 800;">Congratulations, ${recipient_name}! 🎉</h2>
+          <p style="font-size: 14px; color: #0f6f1a; margin: 0; line-height: 1.5;">
+            You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlanzo</strong>.
           </p>
         </div>
 
@@ -874,17 +874,17 @@ Deno.serve(async (req) => {
         ${pdfDocSection}
 
         <!-- Verification Card -->
-        <div style="margin: 28px 0 24px; padding: 0; background: #ffffff; border: 1px solid #bbf7d0; border-radius: 14px; overflow: hidden;">
-          <div style="background: #f0fdf4; padding: 20px 24px; text-align: center;">
+        <div style="margin: 28px 0 24px; padding: 0; background: #ffffff; border: 1px solid #bbefb4; border-radius: 14px; overflow: hidden;">
+          <div style="background: #f1fcef; padding: 20px 24px; text-align: center;">
             <div style="font-size: 24px; margin-bottom: 8px;">🔗</div>
-            <h3 style="font-size: 15px; color: #065f46; margin: 0 0 4px; font-weight: 700;">View &amp; Verify Online</h3>
-            <p style="font-size: 12px; color: #047857; margin: 0 0 14px;">Employers can verify this certificate instantly</p>
+            <h3 style="font-size: 15px; color: #10591a; margin: 0 0 4px; font-weight: 700;">View &amp; Verify Online</h3>
+            <p style="font-size: 12px; color: #0f6f1a; margin: 0 0 14px;">Employers can verify this certificate instantly</p>
             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
               <tr>
                 <td align="center" style="padding: 0;">
                   <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                     <tr>
-                      <td style="background: #059669; border-radius: 10px; padding: 12px 24px;" bgcolor="#059669">
+                      <td style="background: #14861f; border-radius: 10px; padding: 12px 24px;" bgcolor="#14861f">
                         <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
                            style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; white-space: nowrap;">
                           Verify Certificate →
@@ -895,7 +895,7 @@ Deno.serve(async (req) => {
                 </td>
               </tr>
             </table>
-            <p style="font-size: 10px; color: #059669; margin: 10px 0 0; font-family: 'SF Mono', 'Consolas', monospace;">Code: ${verification_code || ''}</p>
+            <p style="font-size: 10px; color: #14861f; margin: 10px 0 0; font-family: 'SF Mono', 'Consolas', monospace;">Code: ${verification_code || ''}</p>
           </div>
         </div>
 
@@ -910,12 +910,12 @@ Deno.serve(async (req) => {
         <!-- Signature -->
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">Warm regards,</p>
-          <p style="font-size: 15px; color: #059669; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 15px; color: #14861f; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
           <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
-                <p style="font-size: 11px; color: #166534; margin: 0;">
+              <td style="padding: 8px 16px; background: #f1fcef; border-radius: 8px;">
+                <p style="font-size: 11px; color: #10591a; margin: 0;">
                   🌐 ${APP_URL} &nbsp;|&nbsp; ✉️ growlancer.own@gmail.com
                 </p>
               </td>
@@ -924,7 +924,7 @@ Deno.serve(async (req) => {
         </div>`;
 
       const headerTitle = isLOR ? 'Letter of Recommendation' : 'Internship Completion Certificate';
-      const headerGradient = isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%';
+      const headerGradient = isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#14861f 0%, #0f6f1a 100%';
       const bodyHtml = baseEmailHtml(headerTitle, bodyContent, headerGradient);
 
       // Attach the certificate/LOR PDF as an email attachment

@@ -23,7 +23,7 @@ interface CategoryPickerProps {
 /**
  * 🗂️ Category-only picker — searchable A–Z line list.
  *
- * Growlancer works on 145 top-level categories — subcategories and the
+ * Growlanzo works on 145 top-level categories — subcategories and the
  * pre-seeded skill hierarchy are NOT shown to users. Freelancers and clients
  * add their own skills as free text (their choice, their words), and all
  * matching/recommendations run on the category.

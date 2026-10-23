@@ -46,7 +46,7 @@ export function PaymentCallbackPage() {
       .captureOrder(paypalOrderId)
       .then(() => {
         setStatus('success');
-        setMessage('Your payment has been captured successfully. Thank you for using Growlancer.');
+        setMessage('Your payment has been captured successfully. Thank you for using Growlanzo.');
         window.history.replaceState({}, document.title, location.pathname);
       })
       .catch(error => {

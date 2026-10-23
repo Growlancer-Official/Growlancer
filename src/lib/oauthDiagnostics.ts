@@ -185,7 +185,7 @@ export function describeOAuthFailure(input: {
   ) {
     return {
       title: `${provider} sign-in was cancelled`,
-      message: `You cancelled the ${provider} consent screen, so no Growlancer account was created or changed. Start again whenever you're ready — or use the other provider.`,
+      message: `You cancelled the ${provider} consent screen, so no Growlanzo account was created or changed. Start again whenever you're ready — or use the other provider.`,
       retryable: true,
     };
   }
@@ -224,7 +224,7 @@ export function describeOAuthFailure(input: {
   ) {
     return {
       title: `${provider} sign-in is not configured correctly`,
-      message: `Growlancer could not exchange the ${provider} code for a session. Please try again in a moment — if this keeps happening the ${provider} app's callback URL needs to be checked.`,
+      message: `Growlanzo could not exchange the ${provider} code for a session. Please try again in a moment — if this keeps happening the ${provider} app's callback URL needs to be checked.`,
       retryable: true,
     };
   }
@@ -233,7 +233,7 @@ export function describeOAuthFailure(input: {
   if (!rawError && !description) {
     return {
       title: `${provider} did not send you back`,
-      message: `${provider} opened, but the browser returned to Growlancer without completing the sign-in — so no account was created or changed. This is almost always the provider's own page (a blocked redirect, a sign-in prompt that was closed, or a network that blocks ${provider}). Try again, allow pop-ups/redirects, or use the other provider.`,
+      message: `${provider} opened, but the browser returned to Growlanzo without completing the sign-in — so no account was created or changed. This is almost always the provider's own page (a blocked redirect, a sign-in prompt that was closed, or a network that blocks ${provider}). Try again, allow pop-ups/redirects, or use the other provider.`,
       retryable: true,
     };
   }

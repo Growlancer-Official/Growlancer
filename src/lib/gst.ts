@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────────────────────
-// GROWLANCER — GSTIN (Goods & Services Tax Identification Number) helpers
+// GROWLANZO — GSTIN (Goods & Services Tax Identification Number) helpers
 // Mirrors the server-side trigger (validate_client_gstin) so the UI shows the
 // exact same validation the database enforces.
 // Valid Indian GSTIN = 15 chars:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Growlancer — Local Supabase Backend Deploy
+# Growlanzo — Local Supabase Backend Deploy
 # ----------------------------------------------------------------------------
 # Applies ALL pending migrations and deploys ALL edge functions to production
 # directly from this machine. This is the REPLACEMENT for the GitHub Actions

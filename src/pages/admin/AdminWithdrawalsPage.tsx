@@ -139,7 +139,7 @@ export function AdminWithdrawalsPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-white">Commission Withdrawals</h1>
-          <p className="text-slate-400 text-sm mt-1">Withdraw Growlancer's 5% commission to your bank in real time</p>
+          <p className="text-slate-400 text-sm mt-1">Withdraw Growlanzo's 5% commission to your bank in real time</p>
         </div>
         <button
           onClick={() => void fetchAll()}

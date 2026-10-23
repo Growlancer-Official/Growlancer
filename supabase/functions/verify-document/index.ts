@@ -147,7 +147,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    // ── Auth: the caller must be an authenticated Growlancer user ──────────
+    // ── Auth: the caller must be an authenticated Growlanzo user ──────────
     const supabase = createClient(
       SUPABASE_URL,
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',

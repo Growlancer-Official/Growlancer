@@ -1,4 +1,4 @@
-// Central Routes Configuration for Growlancer
+// Central Routes Configuration for Growlanzo
 // All route paths are defined here to ensure consistency across the app
 
 export const ROUTES = {

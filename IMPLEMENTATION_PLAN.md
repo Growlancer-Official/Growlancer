@@ -20,7 +20,7 @@ Branch: `launch/mvp-hardening`. No deploy, no production data, no real money.
 - Previous session recorded a founder decision for **Option A** (client pays +5 %, freelancer keeps 100 %) and an uncommitted migration `20270203000000_commission_model_option_a.sql` implementing it.
 - The current founder instruction (§2 of the master prompt) states the opposite and is authoritative:
   - client pays **only** the agreed amount — no platform commission on the client checkout,
-  - Growlancer's **5 % is deducted from the freelancer's eligible released earnings** (₹10,000 → ₹500 fee → ₹9,500 net),
+  - Growlanzo's **5 % is deducted from the freelancer's eligible released earnings** (₹10,000 → ₹500 fee → ₹9,500 net),
   - no UI may say "freelancer receives 100 %" or "client pays 5 % extra".
 - **Implemented here: freelancer-side 5 %.** The Option A migration is replaced (it was never committed or applied).
 

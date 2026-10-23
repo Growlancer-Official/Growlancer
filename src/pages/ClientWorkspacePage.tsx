@@ -515,12 +515,12 @@ export function ClientWorkspacePage() {
         key: razorpay_key_id,
         amount: Math.round(amount * 100),
         currency,
-        name: 'Growlancer',
+        name: 'Growlanzo',
         description: `${req.revision_count} extra revision(s)`,
         order_id: order.razorpay_order_id,
         config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
         prefill: { name: user?.name || '', email: user?.email || '' },
-        theme: { color: '#059669' },
+        theme: { color: '#14861f' },
         method: { card: true, upi: true, netbanking: true, wallet: true, emi: true },
         handler: async () => {
           toast.success('Payment received', 'Extra revision funds are now held in escrow.')
@@ -844,7 +844,7 @@ export function ClientWorkspacePage() {
                   {freelancerCerts.slice(0, 3).map(cert => (
                     <span
                       key={cert.skill}
-                      title={`Verified ${cert.skill} — ${cert.level} level (earned via Growlancer skill assessment)`}
+                      title={`Verified ${cert.skill} — ${cert.level} level (earned via Growlanzo skill assessment)`}
                       className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200"
                     >
                       <Award className="w-4 h-4" />
@@ -980,7 +980,7 @@ export function ClientWorkspacePage() {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
+            <p className="font-bold text-white text-sm">Growlanzo Payment, Refund & Safety Policy</p>
             <p className="text-xs text-emerald-100">Everything stays on the platform — payments are always protected</p>
           </div>
         </div>
@@ -991,7 +991,7 @@ export function ClientWorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
-              Growlancer Escrow — release funds to the freelancer only after you approve the complete work.
+              Growlanzo Escrow — release funds to the freelancer only after you approve the complete work.
             </p>
           </div>
           <div className="flex items-start gap-3.5">
@@ -1020,8 +1020,8 @@ export function ClientWorkspacePage() {
               <AlertTriangle className="w-4 h-4 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
-              <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
-              must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy — the
+              <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlanzo.</span> All payments
+              must happen through Growlanzo Escrow. Paying outside the platform is a violation of our policy — the
               freelancer can report it, and repeat violations lead to <span className="font-bold text-red-600">suspension
               or permanent ban</span>.
             </p>
@@ -1063,7 +1063,7 @@ export function ClientWorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
-              Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
+              Growlanzo's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
             </p>
           </div>
         </div>

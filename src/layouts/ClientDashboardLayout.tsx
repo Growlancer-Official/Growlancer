@@ -35,10 +35,10 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
+import { BrandLogo } from '../components/BrandLogo';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -289,16 +289,9 @@ export function ClientDashboardLayout() {
       >
         <div className="flex h-full flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-4">
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-8 w-8 rounded-lg shadow-lg"
-            />
-            <div>
-              <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
-              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
-            </div>
+          <Link to="/" className="block min-w-0">
+            <BrandLogo variant="wordmark" className="h-10 w-auto max-w-full object-contain object-left" />
+            <span className="mt-1 block text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
           </Link>
           <button
             onClick={() => setMobileNavOpen(false)}
@@ -445,16 +438,9 @@ export function ClientDashboardLayout() {
       }
       <aside className="w-64 sticky top-0 h-[calc(100vh-var(--consent-banner-h,0px))] hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 mb-5 px-2">
-          <img 
-            src="/UpdatedLogo.webp" 
-            alt="Growlancer" 
-            className="h-9 w-9 rounded-xl shadow-md"
-          />
-          <div>
-            <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client</span>
-          </div>
+        <Link to="/" className="block mb-5 px-2">
+          <BrandLogo variant="wordmark" className="h-9 w-auto max-w-full object-contain object-left" />
+          <span className="mt-1 block text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client</span>
         </Link>
 
         
@@ -641,8 +627,6 @@ export function ClientDashboardLayout() {
             <VerifyNowHeaderButton />
 
             <GrowCoinBadge userId={user?.id} role={user?.role} />
-
-            <ThemeToggle variant="pill" />
 
             {/* Notifications */}
             <NotificationsPanel />

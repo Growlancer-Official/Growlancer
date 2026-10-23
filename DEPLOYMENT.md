@@ -1,4 +1,4 @@
-# Growlancer — Deployment & Automation Runbook
+# Growlanzo — Deployment & Automation Runbook
 
 How the three services (GitHub, Vercel, Supabase) connect and how changes ship. Read this once before the first automated deploy.
 
@@ -29,9 +29,9 @@ Pull requests also trigger:
 | GitHub → Vercel | ✅ live | Vercel project `growlancer` (id `prj_FdaxAKkah0ly5dsHOsYcU84mHWq8`) deploys `main` |
 | GitHub → Supabase (CI check) | ✅ file present | `supabase-check.yml` (needs secrets — see §3) |
 | GitHub → Supabase (deploy) | ✅ file present | `supabase-deploy.yml` (needs secrets + the `SUPABASE_DB_AUTO_PUSH` gate) |
-| Local CLI → Supabase | ✅ live | `supabase` CLI v2.107.0 authed + linked to **`zttwsjehcgaicziqyxpq`** ("Growlancer", ap-southeast-1) |
+| Local CLI → Supabase | ✅ live | `supabase` CLI v2.107.0 authed + linked to **`zttwsjehcgaicziqyxpq`** ("Growlanzo", ap-southeast-1) |
 
-There is a second Supabase project **`stwfjfbrzzqgshtxoixa`** (also named "Growlancer", ap-northeast-2) that is **not linked** — treat it as a possible future staging/QA environment. Do not deploy migrations to it accidentally.
+There is a second Supabase project **`stwfjfbrzzqgshtxoixa`** (also named "Growlanzo", ap-northeast-2) that is **not linked** — treat it as a possible future staging/QA environment. Do not deploy migrations to it accidentally.
 
 ## 3. One-time setup — do these once
 

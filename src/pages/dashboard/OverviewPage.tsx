@@ -875,7 +875,7 @@ export function OverviewPage() {
           </div>
           <p className="text-emerald-50 text-xs leading-relaxed mb-2">
             Ask anything in any language — get instant answers about how your{' '}
-            {isFreelancer ? 'freelancing business' : 'projects'} work on Growlancer.
+            {isFreelancer ? 'freelancing business' : 'projects'} work on Growlanzo.
           </p>
           <Link
             to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}

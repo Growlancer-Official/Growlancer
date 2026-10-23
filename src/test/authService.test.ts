@@ -216,7 +216,7 @@ describe('fetchUserProfile (with Supabase mock)', () => {
 
   it('overrides role with admin when is_admin=true in profiles_private', async () => {
     const profileData = { id: 'admin_user', name: 'Admin User', role: 'freelancer', avatar: null, country: null, is_pro: false, verification_status: 'none', created_at: new Date().toISOString() };
-    const privateData = { email: 'admin@growlancer.com', phone: null, is_admin: true, suspended_at: null, onboarding_completed: true, referral_code: 'GRW-AD-AAAA' };
+    const privateData = { email: 'admin@growlanzo.com', phone: null, is_admin: true, suspended_at: null, onboarding_completed: true, referral_code: 'GRW-AD-AAAA' };
 
     mockSupabase
       .mockReturnValueOnce({

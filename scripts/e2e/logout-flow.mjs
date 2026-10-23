@@ -1,4 +1,4 @@
-// Growlancer logout + session-clearance E2E (Section-2 "Logout" checklist).
+// Growlanzo logout + session-clearance E2E (Section-2 "Logout" checklist).
 //
 //   node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=freelancer
 //

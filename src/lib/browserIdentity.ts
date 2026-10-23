@@ -119,7 +119,7 @@ export function clearBrowserAccount(): boolean {
 }
 
 /**
- * Real-time same-browser check: true when THIS browser already has a Growlancer
+ * Real-time same-browser check: true when THIS browser already has a Growlanzo
  * account recorded (different from the email currently being typed).
  * @param currentEmail The email being typed in the signup form (optional)
  */

@@ -815,7 +815,7 @@ export function WalletPage() {
                   <InfoTip
                     align="center"
                     title="Lifetime total"
-                    text="Everything you've successfully withdrawn from Growlancer to your payout method, since you joined."
+                    text="Everything you've successfully withdrawn from Growlanzo to your payout method, since you joined."
                   />
                 </span>
               </div>
@@ -1172,7 +1172,7 @@ export function WalletPage() {
               <h3 className="font-display text-xl font-bold text-slate-900 mb-3">
                 Withdraw Funds
               </h3>
-              <InfoTip title="How withdrawals work" text="Enter the amount you want to move out of Growlancer and pick your saved payout method (UPI or bank). A small processing fee ({' '}{(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}%{' '}) applies and is shown before you confirm. Your withdrawal appears here in real time with its status." />
+              <InfoTip title="How withdrawals work" text="Enter the amount you want to move out of Growlanzo and pick your saved payout method (UPI or bank). A small processing fee ({' '}{(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}%{' '}) applies and is shown before you confirm. Your withdrawal appears here in real time with its status." />
 
               {/* Error */}
               {withdrawError && (

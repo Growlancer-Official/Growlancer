@@ -1,6 +1,6 @@
 # AUDIT WAVE 7B — DATABASE / MONEY / RLS / STORAGE (P1) — WORKLOG
 
-**Program:** Growlancer forensic audit-and-fix
+**Program:** Growlanzo forensic audit-and-fix
 **Wave:** 7 · **Batch:** 7B (Database / Money / RLS / Storage — P1)
 **Authoritative register:** [`docs/AUDIT_MASTER_FIX_PLAN.md`](AUDIT_MASTER_FIX_PLAN.md) (§1 P1 table)
 **Detail register:** [`docs/AUDIT_FINDINGS_DATABASE.md`](AUDIT_FINDINGS_DATABASE.md)

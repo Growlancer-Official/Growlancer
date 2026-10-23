@@ -524,7 +524,7 @@ serve(async (req: Request) => {
           result.failure_category === 'name_mismatch'
             ? 'The name you entered does not match the PAN record. You have 1 retry left — please check your name and resubmit.'
             : result.failure_category === 'duplicate_identity'
-            ? 'This identity is already verified on another Growlancer account.'
+            ? 'This identity is already verified on another Growlanzo account.'
             : 'Your details could not be verified. You have 1 retry left — please check your information and resubmit.';
       }
     } else {
@@ -586,7 +586,7 @@ serve(async (req: Request) => {
         : result.failure_category === 'name_mismatch'
         ? 'The name you entered does not match the PAN record. You have 1 retry left — please check your name and try again.'
         : result.failure_category === 'duplicate_identity'
-        ? 'This identity is already verified on another Growlancer account.'
+        ? 'This identity is already verified on another Growlanzo account.'
         : 'Your identity could not be verified. You have 1 retry left — please check your information and try again.';
     const friendly: Record<string, string> = {
       verified: 'Your identity has been verified.',

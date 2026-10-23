@@ -203,7 +203,7 @@ export function FreelancersSearchPage() {
           <p className="text-emerald-100 text-lg mb-2">Browse talented professionals ready to bring your vision to life.</p>
           <TipNote tone="info" compact className="max-w-3xl mb-3 bg-white/10 border-white/20 [&_*]:!text-white">
             <strong>Verified</strong> (green/blue badge) and <strong>Pro</strong> badges are shown next to a freelancer's
-            name — every payment you make is held in Growlancer Escrow until you approve the completed work, and all
+            name — every payment you make is held in Growlanzo Escrow until you approve the completed work, and all
             communication stays inside the platform for your protection.
           </TipNote>
 

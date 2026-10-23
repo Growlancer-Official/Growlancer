@@ -19,6 +19,10 @@ describe('getCorsHeaders allowlist', () => {
 
   describe('allowed origins are reflected', () => {
     it.each([
+      'https://growlanzo.com',
+      'https://www.growlanzo.com',
+      // Former brand domain — accepted until its DNS redirects, so a browser
+      // still sitting on the old origin keeps working through the cutover.
       'https://growlancer.com',
       'https://www.growlancer.com',
       'https://growlancer.vercel.app',
@@ -50,7 +54,7 @@ describe('getCorsHeaders allowlist', () => {
       'http://127.0.0.1.evil.com:5173',
       // Non-loopback host that merely looks local
       'http://localhost.evil.com',
-      'https://growlancer.com.evil.com',
+      'https://growlanzo.com.evil.com',
     ])('%s', (origin) => {
       expect(reflect(origin)).toBeUndefined();
     });
@@ -66,13 +70,13 @@ describe('getCorsHeaders allowlist', () => {
 
   it('never grants credential-readable cross-origin access', () => {
     // Auth is JWT/Bearer based; cookies must never become readable via CORS.
-    for (const origin of ['https://growlancer.com', 'http://localhost:4174']) {
+    for (const origin of ['https://growlanzo.com', 'http://localhost:4174']) {
       expect(getCorsHeaders(origin)['Access-Control-Allow-Credentials']).toBeUndefined();
     }
   });
 
   it('honours the methods override for allowed origins only', () => {
-    expect(getCorsHeaders('https://growlancer.com', 'POST, OPTIONS')['Access-Control-Allow-Methods']).toBe(
+    expect(getCorsHeaders('https://growlanzo.com', 'POST, OPTIONS')['Access-Control-Allow-Methods']).toBe(
       'POST, OPTIONS'
     );
     expect(getCorsHeaders('https://evil.com', 'POST, OPTIONS')).toEqual({});

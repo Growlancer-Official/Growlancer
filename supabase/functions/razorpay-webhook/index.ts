@@ -244,7 +244,7 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!dbOrder) {
-        // Order unknown to us (e.g. created outside Growlancer) — log and move on
+        // Order unknown to us (e.g. created outside Growlanzo) — log and move on
         await insertAuditLog(supabaseAdmin, {
           action: 'webhook_received',
           entity_type: 'razorpay_order',

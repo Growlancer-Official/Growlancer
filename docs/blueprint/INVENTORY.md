@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **663 files** across 12 groups.
+Total tracked structure: **665 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -15,9 +15,9 @@ Total tracked structure: **663 files** across 12 groups.
 | Client libraries & services | 65 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
-| Database migrations | 299 |
+| Database migrations | 300 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 54 |
+| Test suite | 55 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -139,6 +139,7 @@ Shared UI. Feature-specific components live next to their page instead.
 - `src/components/AdminAuthGuard.tsx`
 - `src/components/AIChatSupport.tsx`
 - `src/components/AIGenerateModal.tsx`
+- `src/components/BrandLogo.tsx`
 - `src/components/Button.tsx`
 - `src/components/CategoriesSection.tsx`
 - `src/components/CategoryPicker.tsx`
@@ -180,7 +181,6 @@ Shared UI. Feature-specific components live next to their page instead.
 - `src/components/SignupModal.tsx`
 - `src/components/SiteFooter.tsx`
 - `src/components/SubscriptionPayPalPayment.tsx`
-- `src/components/ThemeToggle.tsx`
 - `src/components/TipNote.tsx`
 - `src/components/Toast.tsx`
 - `src/components/VerifiedBadge.tsx`
@@ -322,7 +322,7 @@ The runtime contract every function imports: CORS, site URL, auth, rate limits, 
 - `supabase/functions/_shared/site.ts`
 - `supabase/functions/_shared/urlGuard.ts`
 
-## Database migrations (299)
+## Database migrations (300)
 
 Ordered by filename timestamp. Applied by `supabase db push --include-all` in Backend Deploy; never by hand in the dashboard.
 
@@ -625,6 +625,7 @@ Ordered by filename timestamp. Applied by `supabase db push --include-all` in Ba
 - `supabase/migrations/20270202000000_upgrade_legacy_referral_codes.sql`
 - `supabase/migrations/20270203000000_commission_freelancer_side.sql`
 - `supabase/migrations/20270203100000_reviews_write_path_hardening.sql`
+- `supabase/migrations/20270204000000_same_role_referrals.sql`
 
 ## Archived migrations (not applied) (6)
 
@@ -637,7 +638,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (54)
+## Test suite (55)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -681,6 +682,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/referralCode.test.ts`
 - `src/test/referralInviteCard.test.tsx`
 - `src/test/referralShare.test.ts`
+- `src/test/sameRoleReferrals.test.ts`
 - `src/test/sellerLevels.test.ts`
 - `src/test/serverOnlyRpcs.test.ts`
 - `src/test/servicePricing.test.ts`

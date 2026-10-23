@@ -127,10 +127,10 @@ export function previewCoinDiscount(
  */
 export function getReferralBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
   if (role === 'freelancer') {
-    return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup.';
+    return '10 Grow Coins when a freelancer you refer completes their first contract (or passes KYC verification) — never at signup. Codes are same-side: you can only refer other freelancers.';
   }
   if (role === 'client') {
-    return '10 Grow Coins when your referral passes KYC verification — never at signup.';
+    return '10 Grow Coins when a client you refer passes KYC verification — never at signup. Codes are same-side: you can only refer other clients.';
   }
   // admin
   return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup.';
@@ -203,7 +203,7 @@ export async function fetchGrowCoinLeaderboard(limit = 10): Promise<GrowCoinLead
   if (error) throw new Error(error.message);
   return ((data || []) as any[]).map((row) => ({
     rank: Number(row.rank) || 0,
-    name: String(row.display_name || 'Growlancer member'),
+    name: String(row.display_name || 'Growlanzo member'),
     avatar: (row.avatar as string | null) ?? null,
     referrals: Number(row.referrals) || 0,
     isYou: row.is_self === true,

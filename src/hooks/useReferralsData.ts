@@ -57,7 +57,7 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
 
       const mapped: ReferralLeader[] = (board || []).map((row: any) => ({
         rank: Number(row.rank) || 0,
-        name: String(row.display_name || 'Growlancer member'),
+        name: String(row.display_name || 'Growlanzo member'),
         refs: Number(row.referrals) || 0,
         avatar: (row.avatar as string | null) ?? null,
         isYou: row.is_self === true,

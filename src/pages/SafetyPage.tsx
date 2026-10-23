@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, History, Lock, Scale, ShieldCheck, UserCheck } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function SafetyPage() {
   const safetyFeatures = [
     {
       icon: ShieldCheck,
       title: 'Escrow Protection with Auto-Release',
-      description: 'Your project funds are secured in Growlancer Escrow before work begins. Once the freelancer delivers, you get a review window (default 72h) to approve — if you do not respond, the payment releases to the freelancer automatically, so funds are never held hostage by either party.',
+      description: 'Your project funds are secured in Growlanzo Escrow before work begins. Once the freelancer delivers, you get a review window (default 72h) to approve — if you do not respond, the payment releases to the freelancer automatically, so funds are never held hostage by either party.',
       color: 'from-emerald-500 to-emerald-600',
       badge: 'Payments'
     },
@@ -41,7 +42,7 @@ export function SafetyPage() {
     {
       icon: ShieldCheck,
       title: 'Outside-Payment Protection',
-      description: 'All payments must happen through Growlancer Escrow. Paying or being asked to pay outside the platform is a policy violation — report it from your workspace and repeat violations lead to suspension or permanent ban.',
+      description: 'All payments must happen through Growlanzo Escrow. Paying or being asked to pay outside the platform is a policy violation — report it from your workspace and repeat violations lead to suspension or permanent ban.',
       color: 'from-teal-500 to-teal-700',
       badge: 'Protection'
     },
@@ -53,8 +54,7 @@ export function SafetyPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"

@@ -1,4 +1,4 @@
-# Growlancer — Forensic Security + Backend/API Audit
+# Growlanzo — Forensic Security + Backend/API Audit
 
 **Document type:** Findings-only security audit (no source code was modified).
 **Scope:** All Supabase Edge Functions (`supabase/functions/**`, 33 functions + 3 shared modules), the frontend auth/authorization layer (`src/context/AuthContext.tsx`, `src/lib/supabase.ts`), CORS configuration, secret handling, and the auth flows (signup / login / password reset / email verification / 2FA / OAuth / admin).

@@ -273,7 +273,7 @@ const subscriptionService = {
   },
 
   /**
-   * Pay for a subscription using the Growlancer wallet balance.
+   * Pay for a subscription using the Growlanzo wallet balance.
    * All financial validation happens server-side (razorpay edge function,
    * action `wallet_subscription_pay`): server-side plan price, wallet
    * balance check, atomic deduction, subscription activation + audit log.

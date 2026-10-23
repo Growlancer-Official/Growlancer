@@ -21,7 +21,7 @@ const PROFESSIONAL_CARTOON_AVATARS = [
 const COMPANY_BRANDING_PRESETS = [
   { name: 'Tech Startup', color: '#3B82F6', icon: '💻' },
   { name: 'Creative Agency', color: '#8B5CF6', icon: '🎨' },
-  { name: 'Financial Services', color: '#059669', icon: '💰' },
+  { name: 'Financial Services', color: '#14861f', icon: '💰' },
   { name: 'Healthcare', color: '#EF4444', icon: '🏥' },
   { name: 'Education', color: '#F59E0B', icon: '📚' },
   { name: 'Retail', color: '#EC4899', icon: '🛍️' },

@@ -1,4 +1,4 @@
-// Growlancer E2E login helper — creates Playwright storage-states for
+// Growlanzo E2E login helper — creates Playwright storage-states for
 // authenticated audit runs.
 //
 //   node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --role=freelancer

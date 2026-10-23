@@ -45,7 +45,7 @@ export function RazorpayCheckout({
   buttonText = 'Pay with Razorpay',
   className = '',
   userInfo,
-  themeColor = '#059669',
+  themeColor = '#14861f',
 }: RazorpayCheckoutProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'creating' | 'checkout' | 'verifying' | 'success' | 'error'>('idle');
@@ -67,8 +67,8 @@ export function RazorpayCheckout({
         key: razorpay_key_id,
         amount: Math.round(amount * 100), // Razorpay expects paise/cents
         currency: currency,
-        name: 'Growlancer',
-        description: orderData.description || 'Growlancer Payment',
+        name: 'Growlanzo',
+        description: orderData.description || 'Growlanzo Payment',
         order_id: order.razorpay_order_id,
         // Razorpay Checkout Config (dashboard → Settings → Checkout Configurations)
         // controls which payment methods show (UPI/cards/net banking/EMI).

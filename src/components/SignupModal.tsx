@@ -16,7 +16,7 @@ interface SignupModalProps {
 /**
  * SignupModal — GitHub / LinkedIn sign-up only.
  *
- * The user picks how they want to use Growlancer (freelance or hire talent),
+ * The user picks how they want to use Growlanzo (freelance or hire talent),
  * then continues with a provider. The chosen role is persisted by
  * `signInWithOAuth` (localStorage → read back by AuthCallbackPage after the
  * redirect) and the profile row is created from the provider's name/email —
@@ -66,14 +66,14 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create your account">
+    <Modal isOpen={isOpen} onClose={onClose} title="Create your account" brand>
       {/* Subtle Background Decorations */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/50 rounded-full blur-2xl -mr-12 -mt-12 opacity-60 pointer-events-none"></div>
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-100/50 rounded-full blur-2xl -ml-12 -mb-12 opacity-60 pointer-events-none"></div>
 
       <div className="relative animate-fade-in-content">
         <p className="text-slate-500 mb-5 text-sm">
-          Tell us how you want to use Growlancer, then continue with GitHub or LinkedIn. Your
+          Tell us how you want to use Growlanzo, then continue with GitHub or LinkedIn. Your
           profile is created automatically.
         </p>
 
@@ -240,11 +240,11 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           onError={setError}
         />
 
-        {/* Trust note — honest, Growlancer-branded */}
+        {/* Trust note — honest, Growlanzo-branded */}
         <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-slate-50 border border-slate-100 p-3">
           <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
           <p className="text-xs text-slate-500 leading-relaxed">
-            We use the name and email from your provider to create your Growlancer profile. We
+            We use the name and email from your provider to create your Growlanzo profile. We
             never see your password and never post anything to your accounts.
           </p>
         </div>

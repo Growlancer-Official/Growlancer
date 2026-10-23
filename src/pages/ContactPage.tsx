@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AIChatSupport } from '../components/AIChatSupport';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Clock, Headphones, Shield, Sparkles, Zap,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function ContactPage() {
   const { user } = useAuth();
@@ -14,8 +15,7 @@ export function ContactPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"

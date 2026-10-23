@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/updated banner.png" alt="Growlancer Banner" width="100%"/>
+<img src="./assets/updated banner.png" alt="Growlanzo Banner" width="100%"/>
 
 <br/>
 
@@ -51,7 +51,7 @@
 
 # 🌐 Overview
 
-**Growlancer** is a technology-driven freelancing marketplace designed to simplify how businesses discover professional talent and how freelancers discover, manage, and deliver meaningful work.
+**Growlanzo** is a technology-driven freelancing marketplace designed to simplify how businesses discover professional talent and how freelancers discover, manage, and deliver meaningful work.
 
 The platform brings together:
 
@@ -59,7 +59,7 @@ The platform brings together:
 
 into a unified professional workflow.
 
-Growlancer is being engineered around a structured marketplace model that supports users throughout the complete project lifecycle — from discovering an opportunity to completing work and establishing professional reputation.
+Growlanzo is being engineered around a structured marketplace model that supports users throughout the complete project lifecycle — from discovering an opportunity to completing work and establishing professional reputation.
 
 ### Product Focus
 
@@ -78,7 +78,7 @@ Growlancer is being engineered around a structured marketplace model that suppor
 
 # 🎯 Mission
 
-Growlancer's mission is to make professional collaboration:
+Growlanzo's mission is to make professional collaboration:
 
 **Faster. Safer. More transparent. More intelligent.**
 
@@ -97,7 +97,7 @@ can access a scalable digital infrastructure for modern talent engagement.
 
 # 💼 Platform
 
-Growlancer is built as an integrated marketplace rather than a collection of disconnected features.
+Growlanzo is built as an integrated marketplace rather than a collection of disconnected features.
 
 The platform is designed around a complete relationship lifecycle:
 
@@ -201,7 +201,7 @@ Real-time notifications keep users informed about relevant project, marketplace,
 
 # 🔄 Marketplace Workflow
 
-Growlancer's core marketplace architecture follows a consistent lifecycle:
+Growlanzo's core marketplace architecture follows a consistent lifecycle:
 
 ```text
                          ┌──────────────────┐
@@ -261,7 +261,7 @@ Critical marketplace operations are designed around centralized workflow logic t
 
 # 🏗 Architecture
 
-Growlancer uses a modular architecture separating the user interface, application logic, workflow services, infrastructure, and persistence layers.
+Growlanzo uses a modular architecture separating the user interface, application logic, workflow services, infrastructure, and persistence layers.
 
 ```text
 ┌───────────────────────────────────────────────────────┐
@@ -350,7 +350,7 @@ The architecture is designed to support maintainability, workflow consistency, p
 # 📂 Repository Structure
 
 ```text
-Growlancer/
+Growlanzo/
 │
 ├── src/
 │   ├── components/
@@ -407,11 +407,11 @@ git --version
 ## Clone Repository
 
 ```bash
-git clone https://github.com/Growlancer-Official/Growlancer.git
+git clone https://github.com/Growlanzo-Official/Growlanzo.git
 ```
 
 ```bash
-cd Growlancer
+cd Growlanzo
 ```
 
 ---
@@ -502,7 +502,7 @@ Changes affecting authentication, authorization, payments, database structure, s
 
 # 🔐 Security
 
-Security is a fundamental requirement of the Growlancer platform.
+Security is a fundamental requirement of the Growlanzo platform.
 
 Security-sensitive areas include:
 
@@ -517,7 +517,7 @@ Security-sensitive areas include:
 * 🧩 Marketplace integrity
 * 🔐 Secret and credential management
 
-Growlancer uses platform security controls including authentication mechanisms, database authorization, Row Level Security, protected server-side operations, secure environment configuration, and application monitoring.
+Growlanzo uses platform security controls including authentication mechanisms, database authorization, Row Level Security, protected server-side operations, secure environment configuration, and application monitoring.
 
 ### Vulnerability Reporting
 
@@ -531,7 +531,7 @@ Please follow the responsible disclosure process defined in:
 
 # 🤝 Contributing
 
-Growlancer is currently under active development and follows a controlled contribution model.
+Growlanzo is currently under active development and follows a controlled contribution model.
 
 The repository contains proprietary application logic, marketplace workflows, security controls, financial infrastructure, and evolving platform architecture.
 
@@ -580,7 +580,7 @@ Please use the repository's issue templates and include enough technical informa
 | 📊 Analytics & Operations   | Active Development |
 | ⚡ Performance & Scalability | Active Development |
 
-Growlancer is being continuously developed toward a production-grade professional marketplace infrastructure.
+Growlanzo is being continuously developed toward a production-grade professional marketplace infrastructure.
 
 ---
 
@@ -588,7 +588,7 @@ Growlancer is being continuously developed toward a production-grade professiona
 
 <div align="center">
 
-[![Visit Growlancer](https://img.shields.io/badge/Visit%20Growlancer-22c55e?style=for-the-badge\&logo=googlechrome\&logoColor=white)](https://growlancer.vercel.app)
+[![Visit Growlanzo](https://img.shields.io/badge/Visit%20Growlanzo-22c55e?style=for-the-badge\&logo=googlechrome\&logoColor=white)](https://growlancer.vercel.app)
 
 **https://growlancer.vercel.app**
 
@@ -602,7 +602,7 @@ Growlancer is being continuously developed toward a production-grade professiona
 
 ### Mohammad Miran Khan
 
-**Founder & CEO — Growlancer**
+**Founder & CEO — Growlanzo**
 
 </div>
 
@@ -616,7 +616,7 @@ Growlancer is being continuously developed toward a production-grade professiona
 
 [![Email](https://img.shields.io/badge/Email-growlancer.own%40gmail.com-2563eb?style=for-the-badge\&logo=gmail\&logoColor=white)](mailto:growlancer.own@gmail.com)
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Growlancer-0A66C2?style=for-the-badge\&logo=linkedin\&logoColor=white)](https://linkedin.com/company/growlancercom)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Growlanzo-0A66C2?style=for-the-badge\&logo=linkedin\&logoColor=white)](https://linkedin.com/company/growlancercom)
 
 </div>
 
@@ -634,11 +634,11 @@ Growlancer is being continuously developed toward a production-grade professiona
 
 # ⚖️ License
 
-Copyright © 2026 Growlancer.
+Copyright © 2026 Growlanzo.
 
 **All Rights Reserved.**
 
-This repository contains proprietary software owned by Growlancer.
+This repository contains proprietary software owned by Growlanzo.
 
 Unless expressly authorized in writing, no part of this repository may be:
 
@@ -652,7 +652,7 @@ Unless expressly authorized in writing, no part of this repository may be:
 
 Access to this repository does not grant ownership, licensing, or commercial usage rights.
 
-For authorized licensing, partnership, or commercial usage inquiries, please contact Growlancer through the official contact channels.
+For authorized licensing, partnership, or commercial usage inquiries, please contact Growlanzo through the official contact channels.
 
 ---
 
@@ -685,7 +685,7 @@ Building the infrastructure for modern professional collaboration.
 <br/><br/>
 
 <sub>
-© 2026 Growlancer. All rights reserved.
+© 2026 Growlanzo. All rights reserved.
 </sub>
 
 </div>
