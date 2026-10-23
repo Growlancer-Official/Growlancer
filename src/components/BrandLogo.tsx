@@ -4,9 +4,11 @@
  * Two assets are shipped for each variant (see public/):
  *   - growlanzo-wordmark-*.png — the "Growlanzo" name only (headers, sidebars)
  *   - growlanzo-full-*.png     — name + "Freelance work. Grown together."
- * Each comes in a light flavour (charcoal type + green "zo" + green tagline, for
- * white surfaces) and a dark flavour (white type, for dark surfaces) — both
- * share identical geometry so swapping the theme never shifts layout.
+ * Each comes in a light flavour (near-black type + green "zo" + green tagline,
+ * for white surfaces) and a dark flavour (silver type, for dark surfaces) —
+ * both share identical geometry so swapping the theme never shifts layout.
+ * The flat green "G" is the same mark as the favicon/app icon
+ * (public/growlanzo-mark-512.png).
  *
  * The default `theme="auto"` renders BOTH flavours and lets the `.dark` class on
  * <html> show exactly one (`darkMode: 'class'` in tailwind.config.js + the
@@ -54,8 +56,8 @@ export function BrandLogo({
   // `?v=` busts any cached copy of a previous artwork revision: the file name
   // is stable across rebrands, so without it a returning visitor keeps the old
   // logo until their cache expires.
-  const lightSrc = `/growlanzo-${variant}-light.png?v=3`;
-  const darkSrc = `/growlanzo-${variant}-dark.png?v=3`;
+  const lightSrc = `/growlanzo-${variant}-light.png?v=5`;
+  const darkSrc = `/growlanzo-${variant}-dark.png?v=5`;
   const shared = { width, height, ...rest };
 
   if (theme === 'light') {
