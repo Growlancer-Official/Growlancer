@@ -1,0 +1,7 @@
+# Keep LF in the working tree regardless of core.autocrlf:
+#  - scripts/project-map.mjs has a shebang; Vite's SSR transform mis-parses it
+#    when the working copy is CRLF, which breaks src/test/projectMap.test.ts.
+#  - docs/blueprint/INVENTORY.md is compared byte-for-byte against the
+#    generator's LF output by the same test.
+*.mjs text eol=lf
+docs/blueprint/INVENTORY.md text eol=lf
