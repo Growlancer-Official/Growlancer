@@ -659,7 +659,7 @@ Deno.serve(async (req) => {
 
     // ─── POST: test_email — sends a live Brevo test email ──
     if (req.method === 'POST' && action === 'test_email') {
-      const testTo = body?.to || 'admin@growlanzo.com'
+      const testTo = body?.to || 'growlancer.own@gmail.com'
       const sent = await sendNotificationEmail('Growlanzo Test Email ✅', '<p>This is a test email from Growlanzo via Brevo.</p>', { email: testTo, name: 'Test' })
       return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Brevo not configured or API error)' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -72,8 +72,15 @@ export function WaitlistPage() {
     }
   };
 
+  // The cookie-consent bar is fixed to the bottom of the viewport and was
+  // physically covering the "Notify Me" button on a 390px phone. Reserve its
+  // measured height (published by CookieConsent) so the form stays reachable
+  // without dismissing the banner first.
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen bg-slate-50 flex items-start sm:items-center justify-center p-4"
+      style={{ paddingBottom: 'calc(var(--consent-banner-h, 0px) + 1rem)' }}
+    >
       <div className="max-w-lg w-full">
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 md:p-12 text-center">
           {/* Icon */}
@@ -91,30 +98,6 @@ export function WaitlistPage() {
           <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-900 mb-3">
             Coming Soon in Your Country 🚀
           </h1>
-
-          <p className="text-slate-500 mb-8 leading-relaxed">
-            Growlanzo is currently available in <strong>India</strong> only.
-            We are working hard to expand to other countries and would love
-            to keep you updated on our launch progress.
-          </p>
-
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-              <Clock className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
-              <h2 className="text-sm font-bold text-slate-900 mb-1">Early Access</h2>
-              <p className="text-xs text-slate-500">
-                Be among the first to know when we launch in your country
-              </p>
-            </div>
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-              <Mail className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
-              <h2 className="text-sm font-bold text-slate-900 mb-1">Launch Updates</h2>
-              <p className="text-xs text-slate-500">
-                Get notified via email when your country is supported
-              </p>
-            </div>
-          </div>
 
           {subscribed ? (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-8">
@@ -170,6 +153,30 @@ export function WaitlistPage() {
               <p className="mt-2 text-xs text-slate-400 text-left">No spam. Unsubscribe anytime.</p>
             </form>
           )}
+
+          <p className="text-slate-500 mb-8 leading-relaxed">
+            Growlanzo is currently available in <strong>India</strong> only.
+            We are working hard to expand to other countries and would love
+            to keep you updated on our launch progress.
+          </p>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <Clock className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
+              <h2 className="text-sm font-bold text-slate-900 mb-1">Early Access</h2>
+              <p className="text-xs text-slate-500">
+                Be among the first to know when we launch in your country
+              </p>
+            </div>
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+              <Mail className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
+              <h2 className="text-sm font-bold text-slate-900 mb-1">Launch Updates</h2>
+              <p className="text-xs text-slate-500">
+                Get notified via email when your country is supported
+              </p>
+            </div>
+          </div>
 
           {/* Navigation */}
           <button

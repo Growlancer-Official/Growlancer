@@ -52,12 +52,13 @@ const PROVIDERS: {
     label: 'Continue with LinkedIn',
     pendingLabel: 'Connecting to LinkedIn…',
     className: 'bg-[#0A66C2] text-white hover:bg-[#004182] focus-visible:ring-[#0A66C2]/30',
+    // Standard white "in" glyph on the brand-blue button. The previous mark
+    // drew the letters in #0A66C2 on a #0A66C2 button, so the icon rendered as
+    // a blank square — invisible at a glance, and definitely not a LinkedIn
+    // logo. currentColor is white here, so the glyph reads at 20px.
     icon: (
-      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor" />
-        <path d="M8 10.5V17H5.5V10.5H8Z" fill="#0A66C2" />
-        <path d="M6.75 8.75C6.06 8.75 5.5 8.19 5.5 7.5C5.5 6.81 6.06 6.25 6.75 6.25C7.44 6.25 8 6.81 8 7.5C8 8.19 7.44 8.75 6.75 8.75Z" fill="#0A66C2" />
-        <path d="M14.5 17H12V13.5C12 12.67 11.33 12 10.5 12C9.67 12 9 12.67 9 13.5V17H6.5V10.5H9V11.3C9.63 10.62 10.7 10.15 11.75 10.15C13.5 10.15 14.5 11.35 14.5 13V17Z" fill="#0A66C2" />
+      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13Zm1.78 13.02H3.55V9h3.57v11.45Z" />
       </svg>
     ),
   },

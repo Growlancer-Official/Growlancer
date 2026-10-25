@@ -1,74 +1,51 @@
-// Launch audit: every static internal link must resolve to a real route.
-// Routes are nested in App.tsx (relative paths), so the table is rebuilt from
-// the JSX nesting rather than from a flat grep.
+// Throwaway audit crawl: renders the built site and reports, for every internal
+// link reachable from the home page, the final URL and whether a 404 or an
+// "early access" unavailable screen is shown.
+import { chromium } from 'playwright-core';
 import fs from 'node:fs';
-import path from 'node:path';
 
-const app = fs.readFileSync('src/app/App.tsx', 'utf8');
+const BASE = 'http://127.0.0.1:4175';
+const CANDIDATES = [
+  `${process.env.LOCALAPPDATA}\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe`,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+];
+const exec = CANDIDATES.find((p) => p && fs.existsSync(p));
 
-// Tokens: opening/closing <Route …> in source order.
-const tokenRe = /<Route\b([^>]*)>|<\/Route>/g;
-const attrRe = /path=(?:"([^"]*)"|\{'([^']*)'\}|\{`([^`]*)`\})/;
-const stack = [];
-const routes = [];
-let m;
-while ((m = tokenRe.exec(app))) {
-  if (m[0] === '</Route>') {
-    stack.pop();
-    continue;
-  }
-  const attrs = m[1] || '';
-  const selfClosing = /\/\s*$/.test(attrs);
-  const p = attrRe.exec(attrs);
-  const segment = p ? (p[1] ?? p[2] ?? p[3]) : '';
-  const parentParts = stack.filter(Boolean);
-  const full =
-    ('/' + [...parentParts, segment].filter(Boolean).join('/')).replace(/\/+/g, '/') || '/';
-  if (segment) routes.push(full);
-  if (!selfClosing) stack.push(segment);
+const browser = await chromium.launch({ executablePath: exec, headless: true });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+
+const links = new Set();
+page.on('pageerror', (e) => console.log('PAGEERROR', page.url(), e.message));
+await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+for (const a of await page.$$eval('a[href]', (els) => els.map((e) => e.getAttribute('href')))) {
+  if (a && a.startsWith('/') && !a.startsWith('//')) links.add(a.split('#')[0]);
 }
 
-// First match wins in React Router, so order matters for `/:param` collisions;
-// for a dead-link check we only need "is there any route that can match".
-const patterns = [...new Set(routes)].map(
-  (r) => '^' + r.replace(/:[^/]+/g, '[^/]+').replace(/\*$/g, '.*').replace(/\/$/, '') + '/?$',
-);
-const routeRe = new RegExp(patterns.join('|'));
-
-function walk(dir, out = []) {
-  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-    const f = path.join(dir, e.name);
-    if (e.isDirectory()) walk(f, out);
-    else if (/\.tsx?$/.test(e.name)) out.push(f);
-  }
-  return out;
+const skip = /^\/(assets|videos|_vercel)\//;
+const rows = [];
+for (const href of [...links].sort()) {
+  if (skip.test(href)) continue;
+  await page.goto(BASE + href, { waitUntil: 'networkidle' }).catch(() => {});
+  const info = await page.evaluate(() => ({
+    path: location.pathname,
+    title: document.title,
+    text: document.body.innerText,
+  }));
+  const notFound = /Page not found/i.test(info.text) && /\b404\b/.test(info.text);
+  const earlyAccess = /not available during early access|not part of the early-access release/i.test(info.text);
+  const loginModal = /Welcome back/i.test(info.text);
+  rows.push({ href, final: info.path, notFound, earlyAccess, loginModal });
 }
 
-const links = new Map();
-for (const file of [...walk('src'), ...walk('pages')]) {
-  const s = fs.readFileSync(file, 'utf8');
-  // to="..." string props only; template/expression links are runtime-built.
-  for (const mm of s.matchAll(/\bto="(\/[^"]*)"/g)) {
-    const href = mm[1].split('?')[0].split('#')[0];
-    if (!links.has(href)) links.set(href, []);
-    links.get(href).push(file);
-  }
-  for (const mm of s.matchAll(/\bhref="(\/[^"]*)"/g)) {
-    const href = mm[1].split('?')[0].split('#')[0];
-    if (!links.has(href)) links.set(href, []);
-    links.get(href).push(file);
-  }
+for (const r of rows) {
+  const flags = [r.notFound && '404', r.earlyAccess && 'EARLY_ACCESS', r.loginModal && 'LOGIN_MODAL']
+    .filter(Boolean)
+    .join(' ');
+  console.log(`${flags || 'ok'} ${r.href} -> ${r.final}`);
 }
 
-const external = /^\/(growlanzo-|favicon|manifest|robots|sitemap|sw\.js|api\/)/;
-const dead = [];
-for (const [href, files] of links) {
-  if (routeRe.test(href)) continue;
-  if (external.test(href)) continue;
-  dead.push({ href, file: files[0], count: files.length });
-}
+console.log('\nBROKEN:', rows.filter((r) => r.notFound).map((r) => r.href).join(', ') || 'none');
+console.log('EARLY_ACCESS:', rows.filter((r) => r.earlyAccess).map((r) => r.href).join(', ') || 'none');
 
-console.log(`routes: ${routes.length} unique, links: ${links.size}, dead: ${dead.length}`);
-for (const d of dead.sort((a, b) => a.href.localeCompare(b.href))) {
-  console.log(`  ${d.href}  <- ${d.file}${d.count > 1 ? ` (+${d.count - 1})` : ''}`);
-}
+await browser.close();

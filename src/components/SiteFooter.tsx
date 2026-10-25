@@ -99,8 +99,8 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               </div>
               <div className="mt-1 text-xs text-slate-400">
                 Operated from India · Grievances:{' '}
-                <a href="mailto:support@growlanzo.com" className="text-slate-500 hover:text-emerald-600 transition-colors">
-                  support@growlanzo.com
+                <a href="mailto:growlancer.own@gmail.com" className="text-slate-500 hover:text-emerald-600 transition-colors">
+                  growlancer.own@gmail.com
                 </a>
                 {' '}— acknowledged within 24 hours, resolved within 15 days.
               </div>
