@@ -58,7 +58,7 @@ function buildAlertHtml(count: number, alerts: Array<{ severity: string; categor
           <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
             <tr>
               <td style="background:#14861f;border-radius:12px;padding:14px 32px;" bgcolor="#14861f">
-                <a href="${APP_URL}/admin/security" target="_blank" rel="noopener noreferrer" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Review Alerts →</a>
+                <a href="${APP_URL}/admin" target="_blank" rel="noopener noreferrer" style="display:inline-block;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Open Admin Console →</a>
               </td>
             </tr>
           </table>

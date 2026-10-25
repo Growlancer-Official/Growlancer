@@ -241,6 +241,10 @@ const ROUTE_RULES: RouteRule[] = [
         test: exact('/waitlist'),
         meta: { title: `Join the Waitlist · ${SITE_NAME}`, description: 'Join the Growlanzo waitlist.' },
     },
+    {
+        test: exact('/unsubscribe'),
+        meta: { title: `Unsubscribe · ${SITE_NAME}`, description: 'Manage Growlanzo product-update emails.', noindex: true },
+    },
 ];
 
 const NOT_FOUND_META: RouteMeta = {

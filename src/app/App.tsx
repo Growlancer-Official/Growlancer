@@ -71,6 +71,7 @@ const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').
 
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
+const UnsubscribePage = lazy(() => import('@pages/UnsubscribePage').then(m => ({ default: m.UnsubscribePage })));
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY IMPORTS — auth-protected routes (no SSR needed)
@@ -327,6 +328,10 @@ function App() {
                 <Route index element={<OverviewPage />} />
                 <Route path="overview" element={<Navigate to="/dashboard" replace />} />
                 <Route path="feed" element={<ProjectFeedPage />} />
+                {/* Old email links pointed at /dashboard/projects; send them to the feed. */}
+                <Route path="projects" element={<Navigate to="/dashboard/feed" replace />} />
+                {/* Billing emails used /dashboard/subscription before the page moved to /pro. */}
+                <Route path="subscription" element={<Navigate to="/dashboard/pro" replace />} />
                 <Route path="invites" element={<InvitesPage />} />
                 <Route path="proposals" element={<ProposalsPage />} />
                 <Route path="contracts" element={<ContractsPage />} />
@@ -394,6 +399,9 @@ function App() {
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
+                {/* ROUTES.CLIENT.TICKETS pointed at /client/tickets, which had no
+                    route — shared links landed on the 404 page. */}
+                <Route path="tickets" element={<Navigate to="/client/support-tickets" replace />} />
                 <Route path="referrals" element={<ClientReferralsPage />} />
                 <Route path="team-projects" element={<ClientTeamProjectsPage />} />
                 <Route path="team-projects/create" element={<ClientPostTeamProjectPage />} />
@@ -450,6 +458,9 @@ function App() {
 
               {/* Waitlist Route (public, no layout) */}
               <Route path="/waitlist" element={<WaitlistPage />} />
+
+              {/* Newsletter unsubscribe link — must never 404 */}
+              <Route path="/unsubscribe" element={<UnsubscribePage />} />
 
               {/* 404 Fallback */}
               <Route path="*" element={<NotFoundPage />} />
