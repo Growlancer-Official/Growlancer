@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **665 files** across 12 groups.
+Total tracked structure: **667 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -15,9 +15,9 @@ Total tracked structure: **665 files** across 12 groups.
 | Client libraries & services | 65 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
-| Database migrations | 300 |
+| Database migrations | 301 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 55 |
+| Test suite | 56 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -322,7 +322,7 @@ The runtime contract every function imports: CORS, site URL, auth, rate limits, 
 - `supabase/functions/_shared/site.ts`
 - `supabase/functions/_shared/urlGuard.ts`
 
-## Database migrations (300)
+## Database migrations (301)
 
 Ordered by filename timestamp. Applied by `supabase db push --include-all` in Backend Deploy; never by hand in the dashboard.
 
@@ -626,6 +626,7 @@ Ordered by filename timestamp. Applied by `supabase db push --include-all` in Ba
 - `supabase/migrations/20270203000000_commission_freelancer_side.sql`
 - `supabase/migrations/20270203100000_reviews_write_path_hardening.sql`
 - `supabase/migrations/20270204000000_same_role_referrals.sql`
+- `supabase/migrations/20270205000000_credential_surface_lockdown.sql`
 
 ## Archived migrations (not applied) (6)
 
@@ -638,7 +639,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (55)
+## Test suite (56)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -656,6 +657,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/cors.test.ts`
 - `src/test/countrySelectContract.test.tsx`
 - `src/test/countryWaitlistSecurity.test.ts`
+- `src/test/credentialSurfaceLockdown.test.ts`
 - `src/test/cspFontAllowList.test.ts`
 - `src/test/currencyCountry.test.ts`
 - `src/test/darkFormControls.test.ts`
