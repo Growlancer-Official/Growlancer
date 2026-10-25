@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
+import { IDENTITY_VERIFICATION_ENABLED } from '../lib/featureFlags';
 
 type KycState = 'loading' | 'verified' | 'pending' | 'needed';
 
@@ -65,6 +66,9 @@ export function VerifyNowHeaderButton() {
     };
   }, [user?.id]);
 
+  // Deferred from this release — render nothing even if this chip is added back
+  // before KYC ships.
+  if (!IDENTITY_VERIFICATION_ENABLED) return null;
   if (state !== 'needed' && state !== 'pending') return null;
 
   const kycPath = user?.role === 'client' ? '/client/verification' : '/dashboard/identity-verification';

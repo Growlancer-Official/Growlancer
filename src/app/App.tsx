@@ -106,7 +106,6 @@ const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m
 const NotificationsCenterPage = lazy(() => import('@pages/dashboard/NotificationsCenterPage').then(m => ({ default: m.NotificationsCenterPage })));
 const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage'));
 const DisputeResolutionPage = lazy(() => import('@pages/dashboard/DisputeResolutionPage').then(m => ({ default: m.DisputeResolutionPage })));
-const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
 const SkillTestPage = lazy(() => import('@pages/dashboard/SkillTestPage').then(m => ({ default: m.SkillTestPage })));
 const TimeTrackingPage = lazy(() => import('@pages/dashboard/TimeTrackingPage').then(m => ({ default: m.TimeTrackingPage })));
@@ -355,7 +354,9 @@ function App() {
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
-                <Route path="identity-verification" element={<IdentityVerificationPage />} />
+                {/* Identity verification is deferred (lib/featureFlags.ts): an old
+                    link lands on the profile editor instead of a dead screen. */}
+                <Route path="identity-verification" element={<Navigate to="/dashboard/profile" replace />} />
                 <Route
                   path="certifications"
                   element={CERTIFICATES_ENABLED ? <SkillCertificationsPage /> : <FeatureUnavailablePage />}
@@ -397,7 +398,9 @@ function App() {
                 <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
-                <Route path="verification" element={<IdentityVerificationPage />} />
+                {/* Identity verification is deferred — profile completion is the
+                    trust signal for launch; old links go to client settings. */}
+                <Route path="verification" element={<Navigate to="/client/settings" replace />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
                 {/* ROUTES.CLIENT.TICKETS pointed at /client/tickets, which had no
                     route — shared links landed on the 404 page. */}

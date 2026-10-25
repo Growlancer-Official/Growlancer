@@ -22,6 +22,7 @@ import { useProStatus } from '../../hooks/useProStatus';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
 import { getNameChangeLock } from '../../lib/nameChangeLock';
+import { freelancerProfileCompletion } from '../../lib/profileCompletion';
 
 
 
@@ -342,12 +343,19 @@ export function ProfessionalProfilePage() {
   }, [activeTab, fetchPayoutMethods]);
 
   // ── Profile Completion ──
-  const profileCompletion = Math.round(
-    ((formData.name ? 1 : 0) + (formData.title ? 1 : 0) + (formData.bio ? 1 : 0) +
-      (formData.hourly_rate ? 1 : 0) + (formData.skills.length ? 1 : 0) +
-      (formData.languages.length ? 1 : 0) + (formData.location ? 1 : 0) +
-      (formData.portfolio_url ? 1 : 0) + (formData.education ? 1 : 0)) / 9 * 100
-  );
+  // Shared scorer (lib/profileCompletion.ts): nine editable fields, no
+  // identity-verification component, so 100% is reachable without any KYC.
+  const profileCompletion = freelancerProfileCompletion({
+    name: formData.name,
+    title: formData.title,
+    bio: formData.bio,
+    hourly_rate: formData.hourly_rate,
+    skills: formData.skills,
+    languages: formData.languages,
+    location: formData.location,
+    portfolio_url: formData.portfolio_url,
+    education: formData.education,
+  }).percent;
 
   // ── Helpers ──
   const autoClearMessages = () => {

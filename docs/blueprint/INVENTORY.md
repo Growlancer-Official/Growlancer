@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **669 files** across 12 groups.
+Total tracked structure: **671 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -12,12 +12,12 @@ Total tracked structure: **669 files** across 12 groups.
 | Layouts | 4 |
 | Components | 51 |
 | Context & hooks | 10 |
-| Client libraries & services | 65 |
+| Client libraries & services | 66 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
 | Database migrations | 301 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 57 |
+| Test suite | 58 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -202,7 +202,7 @@ Cross-page state (auth, theme, currency) and reusable data hooks.
 - `src/hooks/useProStatus.ts`
 - `src/hooks/useReferralsData.ts`
 
-## Client libraries & services (65)
+## Client libraries & services (66)
 
 All data access, business rules and formatting live here — pages call services, not Supabase directly (with few explicit exceptions).
 
@@ -249,6 +249,7 @@ All data access, business rules and formatting live here — pages call services
 - `src/lib/paypal.ts`
 - `src/lib/portfolio.ts`
 - `src/lib/portfolioImageUpload.ts`
+- `src/lib/profileCompletion.ts`
 - `src/lib/razorpay.ts`
 - `src/lib/reauth.ts`
 - `src/lib/referralCode.ts`
@@ -640,7 +641,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (57)
+## Test suite (58)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -700,6 +701,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/themeProvider.test.tsx`
 - `src/test/truthfulPlanClaims.test.ts`
 - `src/test/typographyFonts.test.ts`
+- `src/test/verificationDeferred.test.ts`
 - `src/test/waitlistPage.test.tsx`
 
 ## Operational scripts (34)

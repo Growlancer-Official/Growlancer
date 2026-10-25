@@ -14,6 +14,20 @@
  * and the matching `FEATURE_*_ENABLED=true` on the Supabase function side.
  */
 
+/**
+ * Identity verification (KYC document upload) is deferred from this release.
+ *
+ * The trust signal for launch is PROFILE COMPLETENESS instead — both roles can
+ * reach 100% without uploading anything (see `src/lib/profileCompletion.ts`).
+ * Nothing in the product requires a verified identity to browse, post, hire,
+ * fund escrow, deliver or withdraw.
+ *
+ * The page, edge functions, tables and the admin review screen stay in the
+ * repo so the feature can be switched on later; this switch only removes the
+ * entry points (sidebar entries, header chip and the action-time KYC gate).
+ */
+export const IDENTITY_VERIFICATION_ENABLED = false;
+
 export type ClientFeature = 'internships' | 'certificates' | 'contests';
 
 /** Fail-closed defaults. Keep in step with the server module. */
@@ -28,6 +42,16 @@ export function isFeatureEnabled(feature: ClientFeature): boolean {
   if (raw === 'true') return true;
   if (raw === 'false') return false;
   return DEFAULTS[feature];
+}
+
+/**
+ * True when `path` is the identity-verification screen for either role.
+ * Used by the tests and the router so the redirect stays in one place.
+ */
+export function isIdentityVerificationPath(path: string | null | undefined): boolean {
+  if (!path) return false;
+  const p = path.split('?')[0].split('#')[0];
+  return p === '/dashboard/identity-verification' || p === '/client/verification';
 }
 
 /**

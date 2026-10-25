@@ -18,7 +18,6 @@ import {
   LogOut,
   Home,
   Laptop,
-  Shield,
   Menu,
   X,
   Bell,
@@ -34,7 +33,6 @@ import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
-import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
@@ -93,7 +91,8 @@ const accountLinks: SidebarLink[] = [
   { id: 'reviews', path: '/client/reviews', icon: Star, label: 'Reviews' },
   { id: 'payments', path: '/client/payments', icon: CreditCard, label: 'Payments' },
   { id: 'settings', path: '/client/settings', icon: Settings, label: 'Settings' },
-  { id: 'verification', path: '/client/verification', icon: Shield, label: 'Verification' },
+  // Identity verification is deferred (see lib/featureFlags.ts): no entry here
+  // until KYC ships. Profile completeness is the trust signal instead.
 ];
 
 /**
@@ -622,9 +621,6 @@ export function ClientDashboardLayout() {
                 AI Active
               </span>
             </div>
-
-            {/* Verify Now — hidden on mobile, disappears in real time once verified */}
-            <VerifyNowHeaderButton />
 
             <GrowCoinBadge userId={user?.id} role={user?.role} />
 
