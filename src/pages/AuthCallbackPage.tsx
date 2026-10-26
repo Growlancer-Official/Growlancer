@@ -509,13 +509,12 @@ export function AuthCallbackPage() {
 
         // ── 7. Country gate for OAuth signups ──
         // If user authenticated via OAuth and has no country set, show country confirmation.
-        setStatus('success');
-
-        // ⚡ Fast for OAuth (350ms), but keep the "Email verified successfully!"
-        // milestone visible for ~1s on the email/password signup path.
-        await new Promise(resolve => setTimeout(resolve, isProviderOAuth ? 350 : 1000));
-
-        if (cancelled) return;
+        //
+        // ⚡ No "Processing…" splash for a returning user. They asked to sign in,
+        // the session is already established, so this page stays on the spinner
+        // only for the profile read below (a single query) and then replaces
+        // itself with their dashboard. The confirmation flash is reserved for
+        // people who still have onboarding to do — see the fast path at the end.
 
         // 🆕 Read saved role from localStorage (preserved during OAuth signup)
         const savedRole = localStorage.getItem('growlancer_oauth_role');
@@ -639,6 +638,14 @@ export function AuthCallbackPage() {
           hasProfile: !!profile,
           role: profile?.role,
         });
+        // Returning user (onboarding already done) → straight to the app.
+        // Only an incomplete profile waits on the success screen, because the
+        // onboarding page needs a beat before it can paint.
+        if (profile?.onboardingCompleted === false) {
+          setStatus('success');
+          await new Promise(resolve => setTimeout(resolve, isProviderOAuth ? 350 : 1000));
+          if (cancelled) return;
+        }
         // 🎯 ONE onboarding for everyone — role chosen on the onboarding
         // welcome step (no separate OAuth role-selection mini-form).
         redirectAfterAuth(profile);
@@ -735,7 +742,7 @@ export function AuthCallbackPage() {
     email_change: 'Email updated successfully!',
     invite: 'Welcome to Growlanzo!',
     reauthentication: 'Identity verified!',
-    unknown: 'Processing...',
+    unknown: 'Signing you in…',
   };
 
   const actionDescriptions: Record<AuthAction, string> = {
@@ -745,7 +752,7 @@ export function AuthCallbackPage() {
     email_change: 'Your email has been changed. Redirecting to login...',
     invite: 'Setting up your account. Redirecting to onboarding...',
     reauthentication: 'Your identity has been verified.',
-    unknown: 'Please wait while we process your request...',
+    unknown: 'Hang on a moment — opening your account…',
   };
 
   return (

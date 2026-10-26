@@ -7,6 +7,7 @@ import { LoginModal } from '../components/LoginModal';
 import { SignupModal } from '../components/SignupModal';
 import { SiteFooter } from '../components/SiteFooter';
 import { buildModalCleanupUrl } from '../lib/referralCode';
+import { getPostAuthPath } from '../lib/authAction';
 import { isFeatureEnabled } from '../lib/featureFlags';
 import { BrandLogo } from '../components/BrandLogo';
 
@@ -15,9 +16,17 @@ export function MainLayout() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [signupRole, setSignupRole] = useState<'freelancer' | 'client' | undefined>(undefined);
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // A signed-in visitor never has to sign in again. Every entry point that
+  // opens a login/signup form — the `?modal=login` links, old bookmarks,
+  // `/login`, and the header CTAs — resumes the persisted session instead, so
+  // nobody is walked back through GitHub/LinkedIn just to reach a dashboard
+  // they already have. (Switching accounts is an explicit action: log out, or
+  // "use a different account" in the modal.)
+  const resumeDestination = isAuthenticated && user ? getPostAuthPath(user) : null;
 
   // Escape closes the mobile menu (Section-1G: every dismissible overlay must
   // close on Escape, not just the toggle button). No-op when menu is closed.
@@ -36,6 +45,15 @@ export function MainLayout() {
     const modal = params.get('modal');
     const roleParam = params.get('role') as 'freelancer' | 'client' | null;
 
+    if (authLoading) return; // wait for the session before deciding modal vs. resume
+
+    if ((modal === 'login' || modal === 'signup') && resumeDestination) {
+      // Already signed in — the modal is a dead end, go straight to the app.
+      window.history.replaceState(null, '', buildModalCleanupUrl(location.pathname, location.search));
+      navigate(resumeDestination, { replace: true });
+      return;
+    }
+
     if (modal === 'login') {
       setIsLoginModalOpen(true);
       // Clean URL params without triggering React Router navigation (prevents race conditions with lazy-loaded components)
@@ -47,14 +65,22 @@ export function MainLayout() {
       // `ref`: the OAuth call reads it later, after the modal is open.
       window.history.replaceState(null, '', buildModalCleanupUrl(location.pathname, location.search));
     }
-  }, [location.search, location.pathname, navigate]);
+  }, [location.search, location.pathname, navigate, resumeDestination, authLoading]);
 
   const handleOpenLogin = () => {
+    if (resumeDestination) {
+      navigate(resumeDestination, { replace: true });
+      return;
+    }
     setIsLoginModalOpen(true);
     setMobileMenuOpen(false);
   };
 
   const handleOpenSignup = (role?: 'freelancer' | 'client') => {
+    if (resumeDestination) {
+      navigate(resumeDestination, { replace: true });
+      return;
+    }
     if (role) {
       setSignupRole(role);
     } else {
