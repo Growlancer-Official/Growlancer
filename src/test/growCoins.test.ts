@@ -195,7 +195,7 @@ describe('legal pages — coin terms, legal identity, no invented claims', () =>
   it('Terms and Privacy name a real operator and grievance contact', () => {
     for (const page of [TERMS_PAGE, PRIVACY_PAGE]) {
       expect(page).toMatch(/Muhammad \(Founder/);
-      expect(page).toMatch(/mailto:growlancer\.own@gmail\.com/);
+      expect(page).toMatch(/mailto:growlanzo\.own@gmail\.com/);
     }
     // The jurisdiction is stated, not left as "the Platform's incorporation".
     expect(TERMS_PAGE).toMatch(/laws of India/);

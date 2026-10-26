@@ -47,7 +47,7 @@ export function BrandLogo({
   // is stable across rebrands, so without it a returning visitor keeps the old
   // logo until their cache expires.
   const suffix = theme === 'inverse' ? '-inverse' : '';
-  const src = `/growlanzo-${variant}${suffix}.png?v=6`;
+  const src = `/growlanzo-${variant}${suffix}.png?v=7`;
 
   return <img src={src} alt={alt} className={className} width={width} height={height} {...rest} />;
 }

@@ -1,7 +1,7 @@
 // Internship Applications Edge Function
 // Handles new internship application submissions & status updates
 // Sends real email notifications (email service currently disabled):
-//   1) Admin notification to growlancer.own@gmail.com
+//   1) Admin notification to growlanzo.own@gmail.com
 //   2) Confirmation email to applicant
 //   3) Status change emails (shortlisted, interview, selected, rejected)
 
@@ -12,7 +12,7 @@ import { SITE_URL } from '../_shared/site.ts'
 import { featureDisabledResponse, isFeatureEnabled } from '../_shared/features.ts'
 
 // Transactional email via Brevo (shared helper).
-const ADMIN_EMAIL = 'growlancer.own@gmail.com'
+const ADMIN_EMAIL = 'growlanzo.own@gmail.com'
 const APP_URL = SITE_URL
 
 const GITHUB_URL = 'https://github.com/Mrkhan154212/Growlancer'
@@ -229,7 +229,7 @@ function buildReceivedEmailHtml(data: ApplicationData): string {
   return baseEmailHtml('Application Received Successfully', body)
 }
 
-/** Admin Notification — sent to growlancer.own@gmail.com */
+/** Admin Notification — sent to growlanzo.own@gmail.com */
 function buildAdminEmailHtml(data: ApplicationData): string {
   const escapedName = escapeHtml(data.full_name);
   const escapedEmail = escapeHtml(data.email);

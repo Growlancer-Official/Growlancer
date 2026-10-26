@@ -10,7 +10,7 @@ import { getCorsHeaders } from '../_shared/cors.ts'
 import { SITE_URL } from '../_shared/site.ts'
 
 // Transactional email via Brevo (shared helper).
-const ADMIN_EMAIL = 'growlancer.own@gmail.com'
+const ADMIN_EMAIL = 'growlanzo.own@gmail.com'
 const APP_URL = SITE_URL
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────

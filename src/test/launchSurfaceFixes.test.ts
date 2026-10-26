@@ -19,8 +19,8 @@ const OAUTH = read('src/components/OAuthButtons.tsx');
 const FOOTER = read('src/components/SiteFooter.tsx');
 
 describe('support mailbox', () => {
-  it('the footer shows growlancer.own@gmail.com', () => {
-    expect(FOOTER).toContain('growlancer.own@gmail.com');
+  it('the footer shows growlanzo.own@gmail.com', () => {
+    expect(FOOTER).toContain('growlanzo.own@gmail.com');
     expect(FOOTER).not.toContain('support@growlanzo.com');
   });
 
@@ -31,14 +31,14 @@ describe('support mailbox', () => {
   ]) {
     it(`${page} points at the Gmail inbox`, () => {
       const src = read(page);
-      expect(src).toContain('growlancer.own@gmail.com');
+      expect(src).toContain('growlanzo.own@gmail.com');
       expect(src).not.toContain('support@growlanzo.com');
     });
   }
 
   it('transactional emails use the Gmail mailbox', () => {
     const src = read('supabase/functions/email-notifications/index.ts');
-    expect(src).toContain('mailto:growlancer.own@gmail.com');
+    expect(src).toContain('mailto:growlanzo.own@gmail.com');
     expect(src).not.toContain('support@growlanzo.com');
   });
 });

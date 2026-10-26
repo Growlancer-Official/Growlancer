@@ -43,10 +43,10 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
   }
 
   // IMPORTANT: must be a sender VERIFIED in the Brevo account (otherwise Gmail
-  // drops / spams the mail). Verified sender: growlancer.own@gmail.com.
+  // drops / spams the mail). Verified sender: growlanzo.own@gmail.com.
   // If you want a different address (e.g. noreply@...), verify it in Brevo
   // Dashboard > Senders first, then set EMAIL_FROM to it.
-  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlanzo <growlancer.own@gmail.com>';
+  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlanzo <growlanzo.own@gmail.com>';
   const replyTo = opts.replyTo ?? Deno.env.get('EMAIL_REPLY_TO');
 
   // Parse "Name <email>" into Brevo's { name, email } shape.

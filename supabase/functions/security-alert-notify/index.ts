@@ -10,7 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendEmail } from '../_shared/brevo.ts'
 import { SITE_URL } from '../_shared/site.ts';
 
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'growlancer.own@gmail.com';
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') ?? 'growlanzo.own@gmail.com';
 const APP_URL = SITE_URL;
 
 function escapeHtml(str: string): string {

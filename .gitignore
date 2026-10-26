@@ -38,3 +38,4 @@ supabase/.temp/
 tests/e2e-artifacts/
 .e2e/
 .env.e2e
+screenshots/
