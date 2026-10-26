@@ -1084,7 +1084,7 @@ export function ClientWorkspacePage() {
                         <MessageSquare className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
+                        <h3 className="font-semibold text-slate-900">Project Chat Room</h3>
                         <p className="text-xs text-slate-500">Secure real-time correspondence with {selectedContract.freelancer?.name}</p>
                       </div>
                     </div>
