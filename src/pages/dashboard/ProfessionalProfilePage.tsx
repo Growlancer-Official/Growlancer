@@ -410,6 +410,7 @@ export function ProfessionalProfilePage() {
         const { error: fpError } = await supabase
           .from('freelancer_profiles')
           .update({
+            title: formData.title,
             bio: formData.bio,
             hourly_rate: formData.hourly_rate,
             experience: formData.experience,
@@ -418,6 +419,8 @@ export function ProfessionalProfilePage() {
             languages: formData.languages,
             location: formData.location,
             portfolio_url: formData.portfolio_url,
+            education: formData.education,
+            certifications: formData.certifications,
             availability: formData.availability,
             updated_at: new Date().toISOString(),
           } as any)
@@ -428,6 +431,7 @@ export function ProfessionalProfilePage() {
           .from('freelancer_profiles')
           .insert({
             user_id: user.id,
+            title: formData.title,
             bio: formData.bio,
             hourly_rate: formData.hourly_rate,
             experience: formData.experience,
@@ -436,6 +440,8 @@ export function ProfessionalProfilePage() {
             languages: formData.languages,
             location: formData.location,
             portfolio_url: formData.portfolio_url,
+            education: formData.education,
+            certifications: formData.certifications,
             availability: formData.availability,
           } as any);
         if (insertError) throw insertError;
