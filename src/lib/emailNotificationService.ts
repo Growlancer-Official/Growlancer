@@ -9,6 +9,8 @@
 import { supabase } from './supabase';
 
 type EmailType =
+  | 'welcome_account'
+  | 'email_verified'
   | 'withdrawal_completed'
   | 'withdrawal_failed'
   | 'dispute_opened'
@@ -200,6 +202,45 @@ export const emailNotificationService = {
       recipient_email: params.recipientEmail,
       recipient_name: params.recipientName,
       rejection_reason: params.rejectionReason,
+    });
+  },
+
+  // ─── Signup (real time) ───────────────────────────────────────────
+
+  /**
+   * Welcome email — fired the moment a NEW account is created through GitHub
+   * or LinkedIn. The address is the one the provider verified, so the email is
+   * real-time proof that the account is live. Fire-and-forget: the account
+   * exists whether or not this send succeeds.
+   */
+  async welcomeAccount(params: {
+    recipientEmail: string;
+    recipientName: string;
+    role: 'freelancer' | 'client';
+    provider: string;
+  }): Promise<void> {
+    await sendEmail('welcome_account', {
+      recipient_email: params.recipientEmail,
+      recipient_name: params.recipientName,
+      role: params.role,
+      provider: params.provider,
+    });
+  },
+
+  /**
+   * "Your email is verified" confirmation. OAuth providers confirm the address
+   * at sign-in, so Supabase sends no confirmation link for them — this is the
+   * honest equivalent: the address on the account is verified, here is proof.
+   */
+  async emailVerified(params: {
+    recipientEmail: string;
+    recipientName: string;
+    provider: string;
+  }): Promise<void> {
+    await sendEmail('email_verified', {
+      recipient_email: params.recipientEmail,
+      recipient_name: params.recipientName,
+      provider: params.provider,
     });
   },
 

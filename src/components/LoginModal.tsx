@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Clock, Loader2, ShieldCheck } from 'lucide-react';
 import { supabase, clearSupabaseAuthStorage, hasPersistedAuthSession, isStaleSessionError } from '../lib/supabase';
+import { readLogoutNotice, clearLogoutNotice, LOGOUT_NOTICE_COPY } from '../lib/logoutNotice';
 import { useAuth } from '../context/AuthContext';
 import { getPostAuthPath } from '../lib/authAction';
 import { Modal } from './Modal';
@@ -35,6 +36,18 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   const [error, setError] = useState<string | null>(null);
   const [resuming, setResuming] = useState(false);
   const [signedInOnThisDevice, setSignedInOnThisDevice] = useState(false);
+  // Why the last session ended, when the app itself ended it (24h inactivity).
+  // Read once on open and dropped immediately so it never shows twice.
+  const [logoutNotice, setLogoutNotice] = useState<{ title: string; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const notice = readLogoutNotice();
+    if (notice) {
+      setLogoutNotice(LOGOUT_NOTICE_COPY[notice.reason]);
+      clearLogoutNotice();
+    }
+  }, [isOpen]);
 
   // Read the persisted token synchronously on open: it is the only instant
   // evidence that this visitor already has an account on this device, and it
@@ -159,6 +172,20 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           </div>
         ) : (
           <>
+            {/* Signed out by the app itself (24h idle) — say so before offering
+                the providers, so it never looks like a failed login. */}
+            {logoutNotice && (
+              <div className="mb-4 flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 p-3">
+                <Clock className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-amber-800">{logoutNotice.title}</p>
+                  <p className="text-xs text-amber-700/90 leading-relaxed mt-0.5">
+                    {logoutNotice.message}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* GitHub & LinkedIn — the only sign-in methods */}
             <OAuthButtons
               onSelect={async (provider) => {

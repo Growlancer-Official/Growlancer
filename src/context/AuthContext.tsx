@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, startTransition, ReactNode } from 'react';
 import { Session, User as SupabaseUser, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, isStaleSessionError, hasPersistedAuthSession } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
 import {
   fetchUserProfile,
@@ -9,6 +9,7 @@ import {
 } from '../lib/services/authService';
 import { shouldRedirectToAuthCallback } from '../lib/authAction';
 import { beginOAuthAttempt, clearOAuthAttempt } from '../lib/oauthDiagnostics';
+import { noteLogoutReason } from '../lib/logoutNotice';
 import { captureError, captureInfo } from '../lib/telemetry';
 import { recordBrowserAccount, clearBrowserAccount } from '../lib/browserIdentity';
 
@@ -576,7 +577,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // ✅ Attempt to recover a stale session if user is authenticated but
         // supabase.auth.getSession() returned null (e.g., token expired while tab was closed)
-        if (!currentSession && !lastError) {
+        //
+        // 🛑 ONLY when a token is actually stored. For a visitor with nothing
+        // stored there is nothing to recover, and these two calls used to cost
+        // every anonymous page view a getUser() + refreshSession() round trip —
+        // which is also what kept the header's Login button from appearing for
+        // the first seconds of a signed-out visit.
+        if (!currentSession && !lastError && hasPersistedAuthSession()) {
           const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
           if (userData?.user && mounted) {
             devLog('[Auth] Stale session detected — attempting silent refresh');
@@ -937,12 +944,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           source: 'auth',
           elapsedHours: Math.round(elapsed / 3600000),
         });
+        // 📣 Say WHY. Without this the person just finds themselves signed out
+        // and reads it as a broken login. The login screen picks this up and
+        // explains the 24-hour rule above the provider buttons — then drops it.
+        noteLogoutReason('idle_timeout');
         localStorage.removeItem(LAST_ACTIVITY_KEY);
         broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
         supabase.auth.signOut().catch(() => {});
+        // 🔥 The stored token must not survive an idle timeout: if it did, the
+        // next page load would silently resume the very session we just ended.
+        clearSupabaseAuthStorage();
         setUser(null);
         setSession(null);
         setSupabaseUser(null);
+        // Land on the login form with the reason. replace() (not href) so the
+        // Back button cannot return to a page whose session no longer exists.
+        if (!window.location.search.includes('modal=login')) {
+          window.location.replace('/?modal=login');
+        }
       }
     };
 

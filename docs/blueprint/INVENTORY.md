@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **673 files** across 12 groups.
+Total tracked structure: **675 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -12,12 +12,12 @@ Total tracked structure: **673 files** across 12 groups.
 | Layouts | 4 |
 | Components | 51 |
 | Context & hooks | 10 |
-| Client libraries & services | 66 |
+| Client libraries & services | 67 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
 | Database migrations | 301 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 60 |
+| Test suite | 61 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -202,7 +202,7 @@ Cross-page state (auth, theme, currency) and reusable data hooks.
 - `src/hooks/useProStatus.ts`
 - `src/hooks/useReferralsData.ts`
 
-## Client libraries & services (66)
+## Client libraries & services (67)
 
 All data access, business rules and formatting live here — pages call services, not Supabase directly (with few explicit exceptions).
 
@@ -240,6 +240,7 @@ All data access, business rules and formatting live here — pages call services
 - `src/lib/inviteService.ts`
 - `src/lib/kycGate.ts`
 - `src/lib/legalLastUpdated.ts`
+- `src/lib/logoutNotice.ts`
 - `src/lib/messages.ts`
 - `src/lib/nameChangeLock.ts`
 - `src/lib/notificationPreferences.ts`
@@ -641,7 +642,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (60)
+## Test suite (61)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -685,6 +686,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/profileSavePayload.test.ts`
 - `src/test/profilesPrivatePrivilegeGuard.test.ts`
 - `src/test/projectMap.test.ts`
+- `src/test/providerMismatchAndIdleTimeout.test.ts`
 - `src/test/publicMetricsHonesty.test.ts`
 - `src/test/referralCode.test.ts`
 - `src/test/referralInviteCard.test.tsx`

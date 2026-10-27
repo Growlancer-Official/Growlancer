@@ -1,5 +1,6 @@
 // Email Notifications Edge Function
-// Sends real transactional email notifications (email service currently disabled):
+// Sends real transactional email notifications:
+//   0) Welcome + email-verified (real time, on GitHub/LinkedIn signup)
 //   1) Withdrawal completed
 //   2) Withdrawal failed (funds returned to wallet)
 //   3) Dispute opened (both parties)
@@ -79,6 +80,75 @@ function buildSupportTicketHtml(name: string, ticketId: string, ticketSubject?: 
   )
 }
 
+
+// ─── Signup emails (sent in real time on account creation) ───────────
+/** Human name for a provider id — used in every user-facing message. */
+function providerLabel(provider: unknown): string {
+  const p = String(provider ?? '').toLowerCase()
+  if (p.includes('linkedin')) return 'LinkedIn'
+  if (p.includes('github')) return 'GitHub'
+  return 'your sign-in provider'
+}
+
+function buildWelcomeHtml(name: string, email: string, provider: unknown, role: unknown): string {
+  const safeName = escapeHtml(name || 'there')
+  const safeEmail = escapeHtml(email || '')
+  const providerLabel_ = providerLabel(provider)
+  const roleLabel = String(role ?? '').toLowerCase() === 'client' ? 'client' : 'freelancer'
+  const nextStep = roleLabel === 'client'
+    ? 'Post your first project — it takes about two minutes, and escrow protects every contract.'
+    : 'Complete your profile and set your skills — that is what gets you ranked in client searches.'
+  return baseEmailHtml(
+    `Welcome to Growlanzo, ${safeName} 👋`,
+    `
+    <p style="margin:0 0 16px;color:#334155;">Hi ${safeName},</p>
+    <p style="margin:0 0 16px;color:#334155;">
+      Your <strong>${roleLabel}</strong> account is live. You signed up with <strong>${providerLabel_}</strong>,
+      so you are already signed in — there is nothing else to verify.
+    </p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 16px;">
+      <p style="margin:0 0 4px;color:#475569;font-size:13px;">Account email</p>
+      <p style="margin:0;font-weight:700;color:#0f172a;font-size:15px;">${safeEmail || '—'}</p>
+      <p style="margin:12px 0 4px;color:#475569;font-size:13px;">Next step</p>
+      <p style="margin:0;color:#0f172a;font-size:14px;">${nextStep}</p>
+    </div>
+    <p style="margin:0 0 16px;color:#334155;">
+      Every contract on Growlanzo runs on protected escrow, and we earn one flat 5% only when
+      the freelancer gets paid.
+    </p>
+    <p style="margin:0;color:#64748b;font-size:13px;">— The Growlanzo Team</p>
+    `
+  )
+}
+
+function buildEmailVerifiedHtml(name: string, email: string, provider: unknown): string {
+  const safeName = escapeHtml(name || 'there')
+  const safeEmail = escapeHtml(email || '')
+  const providerLabel_ = providerLabel(provider)
+  return baseEmailHtml(
+    'Your email is verified ✅',
+    `
+    <p style="margin:0 0 16px;color:#334155;">Hi ${safeName},</p>
+    <p style="margin:0 0 16px;color:#334155;">
+      The email address on your Growlanzo account has been confirmed:
+    </p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 16px;">
+      <p style="margin:0 0 4px;color:#475569;font-size:13px;">Verified email</p>
+      <p style="margin:0;font-weight:700;color:#0f172a;font-size:15px;">${safeEmail || '—'}</p>
+      <p style="margin:12px 0 4px;color:#475569;font-size:13px;">Confirmed by</p>
+      <p style="margin:0;color:#0f172a;font-size:14px;">${providerLabel_} (at sign-in)</p>
+    </div>
+    <p style="margin:0 0 16px;color:#334155;">
+      ${providerLabel_} verified this address when you signed in, so there is no confirmation
+      link to click and nothing left to do.
+    </p>
+    <p style="margin:0 0 16px;color:#334155;">
+      Did not create this account? Reply to this email and our support team will remove it.
+    </p>
+    <p style="margin:0;color:#64748b;font-size:13px;">— The Growlanzo Team</p>
+    `
+  )
+}
 
 // ─── Email Sender (Brevo) ────────────────────────────────────────────────
 // Real transactional email via the shared Brevo helper. Falls back to a
@@ -588,6 +658,16 @@ Deno.serve(async (req) => {
     let htmlContent = ''
 
     switch (type) {
+      case 'welcome_account': {
+        subject = `Welcome to Growlanzo, ${recipient_name?.split(' ')[0] || 'there'} 👋 Your account is ready`
+        htmlContent = buildWelcomeHtml(recipient_name, recipient_email, data.provider, data.role)
+        break
+      }
+      case 'email_verified': {
+        subject = 'Your Growlanzo email is verified ✅'
+        htmlContent = buildEmailVerifiedHtml(recipient_name, recipient_email, data.provider)
+        break
+      }
       case 'withdrawal_completed': {
         subject = `Withdrawal of ${formatCurrency(data.amount)} Processed Successfully ✅`
         htmlContent = buildWithdrawalCompletedHtml(recipient_name, data.amount, data.net_amount || data.amount, data.method || 'PayPal')

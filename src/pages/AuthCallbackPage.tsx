@@ -1,14 +1,19 @@
 import { useEffect, useState, startTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage } from '../lib/supabase';
 import { fetchUserProfile, createUserProfile as createProfile } from '../lib/services/authService';
 import { redirectAfterAuth } from '../lib/authAction';
 import {
+  alternateProvider,
   clearOAuthAttempt,
   describeOAuthFailure,
+  providerDisplayName,
   readOAuthAttempt,
+  type OAuthProvider,
 } from '../lib/oauthDiagnostics';
-import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
+import { emailNotificationService } from '../lib/emailNotificationService';
+import { useAuth } from '../context/AuthContext';
+import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight, AlertTriangle, LogIn } from 'lucide-react';
 import { CountrySelect } from '../components/CountrySelect';
 import { BrandLogo } from '../components/BrandLogo';
 
@@ -29,7 +34,32 @@ function safeNavigate(navFn: () => void) {
 // the SAME destination rules: role selection → onboarding → dashboard.
 // Full-page window.location.replace avoids the ProtectedRoute bounce-back race.
 
-type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
+type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate' | 'provider_mismatch';
+
+/**
+ * Why this sign-in could not continue on the provider that was attempted.
+ *
+ * Growlanzo accounts can ONLY be created with GitHub or LinkedIn, which is
+ * what makes both cases answerable without asking the database anything:
+ *
+ *  - already_exists: GoTrue rejected the sign-in because the email already has
+ *    an account, and the identity it just tried did NOT match it — so the
+ *    account lives on the OTHER provider, named here with certainty (no lookup,
+ *    no email enumeration, no second account created).
+ *  - email_hidden: the provider handed us no usable address, so nothing can be
+ *    matched or set up at all (GitHub gives "<id>+<uuid>@users.noreply.github.com"
+ *    when the address is private).
+ */
+type ProviderMismatch =
+  | { kind: 'already_exists'; existingProvider: OAuthProvider }
+  | { kind: 'email_hidden'; attemptedProvider: OAuthProvider };
+
+/**
+ * How recent a profile row must be to count as "created by this signup", so the
+ * welcome emails fire for the account the person just made — and never for a
+ * returning user who merely signed in again.
+ */
+const SIGNUP_EMAIL_WINDOW_MS = 5 * 60 * 1000;
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
 
 export function AuthCallbackPage() {
@@ -40,6 +70,8 @@ export function AuthCallbackPage() {
   // True heading for the failure — "Authentication failed" is wrong for a
   // sign-in the user cancelled or one the provider never finished.
   const [errorTitle, setErrorTitle] = useState<string | null>(null);
+  const [mismatch, setMismatch] = useState<ProviderMismatch | null>(null);
+  const { signInWithOAuth } = useAuth();
   const [action, setAction] = useState<AuthAction>('unknown');
 
   useEffect(() => {
@@ -114,6 +146,28 @@ export function AuthCallbackPage() {
           // email is already used on Growlanzo — log in with the original
           // method instead of creating a second account.
           if (/already registered|already exists|already.*in use|duplicate/i.test(rawDescription)) {
+            // 🔁 PROVIDER MISMATCH. Accounts can only be created with GitHub or
+            // LinkedIn, so a duplicate-email rejection on THIS provider proves
+            // the account was made on the other one. Name it and take the person
+            // there in one click, instead of a generic "use the original method".
+            const attemptedRaw =
+              (searchParams.get('provider') as OAuthProvider | null) ||
+              (readOAuthAttempt()?.provider as OAuthProvider | undefined) ||
+              (localStorage.getItem('growlancer_oauth_provider') as OAuthProvider | null);
+            const attempted =
+              attemptedRaw === 'github' || attemptedRaw === 'linkedin_oidc' ? attemptedRaw : null;
+            if (attempted) {
+              devLog('[AuthCallback] provider mismatch — account exists on the other provider', {
+                attempted,
+                existing: alternateProvider(attempted),
+              });
+              // The failed attempt is answered; its breadcrumb must not survive
+              // to stack an "unfinished sign-in" notice on top of this screen.
+              clearOAuthAttempt();
+              setMismatch({ kind: 'already_exists', existingProvider: alternateProvider(attempted) });
+              setStatus('provider_mismatch');
+              return;
+            }
             setErrorMessage(
               'This email is already used professionally on Growlanzo. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
             );
@@ -543,6 +597,38 @@ export function AuthCallbackPage() {
           await new Promise(r => setTimeout(r, 300));
           profile = await fetchUserProfile(authUser.id);
         }
+
+        // 🔁 HIDDEN EMAIL — only for an identity that has NO account yet.
+        // A private GitHub address comes back as "<id>+<uuid>@users.noreply.github.com".
+        // Creating an account on it would leave the person with a second,
+        // unreachable account: no welcome mail, no notifications, nothing that
+        // can be recovered. A returning user who already has a profile is never
+        // touched here — their account works, whatever the address looks like.
+        if (authUser && isProviderOAuth && !profile) {
+          const oauthEmail = authUser.email || '';
+          const hiddenEmail =
+            !oauthEmail || /@users\.noreply\.github\.com$/i.test(oauthEmail);
+          if (hiddenEmail) {
+            const attemptedRaw =
+              (localStorage.getItem('growlancer_oauth_provider') as OAuthProvider | null) ||
+              ((authProvider as OAuthProvider | undefined) ?? null);
+            const attempted: OAuthProvider =
+              attemptedRaw === 'linkedin_oidc' ? 'linkedin_oidc' : 'github';
+            devLog('[AuthCallback] OAuth identity has no usable email — stopping before account creation', {
+              provider: attempted,
+            });
+            // Drop the half-created identity locally: signing in with an address
+            // nobody can reach is worse than signing in again. Storage is cleared
+            // explicitly as well — the same belt-and-braces the rest of the app
+            // uses, so the token cannot come back on the next page load.
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            clearSupabaseAuthStorage();
+            clearOAuthAttempt();
+            setMismatch({ kind: 'email_hidden', attemptedProvider: attempted });
+            setStatus('provider_mismatch');
+            return;
+          }
+        }
         if (profile && isOAuthFlow && savedRole && profile.role !== oauthRole) {
           // 🆕 Role correction ONLY when the user explicitly chose a role in the signup
           // modal (savedRole is set). Returning OAuth users (login flow, no savedRole)
@@ -584,6 +670,45 @@ export function AuthCallbackPage() {
               name,
               createRole as 'freelancer' | 'client'
             );
+          }
+        }
+
+        // 📬 REAL-TIME WELCOME + VERIFICATION EMAILS
+        // The moment a NEW account exists, the address the provider verified
+        // hears about it: one welcome email (what they signed up as, what to do
+        // next) and one "your email is verified" confirmation. OAuth sign-ins
+        // get no Supabase confirmation link — this is the proof they receive.
+        // Fire-and-forget: the account exists whether or not the send succeeds.
+        if (profile && authUser?.email) {
+          const createdAtMs = profile.createdAt ? Date.parse(profile.createdAt) : NaN;
+          const isNewAccount =
+            Number.isFinite(createdAtMs) && Date.now() - createdAtMs < SIGNUP_EMAIL_WINDOW_MS;
+          // One send per account, ever — a reload, a retry or a second tab must
+          // not turn a signup into three welcome emails.
+          const sentKey = `growlancer_welcome_sent_${authUser.id}`;
+          if (isNewAccount && !localStorage.getItem(sentKey)) {
+            localStorage.setItem(sentKey, '1');
+            const name =
+              profile.name ||
+              authUser.user_metadata?.name ||
+              authUser.email.split('@')[0] ||
+              'there';
+            const provider = providerDisplayName(authProvider);
+            devLog('[AuthCallback] new account — sending welcome + verification emails', {
+              provider,
+              role: profile.role,
+            });
+            void emailNotificationService.welcomeAccount({
+              recipientEmail: authUser.email,
+              recipientName: name,
+              role: profile.role === 'client' ? 'client' : 'freelancer',
+              provider,
+            });
+            void emailNotificationService.emailVerified({
+              recipientEmail: authUser.email,
+              recipientName: name,
+              provider,
+            });
           }
         }
 
@@ -735,6 +860,43 @@ export function AuthCallbackPage() {
     }
   };
 
+  /**
+   * The one-click way back to the provider the account actually lives on.
+   * The failed attempt is already answered, so its breadcrumb must not survive
+   * into the retry.
+   */
+  const handleMismatchRetry = async (provider: OAuthProvider) => {
+    clearOAuthAttempt();
+    const result = await signInWithOAuth(provider);
+    if (!result.success) {
+      setMismatch(null);
+      setErrorTitle(`Could not open ${providerDisplayName(provider)}`);
+      setErrorMessage(result.error || 'Please try again.');
+      setStatus('error');
+    }
+  };
+
+  const mismatchView = mismatch
+    ? {
+        title:
+          mismatch.kind === 'already_exists'
+            ? `Your Growlanzo account is on ${providerDisplayName(mismatch.existingProvider)}`
+            : `We could not read an email address from ${providerDisplayName(mismatch.attemptedProvider)}`,
+        message:
+          mismatch.kind === 'already_exists'
+            ? `You already have an account — it was created with ${providerDisplayName(mismatch.existingProvider)}, so that is where your profile, contracts and payouts live. Sign in with ${providerDisplayName(mismatch.existingProvider)} and you go straight back to your dashboard. No second account was created, and nothing on your account changed.`
+            : `${providerDisplayName(mismatch.attemptedProvider)} did not share an email address with Growlanzo, so we cannot create your account or send you anything there. Make your email visible in your ${providerDisplayName(mismatch.attemptedProvider)} account settings, then try again — or continue with the other provider if that is where your account is.`,
+        retryProvider:
+          mismatch.kind === 'already_exists'
+            ? mismatch.existingProvider
+            : alternateProvider(mismatch.attemptedProvider),
+        retryLabel:
+          mismatch.kind === 'already_exists'
+            ? `Continue with ${providerDisplayName(mismatch.existingProvider)}`
+            : `Continue with ${providerDisplayName(alternateProvider(mismatch.attemptedProvider))}`,
+      }
+    : null;
+
   const actionTitles: Record<AuthAction, string> = {
     signup: 'Email verified successfully!',
     recovery: 'Password reset link verified!',
@@ -863,6 +1025,49 @@ export function AuthCallbackPage() {
               <p className="text-xs text-slate-400">
                 By continuing, you agree to our{' '}
                 <a href="/terms" className="text-emerald-600 hover:underline">Terms of Service</a>
+              </p>
+            </div>
+          )}
+
+          {/* 🔁 Provider mismatch — the account exists, just not on this provider. */}
+          {status === 'provider_mismatch' && mismatch && mismatchView && (
+            <div className="animate-fade-in">
+              <div className="flex justify-center mb-4">
+                <div
+                  className={`h-16 w-16 rounded-2xl flex items-center justify-center ${
+                    mismatch.kind === 'already_exists' ? 'bg-amber-100' : 'bg-red-100'
+                  }`}
+                >
+                  {mismatch.kind === 'already_exists' ? (
+                    <AlertTriangle className="w-8 h-8 text-amber-500" />
+                  ) : (
+                    <XCircle className="w-8 h-8 text-red-500" />
+                  )}
+                </div>
+              </div>
+
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
+                {mismatchView.title}
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">{mismatchView.message}</p>
+
+              <button
+                onClick={() => void handleMismatchRetry(mismatchView.retryProvider)}
+                className="w-full inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                {mismatchView.retryLabel}
+              </button>
+              <button
+                onClick={() => safeNavigate(() => navigate('/', { replace: true }))}
+                className="mt-3 inline-flex items-center justify-center h-10 px-6 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Back to home
+              </button>
+
+              <p className="mt-4 text-xs text-slate-400 leading-relaxed">
+                Growlanzo accounts are created with GitHub or LinkedIn — there is no separate
+                password account, so nothing can be lost by signing in with the right provider.
               </p>
             </div>
           )}
