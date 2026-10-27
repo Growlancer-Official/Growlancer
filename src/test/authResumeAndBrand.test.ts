@@ -51,6 +51,42 @@ describe('a signed-in visitor is never asked to sign in again', () => {
     expect(LAYOUT.match(/navigate\(resumeDestination, \{ replace: true \}\)/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
   });
 
+  it('the restore window never offers the provider buttons (reported live, Oct 27)', () => {
+    // The second live report: "login karne par pehle LinkedIn/GitHub par jata
+    // hai". Cause was a first-paint race, not a broken session — auth restore is
+    // async, so for ~1-2s the header rendered "Login" and the modal rendered the
+    // provider buttons for someone who was already signed in. Tapping either
+    // started a second OAuth round trip.
+    //
+    // The invariant: the persisted token is read SYNCHRONOUSLY, and while a
+    // session exists-but-is-restoring, neither the header nor the modal may
+    // offer a provider.
+    const SUPABASE = readSource('src/lib/supabase.ts');
+
+    // One shared, synchronous check — no network, so it works on first paint.
+    expect(SUPABASE).toContain('export function hasPersistedAuthSession')
+    expect(SUPABASE).toMatch(/key\.endsWith\('-auth-token-user'\)/);
+
+    // Header: reserve the space for the WHOLE unresolved window, not just when a
+    // token happens to be readable. The pre-rendered shell used to bake in a
+    // Login button (the build renders with auth unresolved), so a signed-in
+    // visitor saw it on every load — and tapped it.
+    expect(LAYOUT).toMatch(
+      /const isRestoringSession = !isAuthenticated && \(Boolean\(session\) \|\| authLoading\)/
+    );
+    expect(LAYOUT).toMatch(/\{!isAuthenticated && !isRestoringSession && \(/);
+
+    // The "your sign-in did not finish" retry prompt offers the providers too,
+    // so it must stay silent while auth is still resolving.
+    const NOTICE = readSource('src/components/OAuthReturnNotice.tsx');
+    expect(NOTICE).toMatch(/if \(isLoading\) return;/);
+
+    // Modal: the providers render only when there is nothing to restore.
+    expect(LOGIN).toContain('hasPersistedAuthSession');
+    expect(LOGIN).toMatch(/const restoring = isOpen && !isAuthenticated &&/);
+    expect(LOGIN).toMatch(/\{restoring \|\| resuming \? \(/);
+  });
+
   it('the OAuth callback does not park a returning user on a success screen', () => {
     // The delay/status flash is gated on onboarding actually being pending.
     expect(CALLBACK).toContain('if (profile?.onboardingCompleted === false) {');

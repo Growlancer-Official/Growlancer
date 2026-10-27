@@ -31,7 +31,7 @@ import {
  * stays out of its way.
  */
 export function OAuthReturnNotice() {
-  const { user, isAuthenticated, signInWithOAuth } = useAuth();
+  const { user, isAuthenticated, isLoading, signInWithOAuth } = useAuth();
   const location = useLocation();
   const [attemptProvider, setAttemptProvider] = useState<string | null>(null);
   const [retrying, setRetrying] = useState<OAuthProvider | null>(null);
@@ -39,6 +39,11 @@ export function OAuthReturnNotice() {
 
   useEffect(() => {
     if (dismissedRef.current) return;
+    // ⛔ Still resolving: this page does not yet know whether the visitor is a
+    // returning user. Offering "try GitHub again" here would push someone whose
+    // session is one tick away from restoring back through the provider — the
+    // exact loop this notice must never recreate.
+    if (isLoading) return;
     if (isAuthenticated || user) {
       // Signed in — whatever happened, it resolved. Never nag a logged-in user.
       clearOAuthAttempt();
@@ -51,7 +56,7 @@ export function OAuthReturnNotice() {
     const attempt = readOAuthAttempt();
     if (!attempt || !isStaleAttempt(attempt)) return;
     setAttemptProvider(attempt.provider);
-  }, [isAuthenticated, user, location.pathname]);
+  }, [isAuthenticated, user, isLoading, location.pathname]);
 
   const dismiss = useCallback(() => {
     dismissedRef.current = true;

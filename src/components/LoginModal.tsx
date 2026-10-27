@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
-import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, hasPersistedAuthSession, isStaleSessionError } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { getPostAuthPath } from '../lib/authAction';
 import { Modal } from './Modal';
@@ -31,9 +31,29 @@ interface LoginModalProps {
  */
 export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProps) {
   const navigate = useNavigate();
-  const { signInWithOAuth, user, isAuthenticated, isLoading } = useAuth();
+  const { signInWithOAuth, user, session, isAuthenticated, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [resuming, setResuming] = useState(false);
+  const [signedInOnThisDevice, setSignedInOnThisDevice] = useState(false);
+
+  // Read the persisted token synchronously on open: it is the only instant
+  // evidence that this visitor already has an account on this device, and it
+  // decides whether the provider buttons may be shown while auth restores.
+  useEffect(() => {
+    if (isOpen) setSignedInOnThisDevice(hasPersistedAuthSession());
+  }, [isOpen]);
+
+  const hasSession = Boolean(session) || isAuthenticated;
+  /**
+   * ⛔ The window that used to send returning users back to the provider: a
+   * session exists (or its token is in storage) but the app has not finished
+   * restoring it. Offering "Continue with GitHub" here means the person taps
+   * it and is walked through LinkedIn/GitHub again for an account they already
+   * have. While `restoring` is true, the modal shows the resume card instead —
+   * for a first-time visitor (no token, nothing to restore) the provider
+   * buttons still appear immediately, so nothing new blocks signup.
+   */
+  const restoring = isOpen && !isAuthenticated && (hasSession || (isLoading && signedInOnThisDevice));
 
   // Auto-resume: a valid session outranks the sign-in form. getUser() (not
   // getSession()) is the trigger because it is the server-validated check — a
@@ -45,7 +65,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       setResuming(false);
       return;
     }
-    if (isLoading || !isAuthenticated || !user) return;
+    if (!hasSession || !user) return;
 
     let cancelled = false;
     setResuming(true);
@@ -73,7 +93,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
     return () => {
       cancelled = true;
     };
-  }, [isOpen, isLoading, isAuthenticated, user, navigate, onClose]);
+  }, [isOpen, hasSession, user, navigate, onClose]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Welcome back" brand>
@@ -83,7 +103,9 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
 
       <div className="relative animate-fade-in-content">
         <p className="text-slate-500 mb-5 text-sm">
-          Sign in to manage your projects, contracts and payouts.
+          {restoring
+            ? 'Checking the session already on this device…'
+            : 'Sign in to manage your projects, contracts and payouts.'}
         </p>
 
         {/* Error Display */}
@@ -95,26 +117,35 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
         )}
 
         {/* Returning session — skip the provider round trip entirely. */}
-        {resuming ? (
+        {restoring || resuming ? (
           <div className="mb-4 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 p-4">
             <Loader2 className="w-5 h-5 text-emerald-600 animate-spin shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-emerald-800">Taking you to your dashboard…</p>
+              <p className="text-sm font-semibold text-emerald-800">
+                {user ? 'Taking you to your dashboard…' : 'Restoring your session…'}
+              </p>
               <p className="text-xs text-emerald-700/80 leading-relaxed mt-0.5">
-                You're already signed in as {user?.email || 'your account'} — no need to sign in again.
+                {user
+                  ? `You're already signed in as ${user.email || 'your account'} — no need to sign in again.`
+                  : 'You signed in on this device already. One moment while we open your account.'}
               </p>
               <div className="mt-3 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => { onClose(); navigate(getPostAuthPath(user), { replace: true }); }}
-                  className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
-                >
-                  Open dashboard
-                </button>
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() => { onClose(); navigate(getPostAuthPath(user), { replace: true }); }}
+                    className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 hover:underline"
+                  >
+                    Open dashboard
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={async () => {
                     setResuming(false);
+                    /* Explicit account switch: drop the stored session first,
+                       then reload so the provider buttons appear for real. */
+                    window.localStorage.removeItem('growlancer_oauth_role');
                     await supabase.auth.signOut().catch(() => {});
                     clearSupabaseAuthStorage();
                     window.location.replace('/?modal=login');

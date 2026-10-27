@@ -106,6 +106,35 @@ export function clearSupabaseAuthStorage(): void {
 }
 
 /**
+ * Synchronously answers: "does this browser already hold a Supabase session?"
+ *
+ * This is the persisted token check ONLY — no network, no validation. It exists
+ * so the UI can tell a RETURNING user (session in storage, still restoring) apart
+ * from a FIRST-TIME visitor (nothing stored) on the very first paint.
+ *
+ * Returning users must never be shown the GitHub/LinkedIn buttons again. Before
+ * this existed, the header rendered "Login" for the first ~1-2s of a returning
+ * visit (auth restore is async), and tapping it opened a modal whose only
+ * options were the providers — the "login again sends me back to GitHub" loop.
+ */
+export function hasPersistedAuthSession(): boolean {
+  try {
+    if (typeof localStorage === 'undefined') return false;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('sb-') || !key.includes('-auth-token')) continue;
+      // `-user` mirrors are not proof of a session; only the token object is.
+      if (key.endsWith('-auth-token-user')) continue;
+      const raw = localStorage.getItem(key);
+      if (raw && raw !== 'null' && raw.length > 2) return true;
+    }
+  } catch {
+    // localStorage unavailable (private browsing, disabled) — treat as signed out
+  }
+  return false;
+}
+
+/**
  * True ONLY when the error means the auth user no longer exists server-side
  * (deleted from Supabase / revoked token). Returns false for transient
  * network errors, timeouts, or GoTrue 5xx — those must NOT trigger a

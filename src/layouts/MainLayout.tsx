@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, AlertTriangle, Briefcase, CircleDollarSign, HelpCircle, Info, LayoutGrid, LogIn, Mail, Package, Trophy, UserPlus, Users, Zap } from 'lucide-react';
+import { Menu, X, LayoutDashboard, AlertTriangle, Briefcase, CircleDollarSign, HelpCircle, Info, LayoutGrid, Loader2, LogIn, Mail, Package, Trophy, UserPlus, Users, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ROUTES } from '../routes';
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +16,8 @@ export function MainLayout() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [signupRole, setSignupRole] = useState<'freelancer' | 'client' | undefined>(undefined);
-  const { isAuthenticated, role, user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, role, user, session, isLoading: authLoading } = useAuth();
+  const isRestoringSession = !isAuthenticated && (Boolean(session) || authLoading);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,6 +28,17 @@ export function MainLayout() {
   // they already have. (Switching accounts is an explicit action: log out, or
   // "use a different account" in the modal.)
   const resumeDestination = isAuthenticated && user ? getPostAuthPath(user) : null;
+
+  // 🔑 The unresolved window, which is the whole point. Auth restore is
+  // asynchronous (session read + server validation + profile fetch), and until
+  // it settles this page does NOT know whether the visitor is a returning user.
+  // Login must not be offered in that window: it is the button a signed-in user
+  // tapped right before being sent back through GitHub/LinkedIn, and it is also
+  // what the pre-rendered shell baked in, so a signed-in visitor saw it flash on
+  // every page load. The space is reserved instead. A genuinely signed-out
+  // visitor gets Login/Signup the moment the restore settles (milliseconds when
+  // nothing is stored), and a session that yields no user after loading — a dead
+  // token — still gets Login back so the person can sign in again.
 
   // Escape closes the mobile menu (Section-1G: every dismissible overlay must
   // close on Escape, not just the toggle button). No-op when menu is closed.
@@ -163,7 +175,15 @@ export function MainLayout() {
 
             {/* Right actions */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              {!isAuthenticated && (
+              {isRestoringSession && (
+                /* A session exists on this device and is still being restored:
+                   reserve the space instead of flashing Login/Signup. */
+                <div
+                  className="h-10 w-[7.5rem] rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse"
+                  aria-hidden="true"
+                />
+              )}
+              {!isAuthenticated && !isRestoringSession && (
                 <>
                   <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 ring-1 ring-slate-200 bg-white hover:text-slate-900 hover:bg-slate-50 hover:ring-slate-300 transition-colors">Login</button>
                   {/* Below 360px the header cannot hold the wordmark, the theme
@@ -266,7 +286,12 @@ export function MainLayout() {
             <div className="border-t border-slate-100 my-3"></div>
 
             {/* Auth */}
-            {!isAuthenticated ? (
+            {isRestoringSession ? (
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Restoring your session…
+              </div>
+            ) : !isAuthenticated ? (
               <>
                 <button onClick={handleOpenLogin} className="flex items-center gap-3 w-full text-left px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
                   <LogIn className="w-4 h-4 text-slate-400" />
