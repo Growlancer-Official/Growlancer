@@ -4,20 +4,20 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **675 files** across 12 groups.
+Total tracked structure: **682 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
 | Pages | 96 |
 | Layouts | 4 |
-| Components | 51 |
+| Components | 52 |
 | Context & hooks | 10 |
-| Client libraries & services | 67 |
+| Client libraries & services | 69 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
 | Database migrations | 301 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 61 |
+| Test suite | 65 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -131,7 +131,7 @@ The four shells: public, freelancer dashboard, client dashboard, admin console.
 - `src/layouts/DashboardLayout.tsx`
 - `src/layouts/MainLayout.tsx`
 
-## Components (51)
+## Components (52)
 
 Shared UI. Feature-specific components live next to their page instead.
 
@@ -145,6 +145,7 @@ Shared UI. Feature-specific components live next to their page instead.
 - `src/components/CategoriesSection.tsx`
 - `src/components/CategoryPicker.tsx`
 - `src/components/ConfirmModal.tsx`
+- `src/components/ConsentGatedAnalytics.tsx`
 - `src/components/CookieConsent.tsx`
 - `src/components/CountrySelect.tsx`
 - `src/components/EarningsChart.tsx`
@@ -202,7 +203,7 @@ Cross-page state (auth, theme, currency) and reusable data hooks.
 - `src/hooks/useProStatus.ts`
 - `src/hooks/useReferralsData.ts`
 
-## Client libraries & services (67)
+## Client libraries & services (69)
 
 All data access, business rules and formatting live here — pages call services, not Supabase directly (with few explicit exceptions).
 
@@ -220,6 +221,7 @@ All data access, business rules and formatting live here — pages call services
 - `src/lib/clientBusiness.ts`
 - `src/lib/clientPaymentMethods.ts`
 - `src/lib/config.ts`
+- `src/lib/consent.ts`
 - `src/lib/contests.ts`
 - `src/lib/contractMilestones.ts`
 - `src/lib/contractStatuses.ts`
@@ -258,6 +260,7 @@ All data access, business rules and formatting live here — pages call services
 - `src/lib/refundService.ts`
 - `src/lib/reviews.ts`
 - `src/lib/revisionService.ts`
+- `src/lib/secondAccountGuard.ts`
 - `src/lib/sellerLevels.ts`
 - `src/lib/servicePricing.ts`
 - `src/lib/services/authService.ts`
@@ -642,7 +645,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (61)
+## Test suite (65)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -657,7 +660,10 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/ciGuardrails.test.ts`
 - `src/test/commissionAndPaymentSecurity.test.ts`
 - `src/test/config.test.ts`
+- `src/test/consent.test.ts`
 - `src/test/consentBannerSpacing.test.tsx`
+- `src/test/consentGatedAnalytics.test.tsx`
+- `src/test/cookieConsentBanner.test.tsx`
 - `src/test/cors.test.ts`
 - `src/test/countrySelectContract.test.tsx`
 - `src/test/countryWaitlistSecurity.test.ts`
@@ -692,6 +698,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/referralInviteCard.test.tsx`
 - `src/test/referralShare.test.ts`
 - `src/test/sameRoleReferrals.test.ts`
+- `src/test/secondAccountGuard.test.ts`
 - `src/test/sellerLevels.test.ts`
 - `src/test/serverOnlyRpcs.test.ts`
 - `src/test/servicePricing.test.ts`

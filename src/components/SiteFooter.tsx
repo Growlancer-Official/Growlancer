@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 import { isFeatureEnabled } from '../lib/featureFlags';
+import { openConsentPreferences } from '../lib/consent';
 import { BrandLogo } from './BrandLogo';
 
 type SiteFooterProps = {
@@ -84,6 +85,17 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/escrow-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Escrow Policy</Link></li>
               <li><Link to="/refund-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Refund Policy</Link></li>
               <li><Link to="/cookies" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Cookie Policy</Link></li>
+              {/* Reopens the consent panel on any page — the choice must never
+                  be a one-way door. Same line weight as the links beside it. */}
+              <li>
+                <button
+                  type="button"
+                  onClick={openConsentPreferences}
+                  className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200 underline-offset-2 hover:underline"
+                >
+                  Cookie preferences
+                </button>
+              </li>
             </ul>
           </div>
         </div>

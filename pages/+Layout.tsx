@@ -2,8 +2,7 @@ import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { StaticRouter } from 'react-router-dom/server';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
+import { ConsentGatedAnalytics } from '../src/components/ConsentGatedAnalytics';
 import { usePageContext } from 'vike-react/usePageContext';
 
 // ─── CSS ──────────────────────────────────────────────────
@@ -27,9 +26,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
       {router}
-      {/* Vercel Analytics/SpeedInsights — only in production to avoid 404 warnings in dev */}
-      {import.meta.env.PROD && <Analytics />}
-      {import.meta.env.PROD && <SpeedInsights />}
+      {/* Vercel Analytics/SpeedInsights — production only (no 404s in dev) AND
+          only once the visitor has actually allowed optional analytics. */}
+      <ConsentGatedAnalytics enabled={import.meta.env.PROD} />
     </ErrorBoundary>
   );
 }

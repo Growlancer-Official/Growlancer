@@ -119,26 +119,33 @@ export default function Head() {
         html { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         body { margin: 0; background: #FFF8EE; color: #0F172A; overflow-x: hidden; }
         #root { min-height: 100vh; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .max-w-7xl { max-width: 80rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        @media (min-width: 640px) { .sm\\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; } }
-        @media (min-width: 1024px) { .lg\\:px-8 { padding-left: 2rem; padding-right: 2rem; } }
-        .relative { position: relative; }
-        .grid { display: grid; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .flex-col { flex-direction: column; }
-        .gap-10 { gap: 2.5rem; }
-        .gap-12 { gap: 3rem; }
-        .pt-10 { padding-top: 2.5rem; }
-        .pb-10 { padding-bottom: 2.5rem; }
-        @media (min-width: 640px) { .sm\\:pt-14 { padding-top: 3.5rem; } .sm\\:pb-14 { padding-bottom: 3.5rem; } .sm\\:text-5xl { font-size: 3rem; line-height: 1; } .sm\\:text-lg { font-size: 1.125rem; line-height: 1.75rem; } }
-        @media (min-width: 1024px) { .lg\\:col-span-6 { grid-column: span 6 / span 6; } .lg\\:text-6xl { font-size: 3.75rem; line-height: 1; } .lg\\:pt-16 { padding-top: 4rem; } }
+        /* ⚠️ Zero-specificity, on purpose. This block is appended to <head>
+           AFTER the compiled stylesheet, so a plain '.flex-col { … }' here
+           outranked the real utilities by document order and made every
+           "flex-col sm:flex-row" element a COLUMN at every width (measured:
+           the cookie notice's actions stacked at 1440px). ":where()" keeps the
+           pre-stylesheet paint working while letting the compiled sheet — which
+           is the source of truth — always win. */
+        :where(.mx-auto) { margin-left: auto; margin-right: auto; }
+        :where(.max-w-7xl) { max-width: 80rem; }
+        :where(.px-4) { padding-left: 1rem; padding-right: 1rem; }
+        @media (min-width: 640px) { :where(.sm\\:px-6) { padding-left: 1.5rem; padding-right: 1.5rem; } }
+        @media (min-width: 1024px) { :where(.lg\\:px-8) { padding-left: 2rem; padding-right: 2rem; } }
+        :where(.relative) { position: relative; }
+        :where(.grid) { display: grid; }
+        :where(.flex) { display: flex; }
+        :where(.items-center) { align-items: center; }
+        :where(.justify-center) { justify-content: center; }
+        :where(.flex-col) { flex-direction: column; }
+        :where(.gap-10) { gap: 2.5rem; }
+        :where(.gap-12) { gap: 3rem; }
+        :where(.pt-10) { padding-top: 2.5rem; }
+        :where(.pb-10) { padding-bottom: 2.5rem; }
+        @media (min-width: 640px) { :where(.sm\\:pt-14) { padding-top: 3.5rem; } :where(.sm\\:pb-14) { padding-bottom: 3.5rem; } :where(.sm\\:text-5xl) { font-size: 3rem; line-height: 1; } :where(.sm\\:text-lg) { font-size: 1.125rem; line-height: 1.75rem; } }
+        @media (min-width: 1024px) { :where(.lg\\:col-span-6) { grid-column: span 6 / span 6; } :where(.lg\\:text-6xl) { font-size: 3.75rem; line-height: 1; } :where(.lg\\:pt-16) { padding-top: 4rem; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-up { animation: fadeUp 700ms ease-out forwards; }
-        .opacity-0 { opacity: 0; }
+        :where(.animate-fade-up) { animation: fadeUp 700ms ease-out forwards; }
+        :where(.opacity-0) { opacity: 0; }
       `}</style>
     </>
   );

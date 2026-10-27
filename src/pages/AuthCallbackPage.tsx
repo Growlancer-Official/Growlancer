@@ -12,6 +12,13 @@ import {
   type OAuthProvider,
 } from '../lib/oauthDiagnostics';
 import { emailNotificationService } from '../lib/emailNotificationService';
+import {
+  approveSecondAccount,
+  consumeSecondAccountApproval,
+  detectSecondAccount,
+  type SecondAccountCandidate,
+} from '../lib/secondAccountGuard';
+import { recordBrowserAccount } from '../lib/browserIdentity';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight, AlertTriangle, LogIn } from 'lucide-react';
 import { CountrySelect } from '../components/CountrySelect';
@@ -34,7 +41,13 @@ function safeNavigate(navFn: () => void) {
 // the SAME destination rules: role selection → onboarding → dashboard.
 // Full-page window.location.replace avoids the ProtectedRoute bounce-back race.
 
-type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate' | 'provider_mismatch';
+type CallbackStatus =
+  | 'processing'
+  | 'success'
+  | 'error'
+  | 'country_gate'
+  | 'provider_mismatch'
+  | 'second_account';
 
 /**
  * Why this sign-in could not continue on the provider that was attempted.
@@ -71,6 +84,10 @@ export function AuthCallbackPage() {
   // sign-in the user cancelled or one the provider never finished.
   const [errorTitle, setErrorTitle] = useState<string | null>(null);
   const [mismatch, setMismatch] = useState<ProviderMismatch | null>(null);
+  // The identity that just signed in, when it is NOT the account this browser
+  // already uses. Rendered as a question, never as a silent account switch.
+  const [secondAccount, setSecondAccount] = useState<SecondAccountCandidate | null>(null);
+  const [secondAttemptProvider, setSecondAttemptProvider] = useState<OAuthProvider>('github');
   const { signInWithOAuth } = useAuth();
   const [action, setAction] = useState<AuthAction>('unknown');
 
@@ -78,6 +95,8 @@ export function AuthCallbackPage() {
     let cancelled = false;
 
     async function handleCallback() {
+      // True once the visitor explicitly agreed to create an additional account.
+      let approvedSecondAccount = false;
       try {
         // ── 1. Detect auth action type ──
         // With flowType 'implicit', session tokens arrive in the URL hash
@@ -629,6 +648,49 @@ export function AuthCallbackPage() {
             return;
           }
         }
+        // 🛡️ SECOND-ACCOUNT GUARD — the case the mismatch screen cannot see.
+        //
+        // Someone whose account lives on LinkedIn taps "Continue with GitHub".
+        // GitHub authenticates them with a DIFFERENT email, so GoTrue finds no
+        // duplicate and creates a second account; the auth.users trigger then
+        // writes an unfinished profile row for it. Nothing errors, and the person
+        // silently ends up in a brand-new empty dashboard instead of their own.
+        //
+        // Signals, all of which must hold:
+        //   • a provider OAuth sign-in,
+        //   • a LOGIN intent (no role saved — SignupModal would have saved one),
+        //   • an unfinished profile (the second account the trigger just created),
+        //   • this browser already recorded a DIFFERENT account (same fingerprint),
+        //   • and no explicit approval for an extra account.
+        //
+        // The incoming session is destroyed here rather than carried across the
+        // question: identity we may not use must not stay live while the visitor
+        // is deciding. Both answers re-run the provider once, which is the only
+        // way back with a session we are allowed to keep.
+        if (authUser && isProviderOAuth && !savedRole && (!profile || profile.onboardingCompleted === false)) {
+          const candidate = detectSecondAccount(authUser.email);
+          if (candidate && !consumeSecondAccountApproval()) {
+            const attempted: OAuthProvider =
+              authProvider === 'linkedin_oidc' ? 'linkedin_oidc' : 'github';
+            devLog('[AuthCallback] second account detected — asking before anything continues', {
+              attempted,
+            });
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            clearSupabaseAuthStorage();
+            clearOAuthAttempt();
+            setSecondAttemptProvider(attempted);
+            setSecondAccount(candidate);
+            setStatus('second_account');
+            return;
+          }
+          if (candidate) {
+            // Explicitly approved: this account may keep the new identity, and
+            // the browser marker moves to it so the guard does not fire on every
+            // future sign-in of the account they chose to create.
+            approvedSecondAccount = true;
+          }
+        }
+
         if (profile && isOAuthFlow && savedRole && profile.role !== oauthRole) {
           // 🆕 Role correction ONLY when the user explicitly chose a role in the signup
           // modal (savedRole is set). Returning OAuth users (login flow, no savedRole)
@@ -773,6 +835,18 @@ export function AuthCallbackPage() {
         }
         // 🎯 ONE onboarding for everyone — role chosen on the onboarding
         // welcome step (no separate OAuth role-selection mini-form).
+        //
+        // 📌 Point the browser marker at the account the visitor explicitly
+        // chose to create. Without this the marker keeps the FIRST account, and
+        // the second-account guard would question this sign-in forever.
+        if (approvedSecondAccount && authUser?.email) {
+          recordBrowserAccount(
+            authUser.email,
+            profile?.role,
+            /* force */ true,
+            authProvider === 'github' || authProvider === 'linkedin_oidc' ? authProvider : undefined
+          );
+        }
         redirectAfterAuth(profile);
       } catch (err) {
         if (!cancelled) {
@@ -870,6 +944,39 @@ export function AuthCallbackPage() {
     const result = await signInWithOAuth(provider);
     if (!result.success) {
       setMismatch(null);
+      setErrorTitle(`Could not open ${providerDisplayName(provider)}`);
+      setErrorMessage(result.error || 'Please try again.');
+      setStatus('error');
+    }
+  };
+
+  /**
+   * "That is not my account" — go back to the provider the recorded account
+   * lives on. The failed attempt is already answered, so its breadcrumb must
+   * not survive into the retry.
+   */
+  const handleSecondAccountUseExisting = async (provider: OAuthProvider) => {
+    clearOAuthAttempt();
+    const result = await signInWithOAuth(provider);
+    if (!result.success) {
+      setSecondAccount(null);
+      setErrorTitle(`Could not open ${providerDisplayName(provider)}`);
+      setErrorMessage(result.error || 'Please try again.');
+      setStatus('error');
+    }
+  };
+
+  /**
+   * "Yes, create a second account" — an explicit decision, recorded once, then
+   * straight back to the provider. The callback sees the approval, skips the
+   * question and continues into onboarding with the new identity.
+   */
+  const handleSecondAccountCreate = async (provider: OAuthProvider) => {
+    approveSecondAccount();
+    clearOAuthAttempt();
+    const result = await signInWithOAuth(provider);
+    if (!result.success) {
+      setSecondAccount(null);
       setErrorTitle(`Could not open ${providerDisplayName(provider)}`);
       setErrorMessage(result.error || 'Please try again.');
       setStatus('error');
@@ -1068,6 +1175,65 @@ export function AuthCallbackPage() {
               <p className="mt-4 text-xs text-slate-400 leading-relaxed">
                 Growlanzo accounts are created with GitHub or LinkedIn — there is no separate
                 password account, so nothing can be lost by signing in with the right provider.
+              </p>
+            </div>
+          )}
+
+          {/* 🛡️ Different identity on this browser — ask before creating a second account. */}
+          {status === 'second_account' && secondAccount && (
+            <div className="animate-fade-in text-left">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 rounded-2xl bg-amber-100 flex items-center justify-center">
+                  <AlertTriangle className="w-8 h-8 text-amber-500" />
+                </div>
+              </div>
+
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-2 text-center">
+                This is a different account
+              </h2>
+
+              <p className="text-sm text-slate-500 mb-3 leading-relaxed">
+                {providerDisplayName(secondAttemptProvider)} signed you in as{' '}
+                <strong className="text-slate-700 break-all">{secondAccount.incomingEmail}</strong>,
+                but this browser already uses{' '}
+                <strong className="text-slate-700 break-all">{secondAccount.existingEmail}</strong>
+                {secondAccount.existingProvider
+                  ? ` — signed in with ${providerDisplayName(secondAccount.existingProvider)}`
+                  : ''}
+                .
+              </p>
+
+              <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 mb-5">
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  Continuing here would create a <strong>second Growlanzo account</strong> with its own
+                  dashboard, contracts and payouts. Nothing on your existing account has been changed
+                  or deleted, and no second account has been created yet — you are signed out until
+                  you choose.
+                </p>
+              </div>
+
+              <button
+                onClick={() =>
+                  void handleSecondAccountUseExisting(
+                    secondAccount.existingProvider ?? alternateProvider(secondAttemptProvider)
+                  )
+                }
+                className="w-full inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                Sign in to my existing account
+              </button>
+
+              <button
+                onClick={() => void handleSecondAccountCreate(secondAttemptProvider)}
+                className="mt-3 w-full inline-flex items-center justify-center h-11 px-6 rounded-xl bg-white text-slate-700 ring-1 ring-slate-200 font-semibold hover:bg-slate-50 hover:ring-slate-300 transition-colors"
+              >
+                Create a new account with {providerDisplayName(secondAttemptProvider)}
+              </button>
+
+              <p className="mt-4 text-xs text-slate-400 leading-relaxed text-center">
+                Only choose “create a new account” if you really want a separate account — for
+                example a client account alongside your freelancer one.
               </p>
             </div>
           )}

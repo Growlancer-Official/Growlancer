@@ -21,6 +21,17 @@ interface BrowserAccountRecord {
   recordedAt: number;
   /** Role chosen at signup (freelancer / client) */
   role?: string;
+  /**
+   * Provider the recorded account signs in with ('github' | 'linkedin_oidc').
+   * Optional: records written by older builds do not carry it, so every reader
+   * must still work without it.
+   *
+   * This is what lets the second-account guard name the provider the account
+   * actually lives on. Guessing "the other provider" is only correct when an
+   * account exists on exactly one of the two, and a person can hold two
+   * different GitHub accounts — so it is recorded, not inferred.
+   */
+  provider?: string;
 }
 
 /** Simple deterministic string hash (FNV-1a 32-bit) — no crypto needed. */
@@ -82,18 +93,30 @@ export function getBrowserAccount(): BrowserAccountRecord | null {
 export function recordBrowserAccount(
   email: string,
   role?: string,
-  force = false
+  force = false,
+  provider?: string
 ): void {
   try {
     const fingerprint = getBrowserFingerprint();
     const existing = getBrowserAccount();
-    if (existing && existing.fingerprint === fingerprint && !force) return;
+    if (existing && existing.fingerprint === fingerprint && !force) {
+      // Same account signing in again — keep the first email, but fill in a
+      // provider recorded by an older build so the guard can name it later.
+      if (provider && !existing.provider) {
+        localStorage.setItem(
+          BROWSER_ACCOUNT_KEY,
+          JSON.stringify({ ...existing, provider })
+        );
+      }
+      return;
+    }
 
     const record: BrowserAccountRecord = {
       fingerprint,
       email: email.trim().toLowerCase(),
       recordedAt: Date.now(),
       role,
+      ...(provider ? { provider } : {}),
     };
     localStorage.setItem(BROWSER_ACCOUNT_KEY, JSON.stringify(record));
   } catch {

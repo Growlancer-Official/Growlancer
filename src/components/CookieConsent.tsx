@@ -1,439 +1,463 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Cookie,
-  Shield,
-  Settings,
   BarChart3,
-  Megaphone,
   Check,
+  Cookie,
+  Lock,
+  Settings2,
+
   X,
-  ExternalLink,
 } from 'lucide-react';
+import {
+  type ConsentPreferences,
+  onOpenConsentPreferences,
+  readConsent,
+  writeConsent,
+} from '../lib/consent';
 
-// ─── Types ──────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
+// CookieConsent — the notice Growlanzo actually stands behind.
+//
+// Two categories, because two things exist:
+//   • Strictly necessary — the Supabase auth session, the inactivity marker,
+//     the OAuth return breadcrumb and this record. Signing in is impossible
+//     without them, so they are not offered as a switch.
+//   • Analytics — Vercel Analytics + Speed Insights. Cookieless, aggregate,
+//     off by default, and not loaded until this says yes.
+//
+// There is no marketing/advertising category: nothing in the product embeds an
+// ad pixel, builds a profile, or shares data with an ad network. Claiming
+// otherwise to look "complete" would be the one thing a consent banner must
+// never do.
+//
+// The choice survives reloads (localStorage, not a cookie — it never needs to
+// reach the server). It is reopenable forever from the footer and the Cookie
+// Policy, which is what makes "Reject optional" a real decision rather than a
+// one-way door.
+// ────────────────────────────────────────────────────────────────────────────
 
-export type ConsentCategory = 'necessary' | 'functional' | 'analytics' | 'marketing';
-
-export interface ConsentPreferences {
-  necessary: true; // Always required
-  functional: boolean;
-  analytics: boolean;
-  marketing: boolean;
-  timestamp: string;
-  version: number;
-}
-
-const CONSENT_VERSION = 1;
-const STORAGE_KEY = 'growlancer_consent';
-
-const CATEGORY_INFO: {
-  id: ConsentCategory;
-  label: string;
-  icon: typeof Shield;
-  description: string;
-  alwaysOn?: boolean;
-}[] = [
-  {
-    id: 'necessary',
-    label: 'Necessary',
-    icon: Shield,
-    description: 'Required for the platform to function. Includes authentication tokens, session management, and security features.',
-    alwaysOn: true,
-  },
-  {
-    id: 'functional',
-    label: 'Functional',
-    icon: Settings,
-    description: 'Enables enhanced features like language preferences, theme selection, and saved settings.',
-  },
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: BarChart3,
-    description: 'Helps us understand how you use the platform — page views, feature usage, and error reports via Sentry.',
-  },
-  {
-    id: 'marketing',
-    label: 'Marketing',
-    icon: Megaphone,
-    description: 'Used for personalized advertisements and promotional content. We respect your privacy — this is off by default.',
-  },
-];
-
-// ─── Load/Save ──────────────────────────────────────────────────────
-
-function loadConsent(): ConsentPreferences | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as ConsentPreferences;
-    if (parsed.version === CONSENT_VERSION) return parsed;
-    return null; // Stale version → show banner again
-  } catch {
-    return null;
-  }
-}
-
-function saveConsent(prefs: Omit<ConsentPreferences, 'timestamp' | 'version'>): ConsentPreferences | null {
-  try {
-    const full: ConsentPreferences = {
-      ...prefs,
-      necessary: true,
-      timestamp: new Date().toISOString(),
-      version: CONSENT_VERSION,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(full));
-    return full;
-  } catch {
-    return null;
-  }
-}
-
-function getDefaultPreferences(): Omit<ConsentPreferences, 'timestamp' | 'version'> {
-  return {
-    necessary: true,
-    functional: false,
-    analytics: false,
-    marketing: false,
-  };
-}
-
-// ─── Component ──────────────────────────────────────────────────────
+/** Delay before the notice appears so it never fights the first paint. */
+const SHOW_DELAY_MS = 600;
 
 export function CookieConsent() {
-  const [consent, setConsent] = useState<ConsentPreferences | null>(null);
-  const [showBanner, setShowBanner] = useState(false);
-  const [showCustomize, setShowCustomize] = useState(false);
-  const [customPrefs, setCustomPrefs] = useState(getDefaultPreferences());
+  const [decision, setDecision] = useState<ConsentPreferences | null>(null);
+  const [bannerVisible, setBannerVisible] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
-  const bannerRef = useRef<HTMLDivElement | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  // Draft state for the panel — nothing is persisted until Save/Reject.
+  const [draftAnalytics, setDraftAnalytics] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
-  // Load existing consent on mount
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
+  // ── Load the stored decision ──────────────────────────────────────────────
   useEffect(() => {
-    const existing = loadConsent();
-    if (existing) {
-      setConsent(existing);
-    } else {
-      // Delay showing banner to let page render first
-      const timer = setTimeout(() => {
-        setShowBanner(true);
-        // Trigger slide-in animation after mount
-        requestAnimationFrame(() => setAnimateIn(true));
-      }, 600);
-      return () => clearTimeout(timer);
+    const stored = readConsent();
+    if (stored) {
+      setDecision(stored);
+      setDraftAnalytics(stored.analytics);
+      return;
     }
+    const timer = setTimeout(() => {
+      setBannerVisible(true);
+      // Next frame, so the transition actually runs instead of being skipped.
+      requestAnimationFrame(() => setAnimateIn(true));
+    }, SHOW_DELAY_MS);
+    return () => clearTimeout(timer);
   }, []);
 
-  // The banner is fixed to the bottom of the viewport, so on dashboard/client
-  // routes it sat on top of the full-height sidebars — their last two actions
-  // (Homepage / Logout) were unreachable until consent was given. Publish the
-  // banner's real measured height (it reflows: the action buttons wrap on narrow
-  // screens) so those layouts can reserve exactly that much space, and clear it
-  // the moment the banner goes away. Unset = 0px, i.e. full-height as before.
+  // ── Reopen from anywhere (footer, Cookie Policy) ──────────────────────────
+  useEffect(
+    () =>
+      onOpenConsentPreferences(() => {
+        const stored = readConsent();
+        setDraftAnalytics(stored?.analytics === true);
+        setStorageError(null);
+        previouslyFocused.current =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        setPanelOpen(true);
+        // A visitor who already answered gets the panel only — the notice is
+        // not shown again (it would sit behind the backdrop and then flash as
+        // the panel closes).
+        if (!readConsent()) {
+          setBannerVisible(true);
+          setAnimateIn(true);
+        }
+      }),
+    []
+  );
+
+  /**
+   * Publish the notice's measured height so full-height dashboard sidebars can
+   * subtract it from 100vh. Without this the sidebar's last actions (Homepage /
+   * Logout) sit underneath the notice and cannot be clicked.
+   */
   useEffect(() => {
     const el = bannerRef.current;
-    if (!showBanner || consent || !el) {
+    if (!bannerVisible || !el) {
       document.documentElement.style.removeProperty('--consent-banner-h');
       return;
     }
-
     const apply = () => {
       document.documentElement.style.setProperty('--consent-banner-h', `${el.offsetHeight}px`);
     };
     apply();
-
-    const observer = new ResizeObserver(apply);
-    observer.observe(el);
-
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(apply) : null;
+    observer?.observe(el);
     return () => {
-      observer.disconnect();
+      observer?.disconnect();
       document.documentElement.style.removeProperty('--consent-banner-h');
     };
-  }, [showBanner, consent]);
+  }, [bannerVisible, panelOpen]);
 
-  const handleAcceptAll = useCallback(() => {
-    const prefs = saveConsent({
-      necessary: true,
-      functional: true,
-      analytics: true,
-      marketing: true,
-    });
-    if (!prefs) return; // localStorage unavailable
-    setConsent(prefs);
-    setShowCustomize(false);
-    setTimeout(() => setShowBanner(false), 300);
+  const dismissBanner = useCallback(() => {
+    setAnimateIn(false);
+    // Let the slide-out finish before unmounting, so it does not snap away.
+    setTimeout(() => setBannerVisible(false), 300);
   }, []);
 
-  const handleRejectAll = useCallback(() => {
-    const prefs = saveConsent(getDefaultPreferences());
-    if (!prefs) return; // localStorage unavailable
-    setConsent(prefs);
-    setShowCustomize(false);
-    setTimeout(() => setShowBanner(false), 300);
+  const commit = useCallback(
+    (analytics: boolean) => {
+      const record = writeConsent(analytics);
+      if (!record) {
+        // Storage blocked. Keeping the notice up is the honest behaviour: the
+        // answer could not be remembered, so pretending it was would silently
+        // re-ask next page.
+        setStorageError(
+          'Your browser is blocking site storage, so this choice cannot be saved. Allow storage for this site, or change it in your browser settings.'
+        );
+        return;
+      }
+      setStorageError(null);
+      setDecision(record);
+      setDraftAnalytics(record.analytics);
+      setPanelOpen(false);
+      dismissBanner();
+    },
+    [dismissBanner]
+  );
+
+  const handleAcceptAll = useCallback(() => commit(true), [commit]);
+  const handleRejectOptional = useCallback(() => commit(false), [commit]);
+
+  const openPanel = useCallback(() => {
+    const stored = readConsent();
+    setDraftAnalytics(stored?.analytics === true);
+    setStorageError(null);
+    previouslyFocused.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setPanelOpen(true);
   }, []);
 
-  const handleSaveCustom = useCallback(() => {
-    const prefs = saveConsent(customPrefs);
-    if (!prefs) return; // localStorage unavailable
-    setConsent(prefs);
-    setShowCustomize(false);
-    setTimeout(() => setShowBanner(false), 300);
-  }, [customPrefs]);
+  const closePanel = useCallback(() => {
+    setPanelOpen(false);
+    setStorageError(null);
+    previouslyFocused.current?.focus?.();
+    // If the visitor has never answered, the notice stays up behind the panel.
+    if (decision) setBannerVisible(false);
+  }, [decision]);
 
-  const handleOpenCustomize = useCallback(() => {
-    setCustomPrefs({
-      necessary: true,
-      functional: false,
-      analytics: false,
-      marketing: false,
-    });
-    setShowCustomize(true);
-  }, []);
+  // ── Panel keyboard behaviour: Escape closes, Tab stays inside ─────────────
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closePanel();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const root = panelRef.current;
+      if (!root) return;
+      const focusable = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    // Move focus into the panel so keyboard users are not left behind it.
+    const firstControl = panelRef.current?.querySelector<HTMLElement>(
+      'button:not([disabled]), input, [href]'
+    );
+    firstControl?.focus();
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [panelOpen, closePanel]);
 
-  const toggleCustom = (id: ConsentCategory) => {
-    if (id === 'necessary') return; // Always on
-    setCustomPrefs(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  // If consent is already given, don't show anything
-  if (consent) return null;
-  if (!showBanner) return null;
+  const answered = decision !== null;
+  const showNotice = bannerVisible && (!answered || panelOpen);
 
   return (
     <>
-      {/* Backdrop overlay — only when customize is open */}
-      {showCustomize && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-          onClick={() => setShowCustomize(false)}
-        />
-      )}
-
-      {/* Main Banner */}
-      <div
-        ref={bannerRef}
-        className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-          animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-        }`}
-      >
-        <div className="mx-auto max-w-[100rem] px-3 sm:px-6 pb-3 sm:pb-6">
+      {/* ── Preferences panel ─────────────────────────────────────────────── */}
+      {panelOpen && (
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="relative overflow-hidden rounded-xl border border-white/10 shadow-2xl"
-            style={{
-              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={closePanel}
+            aria-hidden="true"
+          />
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cookie-prefs-title"
+            className="relative w-full sm:max-w-lg overflow-hidden rounded-t-2xl sm:rounded-2xl border border-emerald-500/25 bg-[#08110D] shadow-2xl shadow-black/50"
           >
-            {/* Decorative gradient orbs */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex items-start justify-between gap-4 p-5 pb-4 border-b border-white/10">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
+                  <Cookie className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <h2 id="cookie-prefs-title" className="text-base font-bold text-white">
+                    Cookie preferences
+                  </h2>
+                  <p className="text-xs text-emerald-100/60 mt-0.5">
+                    Choose what Growlanzo may store on this device.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closePanel}
+                className="shrink-0 p-2 -m-1 rounded-lg text-emerald-100/60 hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                aria-label="Close cookie preferences"
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+              </button>
+            </div>
 
-            <div className="relative z-10 p-4 sm:p-3 lg:p-4">
-              {/* Banner Content — Two column on desktop */}
-              <div className="flex flex-col lg:flex-row lg:items-start gap-3 lg:gap-3">
-                {/* Left: Icon + Text */}
-                <div className="flex items-start gap-3 lg:flex-1">
-                  <div className="hidden sm:flex h-12 w-12 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
-                    <Cookie className="w-6 h-6 text-emerald-400" />
+            <div className="p-5 space-y-3 max-h-[52vh] overflow-y-auto">
+              {/* Necessary — stated, not offered */}
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <Lock className="w-4 h-4 text-emerald-400" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-base sm:text-lg font-bold text-white mb-1.5 flex items-center gap-3">
-                      <Cookie className="w-5 h-5 text-emerald-400 sm:hidden" />
-                      Your Privacy Matters
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm font-semibold text-white">Strictly necessary</h3>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/25">
+                        Always on
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-100/60 mt-1 leading-relaxed">
+                      Keeps you signed in, protects your session, and remembers this choice.
+                      Without it GitHub/LinkedIn sign-in cannot work, so it cannot be turned off.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Analytics — the only optional thing, and it is real */}
+              <div
+                className={`rounded-xl border p-4 transition-colors ${
+                  draftAnalytics
+                    ? 'border-emerald-500/30 bg-emerald-500/[0.07]'
+                    : 'border-white/10 bg-white/[0.03]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="h-9 w-9 shrink-0 rounded-lg bg-white/5 flex items-center justify-center">
+                      <BarChart3
+                        className={`w-4 h-4 ${draftAnalytics ? 'text-emerald-400' : 'text-emerald-100/40'}`}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-semibold text-white">Analytics</h3>
+                      <p className="text-xs text-emerald-100/60 mt-1 leading-relaxed">
+                        Aggregate page views and real-user performance. Cookieless — it cannot
+                        identify you, follow you to other sites, or build a profile. Off unless
+                        you allow it.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={draftAnalytics}
+                    aria-label="Analytics"
+                    onClick={() => setDraftAnalytics((value) => !value)}
+                    className={`relative shrink-0 mt-1 w-11 h-6 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#08110D] ${
+                      draftAnalytics ? 'bg-emerald-500' : 'bg-white/20'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                        draftAnalytics ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-emerald-100/40">
+                No advertising, retargeting or cross-site tracking is used anywhere in Growlanzo.
+                Full detail in the{' '}
+                <Link
+                  to="/cookies"
+                  onClick={closePanel}
+                  className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+                >
+                  Cookie Policy
+                </Link>
+                .
+              </p>
+
+              {storageError && (
+                <p role="alert" className="rounded-lg bg-amber-500/10 ring-1 ring-amber-500/30 p-3 text-xs text-amber-200 leading-relaxed">
+                  {storageError}
+                </p>
+              )}
+            </div>
+
+            <div className="p-5 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2.5">
+              <button
+                type="button"
+                onClick={handleRejectOptional}
+                className="sm:flex-1 inline-flex items-center justify-center min-h-[44px] px-4 rounded-xl text-sm font-semibold text-emerald-50 bg-white/5 ring-1 ring-white/15 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                Reject optional
+              </button>
+              <button
+                type="button"
+                onClick={() => commit(draftAnalytics)}
+                className="sm:flex-1 inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                <Check className="w-4 h-4" aria-hidden="true" />
+                Save preferences
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── The notice ────────────────────────────────────────────────────── */}
+      {/* A small, playful box rather than a wall of legal text: the mascot has
+          already eaten the cookies, the promise is one sentence long, and the
+          cross is a first-class action (it dismisses AND keeps optional storage
+          off — hiding the box can never be mistaken for "allowed everything"). */}
+      {showNotice && (
+        <div
+          ref={bannerRef}
+          role="dialog"
+          aria-labelledby="cookie-notice-title"
+          aria-describedby="cookie-notice-body"
+          className={`fixed bottom-0 left-0 right-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-5 transition-all duration-300 ease-out ${
+            animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+          }`}
+        >
+          <div className="mx-auto max-w-[62rem]">
+            <div className="relative overflow-hidden rounded-2xl bg-[#08110D] ring-1 ring-emerald-500/25 shadow-2xl shadow-black/40">
+              <div className="pointer-events-none absolute -top-20 -right-12 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
+
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3.5 sm:px-5">
+                {/* Identity: the cookie icon + the joke, kept to two lines */}
+                <div className="flex items-start gap-3 sm:flex-1 min-w-0">
+                  <div className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
+                    <Cookie className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2
+                      id="cookie-notice-title"
+                      className="text-sm font-bold text-white leading-snug"
+                    >
+                      We ate your cookies <span aria-hidden="true">🍪</span>
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-2xl">
-                      We use cookies and similar technologies to enhance your experience, analyze traffic, 
-                      and personalize content. You can choose which categories to allow. 
-                      Read our{' '}
+                    <p
+                      id="cookie-notice-body"
+                      className="mt-0.5 text-xs text-emerald-100/60 leading-relaxed"
+                    >
+                      For a better experience. Sign-in and security storage stays on; nothing
+                      optional runs unless you allow it.
+                    </p>
+                    <p className="mt-1 text-[11px] text-emerald-100/40">
+                      No advertising or cross-site tracking.{' '}
                       <Link
                         to="/cookies"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors font-medium"
+                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 font-medium"
                       >
                         Cookie Policy
-                      </Link>{' '}
-                      for more details.
+                      </Link>
                     </p>
                   </div>
                 </div>
 
-                {/* Right: Buttons — always side-by-side (Accept | Customize | Reject) */}
-                <div className="flex flex-row items-center flex-wrap justify-end gap-3 sm:gap-3 shrink-0">
+                {/* Actions.
+                    Mobile: full-width, stacked column-reverse so the primary
+                    "Accept all" sits ABOVE the secondary control, with padding
+                    reserved on the right for the absolutely-positioned cross.
+                    `flex-wrap` means any future label change degrades into a
+                    second line instead of pushing past the card edge.
+                    ≥sm: back to a normal horizontal row that hugs the right. */}
+                <div className="w-full sm:w-auto flex flex-col-reverse sm:flex-row flex-wrap items-center justify-center sm:justify-end gap-2 sm:shrink-0 pr-12 sm:pr-0">
                   <button
-                    onClick={handleOpenCustomize}
-                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    type="button"
+                    onClick={openPanel}
+                    className="hidden sm:inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 rounded-xl text-xs font-semibold text-emerald-100/70 hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
-                    <Settings className="w-4 h-4" />
-                    Customize
+                    <Settings2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    Manage
                   </button>
                   <button
-                    onClick={handleRejectAll}
-                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    type="button"
+                    onClick={handleRejectOptional}
+                    className="inline-flex items-center justify-center min-h-[40px] px-3.5 rounded-xl text-xs font-semibold text-emerald-50 bg-white/5 ring-1 ring-white/10 hover:bg-white/10 hover:ring-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
-                    <X className="w-4 h-4" />
-                    Reject All
+                    Reject optional
                   </button>
                   <button
+                    type="button"
                     onClick={handleAcceptAll}
-                    className="inline-flex items-center justify-center gap-3 px-4 sm:px-5 min-h-[44px] rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-colors shadow-lg shadow-emerald-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
-                    <Check className="w-4 h-4" />
-                    Accept All
+                    <Check className="w-3.5 h-3.5" aria-hidden="true" />
+                    Accept all
+                  </button>
+                  {/* The cross: same decision as "Reject optional", so it can
+                      never be read as agreement. Parked in the card's
+                      bottom-right corner on mobile so it does not consume any
+                      of the button row's width; inline again from `sm`. */}
+                  <button
+                    type="button"
+                    onClick={handleRejectOptional}
+                    aria-label="Close — reject optional cookies"
+                    title="Close"
+                    className="absolute bottom-2 right-2 sm:static inline-flex items-center justify-center h-10 w-10 sm:-mr-1 rounded-xl text-emerald-100/60 hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ─── Customize Modal ─────────────────────────────────────────── */}
-      {showCustomize && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div
-            className={`w-full max-w-md rounded-xl border border-white/10 shadow-2xl transition-all duration-300 ${
-              showCustomize ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-            }`}
-            style={{
-              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-3 pb-4 border-b border-white/5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                    <Cookie className="w-5 h-5 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Cookie Preferences</h3>
-                    <p className="text-xs text-slate-500">Choose which cookies to allow</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowCustomize(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-all"
+              {storageError && (
+                <p
+                  role="alert"
+                  className="relative mx-4 mb-3 sm:mx-5 rounded-lg bg-amber-500/10 ring-1 ring-amber-500/30 p-2.5 text-[11px] text-amber-200 leading-relaxed"
                 >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body — Category Toggles */}
-            <div className="p-3 space-y-3 max-h-[50vh] overflow-y-auto">
-              {CATEGORY_INFO.map(cat => {
-                const isOn = cat.alwaysOn ? true : customPrefs[cat.id];
-                const Icon = cat.icon;
-                return (
-                  <div
-                    key={cat.id}
-                    className={`p-4 rounded-xl border transition-all ${
-                      isOn
-                        ? 'bg-emerald-500/5 border-emerald-500/20'
-                        : 'bg-white/[0.02] border-white/5'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div
-                          className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${
-                            isOn ? 'bg-emerald-500/10' : 'bg-white/5'
-                          }`}
-                        >
-                          <Icon
-                            className={`w-4 h-4 ${
-                              isOn ? 'text-emerald-400' : 'text-slate-500'
-                            }`}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-white">
-                              {cat.label}
-                            </span>
-                            {cat.alwaysOn && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                Always On
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                            {cat.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Toggle Switch */}
-                      {!cat.alwaysOn && (
-                        <button
-                          onClick={() => toggleCustom(cat.id)}
-                          className={`relative shrink-0 w-10 h-6 rounded-full transition-all duration-200 ${
-                            isOn ? 'bg-emerald-500' : 'bg-slate-700'
-                          }`}
-                          aria-label={`Toggle ${cat.label} cookies`}
-                        >
-                          <div
-                            className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                              isOn ? 'translate-x-4' : 'translate-x-0'
-                            }`}
-                          />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-3 pt-4 border-t border-white/5">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleRejectAll}
-                  className="flex-1 flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
-                >
-                  <X className="w-4 h-4" />
-                  Reject All
-                </button>
-                <button
-                  onClick={handleSaveCustom}
-                  className="flex-1 flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
-                >
-                  <Check className="w-4 h-4" />
-                  Save Preferences
-                </button>
-              </div>
-              <div className="mt-3 text-center">
-                <Link
-                  to="/cookies"
-                  onClick={() => setShowCustomize(false)}
-                  className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-emerald-400 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  View Full Cookie Policy
-                </Link>
-              </div>
+                  {storageError}
+                </p>
+              )}
             </div>
           </div>
         </div>
       )}
     </>
   );
-}
-
-/**
- * Check if user has consented to a specific cookie category.
- * Returns `true` for "necessary" since it's always required.
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export function hasConsent(category: ConsentCategory): boolean {
-  if (category === 'necessary') return true;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const prefs = JSON.parse(raw) as ConsentPreferences;
-    return prefs[category] === true;
-  } catch {
-    return false;
-  }
 }

@@ -206,12 +206,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user?.id && user?.email) {
       try {
-        recordBrowserAccount(user.email, user.role, /* force */ false);
+        // Record WHICH provider this account signs in with as well as the email:
+        // the second-account guard has to name the provider the account lives on
+        // instead of guessing "the other one" (a person can hold two GitHub
+        // accounts). `force` stays false — the first account on this browser
+        // remains the reference point for the guard.
+        const provider = supabaseUser?.app_metadata?.provider as string | undefined;
+        recordBrowserAccount(
+          user.email,
+          user.role,
+          /* force */ false,
+          provider === 'github' || provider === 'linkedin_oidc' ? provider : undefined
+        );
       } catch {
         // best-effort — never break auth over a storage marker
       }
     }
-  }, [user?.id, user?.email, user?.role]);
+  }, [user?.id, user?.email, user?.role, supabaseUser?.app_metadata?.provider]);
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {

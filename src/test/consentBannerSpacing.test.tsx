@@ -78,16 +78,14 @@ describe('CookieConsent reserves space for full-height sidebars', () => {
   });
 
   it('reserves nothing when consent was already stored', async () => {
-    // Shape mirrors saveConsent(): flat prefs plus the numeric version.
+    // Shape mirrors writeConsent(): the two real categories plus the version.
     localStorage.setItem(
       'growlancer_consent',
       JSON.stringify({
         necessary: true,
-        functional: true,
         analytics: true,
-        marketing: true,
-        version: 1,
-        timestamp: new Date().toISOString(),
+        version: 2,
+        updatedAt: new Date().toISOString(),
       })
     );
 
