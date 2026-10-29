@@ -617,6 +617,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: error instanceof Error ? error.message : String(error),
         });
       } finally {
+        // Initialization is over (successfully or not), so the 12s watchdog
+        // below must not fire: left armed, it logged "Auth initialization
+        // timeout" on every single page load and forced isLoading to false a
+        // second time — which hides a real timeout in the noise and can drop a
+        // freshly restored session back to the signed-out UI.
+        if (authTimeout) {
+          clearTimeout(authTimeout);
+          authTimeout = null;
+        }
         if (mounted) {
           startTransition(() => {
             setIsLoading(false);
