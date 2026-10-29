@@ -30,45 +30,63 @@ type QueryOptions = {
 };
 
 /**
+ * Failures worth one retry: a cold start / gateway blip on a read, not an
+ * authorisation decision. A 4xx is the function's answer and is never retried.
+ */
+function isTransientFunctionError(error: unknown): boolean {
+  const status = (error as { context?: { status?: number } })?.context?.status;
+  if (typeof status === 'number') return status >= 500 || status === 408 || status === 429;
+  // No status at all: the request never completed (network / FunctionsFetchError).
+  return /failed to send|failed to fetch|network|timeout|timed out/i.test(
+    String((error as Error)?.message ?? error ?? ''),
+  );
+}
+
+/**
+ * Read-only invoke with a single retry. Writes are deliberately NOT retried:
+ * replaying a mutation after an ambiguous failure could double-apply it.
+ */
+async function invokeRead<T>(body: Record<string, unknown>): Promise<T | null> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { data, error } = await supabase.functions.invoke(FN, { method: 'POST', body });
+    if (!error) return data as T;
+    if (attempt === 1 || !isTransientFunctionError(error)) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  }
+  return null;
+}
+
+/**
  * Execute a generic query via the admin-data edge function (POST).
  * Returns { data, total }.
  */
 export async function adminQuery<T = any>(options: QueryOptions): Promise<{ data: T[]; total?: number }> {
-  const { data: result, error } = await supabase.functions.invoke(FN, {
-    method: 'POST',
-    body: {
-      action: 'query',
-      table: options.table,
-      select: options.select || '*',
-      order: options.order,
-      orderDir: options.orderDir,
-      limit: options.limit ?? 100,
-      offset: options.offset ?? 0,
-      count: options.count,
-      head: options.head,
-      filters: options.filters,
-      isNull: options.isNull,
-      gte: options.gte,
-      lte: options.lte,
-      in: options.in,
-    },
+  const result = await invokeRead<{ data?: T[]; total?: number }>({
+    action: 'query',
+    table: options.table,
+    select: options.select || '*',
+    order: options.order,
+    orderDir: options.orderDir,
+    limit: options.limit ?? 100,
+    offset: options.offset ?? 0,
+    count: options.count,
+    head: options.head,
+    filters: options.filters,
+    isNull: options.isNull,
+    gte: options.gte,
+    lte: options.lte,
+    in: options.in,
   });
 
-  if (error) throw error;
-  return { data: (result as any)?.data || [], total: (result as any)?.total };
+  return { data: result?.data || [], total: result?.total };
 }
 
 /**
  * Get counts for multiple tables at once.
  */
 export async function adminCounts(tables: string[]): Promise<Record<string, number>> {
-  const { data: result, error } = await supabase.functions.invoke(FN, {
-    method: 'POST',
-    body: { action: 'counts', tables },
-  });
-
-  if (error) throw error;
-  return (result as any)?.counts || {};
+  const result = await invokeRead<{ counts?: Record<string, number> }>({ action: 'counts', tables });
+  return result?.counts || {};
 }
 
 /**

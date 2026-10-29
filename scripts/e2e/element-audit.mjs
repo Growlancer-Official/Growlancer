@@ -608,13 +608,25 @@ async function auditOne(browser, route, device, storageState) {
   // with no console/page error and HTTP 200). A single bounded re-read keeps a
   // real dead session flagged (it never gains a control) while a page that was
   // simply still rendering does not become a false positive.
+  // A single re-read was not enough on a cold dashboard chunk: measured
+  // 2026-10-29, 5/72 authenticated loads still had no control after one retry
+  // while this load's GoTrue check had SUCCEEDED (so the page was simply still
+  // painting). Those loads can wait longer; a dead session can not, and is
+  // never given extra attempts — it only ever gets the single re-read, so this
+  // loop cannot turn an expired storage state into a pass.
+  const sessionProvenAlive = authEvents.some((e) => e.status >= 200 && e.status < 300);
   if (storageState && audit?.authChrome && audit.authChrome.logoutControl === false) {
-    try {
-      await page.waitForTimeout(1500);
-      const recheck = await page.evaluate(inPageAudit, { mobile: device.mobile });
-      if (recheck?.authChrome) audit.authChrome = recheck.authChrome;
-    } catch {
-      /* keep the first reading — the retry must never hide a dead session */
+    const attempts = sessionProvenAlive ? 4 : 1;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        await page.waitForTimeout(1500);
+        const recheck = await page.evaluate(inPageAudit, { mobile: device.mobile });
+        if (recheck?.authChrome) audit.authChrome = recheck.authChrome;
+        if (audit.authChrome?.logoutControl) break;
+      } catch {
+        /* keep the latest reading — the retry must never hide a dead session */
+        break;
+      }
     }
   }
 
