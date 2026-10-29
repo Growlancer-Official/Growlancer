@@ -104,14 +104,37 @@ const THEME_FOUC_GUARD = `<!-- __theme_guard_marker__ -->
   })();
 </script>`;
 
+// ── Step 0: start from an EMPTY dist/ ──────────────────────────
+// Vite empties its own outDir (dist/client) but not the files sitting at the
+// dist ROOT — `dist/index.html` is written there by Vike's prerender (or by the
+// fallback shell below). On a build host that restores a cached workspace
+// (Vercel does), yesterday's index.html survives and is deployed NEXT TO
+// today's assets. Every chunk it names carries a hash this build never emitted,
+// the SPA rewrite answers those requests with index.html, the browser refuses
+// the module because of its text/html MIME type, and every lazy route stays on
+// its skeleton forever.
+//
+// Measured 2026-10-29 on the production alias: its own index.html referenced
+// assets/entries/entry-client-routing.B5qlYO1d.js plus 26 chunks that all
+// returned text/html (the Vercel build log for that deployment says "Vike
+// prerender did not run — dist/client/index.html missing", so the shell it
+// shipped was the cached stale one). A clean build cannot reproduce it.
+// Wiping dist/ here makes the output self-consistent no matter what the host
+// restored: prerender either writes a fresh index.html or the fallback shell
+// is generated from the fresh manifest.
 // ── Step 1: Vite build ─────────────────────────────────────────
 console.log(`\n${YELLOW}[1/5]${RESET} Running vite build...`);
 if (process.env.SKIP_VITE_BUILD === '1') {
   // Test/debug mode: reuse the existing dist/client/ output so the
-  // fallback shell generator can be exercised in isolation.
+  // fallback shell generator can be exercised in isolation — so nothing is
+  // wiped here.
   warn('SKIP_VITE_BUILD=1 — skipping vite build (fallback shell test mode)');
 } else {
   try {
+    // Wipe first so no artifact from a restored build cache can outlive the
+    // assets this build emits (see the Step 0 note above).
+    rmSync(DIST, { recursive: true, force: true });
+    ok('wiped any restored dist/ so no stale index.html can outlive its assets');
     execSync('npx vite build', { cwd: ROOT, stdio: 'inherit' });
     ok('Vite build completed');
   } catch (err) {
@@ -187,6 +210,51 @@ if (!existsSync(CLIENT_HTML)) {
   ok(`dist/client/index.html exists`);
 }
 
+// ── Step 3c: Assert the HTML only names files this build produced ──
+// A build whose index.html points at an asset it did not emit still deploys
+// "successfully" and then breaks in the browser (module MIME error → lazy route
+// never mounts → infinite skeleton). Fails after BOTH HTML sources exist — the
+// prerendered one and the fallback shell — so no path can ship a dangling tag.
+function referencedAssets() {
+  const refs = new Set();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        // `client` is the copy source (validated by its own tree), and the
+        // server build is never served to a browser.
+        if (entry.name === 'client' || entry.name === 'server' || entry.name === '.vite') continue;
+        walk(full);
+      } else if (entry.name.endsWith('.html')) {
+        const html = readFileSync(full, 'utf8');
+        for (const match of html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)) {
+          refs.add({ html: full.slice(DIST.length + 1), asset: match[1].slice(1) });
+        }
+      }
+    }
+  };
+  walk(DIST);
+  return [...refs];
+}
+
+// (function is hoisted; the assertion itself runs after step 3b)
+
+function assertReferencedAssetsExist() {
+  const refs = referencedAssets();
+  const dangling = refs.filter(({ asset }) => !existsSync(resolve(DIST, asset)));
+  if (dangling.length > 0) {
+    fail(
+      `${dangling.length} asset(s) are referenced by the built HTML but missing from dist/:\n` +
+        dangling.slice(0, 10).map((d) => `    ${d.html} → ${d.asset}`).join('\n') +
+        `\n  A deployed page that names a file it does not ship shows an empty screen or an\n` +
+        `  endless skeleton (browsers reject text/html served for a module import).\n` +
+        `  Usually a stale dist/index.html from a restored build cache: this script now\n` +
+        `  wipes dist/ before building, so re-run the build and check the prerender step.`
+    );
+  }
+  ok(`all ${refs.length} asset reference(s) in the built HTML exist on disk`);
+}
+
 // ── Step 3b: Fallback SPA shell (when prerender was skipped) ──
 // If the copy above could not produce dist/index.html (prerender skipped on
 // Vercel), generate a minimal SPA shell from the Vite manifest. The client
@@ -206,6 +274,8 @@ if (!existsSync(DIST_HTML)) {
     );
   }
 }
+
+assertReferencedAssetsExist();
 
 // (THEME_FOUC_GUARD itself now lives near the top of this file — see the
 //  declaration comment there for why it cannot be declared after step 3b.)
@@ -278,7 +348,9 @@ function generateFallbackIndexHtml() {
 
   // 🛡️ Guard: never write a blank shell (no scripts = blank page).
   // Dedupe first so the check reflects what will actually be emitted.
-  const scriptSet = [...new Set(scriptImports)];
+  const scriptSet = [...new Set(scriptImports)].filter((rel) =>
+    existsSync(resolve(DIST_CLIENT, rel)) || existsSync(resolve(DIST, rel)),
+  );
   if (scriptSet.length === 0) {
     fail(
       `Fallback generator found NO client entry scripts — would produce a blank page.\n` +
@@ -292,8 +364,14 @@ function generateFallbackIndexHtml() {
     const bIsRouter = b.includes('entry-client-routing') ? 0 : 1;
     return aIsRouter - bIsRouter;
   });
-  const uniqueCss = [...new Set(cssHrefs)];
-  const uniqueScripts = [...new Set(scriptImports)];
+  // Only emit references that will actually exist in the deployed output. A
+  // manifest can name a prerender-only entry that the client build did not
+  // emit; shipping the tag regardless is exactly how a boot shell ends up
+  // importing a 404.
+  const shipped = (rel) =>
+    existsSync(resolve(DIST_CLIENT, rel)) || existsSync(resolve(DIST, rel));
+  const uniqueCss = [...new Set(cssHrefs)].filter(shipped);
+  const uniqueScripts = [...new Set(scriptImports)].filter(shipped);
 
   const cssTags = uniqueCss
     .map((css) => `  <link rel="stylesheet" type="text/css" href="/${css}">`)

@@ -1,6 +1,15 @@
 // Growlanzo Service Worker
 // Cache-first for static assets, network-first for API requests
-const CACHE_NAME = 'growlanzo-v1';
+//
+// v2 (2026-10-29): v1 could poison itself and never recover. The SPA rewrite
+// answers a missing /assets/*.js with index.html and status 200, and v1's
+// `cacheFirst` stored anything `response.ok` under the requested URL — so a
+// deleted chunk was cached as HTML *at its .js key*. Every later import of that
+// chunk then failed the module MIME check, the lazy route never mounted, and
+// the section sat on its skeleton forever, across reloads and even after a
+// corrected deploy. Bumping the cache name purges those entries on activate;
+// `isCacheableAsset` below stops it from happening again.
+const CACHE_NAME = 'growlanzo-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -39,6 +48,29 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
+
+// Helper: may this response be stored under this request's URL?
+// A chunk URL must only ever hold JavaScript, a stylesheet URL only CSS. The
+// SPA fallback returns 200 + text/html for a missing asset, which is a valid
+// network answer but a poisonous cache entry: the browser then rejects it as a
+// module and the route dies for as long as the entry lives.
+function isCacheableAsset(request, response) {
+  if (!response || !response.ok || response.status !== 200) return false;
+  if (response.redirected) return false;
+  // Only same-origin, non-opaque responses carry the headers checked below.
+  if (response.type !== 'basic') return false;
+
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  const path = new URL(request.url).pathname;
+
+  // Never store HTML under an asset URL, and never store an asset under a
+  // navigation URL.
+  if (/\/(assets|_next)\/|\.(js|mjs|css|woff2?|ttf|png|jpe?g|svg|webp|ico|json)$/i.test(path)) {
+    return !contentType.includes('text/html');
+  }
+  if (isNavigationRequest(request)) return contentType.includes('text/html');
+  return true;
+}
 
 // Helper: is this a navigation request (HTML page)?
 function isNavigationRequest(request) {
@@ -113,19 +145,26 @@ self.addEventListener('fetch', (event) => {
  */
 async function cacheFirst(request) {
   const cached = await caches.match(request);
-  if (cached) {
+  // A cached entry that is not the kind of file the URL implies (an HTML error
+  // page stored under a .js key, left behind by an older worker) is discarded
+  // rather than served: serving it is what makes a route permanently dead.
+  if (cached && isCacheableAsset(request, cached)) {
     // Fire-and-forget update in background
     fetch(request).then((response) => {
-      if (response.ok) {
+      if (isCacheableAsset(request, response)) {
         caches.open(CACHE_NAME).then((cache) => cache.put(request, response));
       }
     }).catch(() => { /* ignore background update failures */ });
     return cached;
   }
+  if (cached) {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.delete(request);
+  }
 
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (isCacheableAsset(request, response)) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
@@ -146,7 +185,7 @@ async function cacheFirst(request) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response.ok && request.method !== 'HEAD' && response.status !== 206) {
+    if (isCacheableAsset(request, response) && request.method !== 'HEAD') {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone()).catch(() => {
         // Silently ignore cache errors (HEAD/206 responses are not cacheable)
@@ -175,7 +214,7 @@ async function networkFirstWithTimeout(request, timeoutMs) {
       timeoutPromise,
     ]);
     // Skip caching for HEAD requests and partial responses (not supported by Cache API)
-    if (response.ok && request.method !== 'HEAD' && response.status !== 206) {
+    if (isCacheableAsset(request, response) && request.method !== 'HEAD') {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone()).catch(() => {});
     }
@@ -200,7 +239,7 @@ async function networkFirstWithTimeout(request, timeoutMs) {
 async function networkFirstWithOfflineFallback(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (isCacheableAsset(request, response)) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
