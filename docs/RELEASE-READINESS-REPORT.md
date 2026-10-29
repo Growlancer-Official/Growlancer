@@ -382,3 +382,31 @@ committing. A guard test now fails whenever any later migration adds a
 - SMS provider for the phone criterion (name + email verify today).
 - `KYC_REQUIRED_FOR_ACTIONS` stays `false` until that provider is live.
 - Razorpay/PayPal live-key payment rehearsals remain untested (§4).
+
+### 8f. Final verification (post-deploy)
+
+Two live gates ran against the deployed system after §8e and both were taken to green:
+
+1. **Privilege + money-path pentest** (Backend Deploy CI, 103 checks against the real
+   database): the KYC column-grant regression from §8e is closed — "own profile name
+   still writable after completing onboarding" now passes **5/5**, escapes attempted 40,
+   **failures 0**.
+2. **Element audit at 375/768/1280** caught the Premium page's own copy: "Pro (Rs
+   299/month)" / "Premium (Rs 499/month)" were the only money strings on the site not
+   using the ₹ glyph, flagged as broken currency on all three viewports. Fixed in
+   `9b6332d` (both info tips now read ₹299 / ₹499) and locked with
+   `src/test/currencyCopyGuard.test.ts`, which fails if any `.tsx` ships an
+   `Rs 999` / `INR 999` prefix.
+
+Final state (commit `9b6332d`):
+
+| Gate | Result |
+| --- | --- |
+| `tsc --noEmit` | PASS |
+| `eslint` | PASS |
+| `vitest` | PASS — 68 files, 812 tests |
+| Production build + white-screen guard | PASS |
+| Element audit 375/768/1280 | PASS — 0 flags |
+| Backend Deploy + live pentest | PASS — 0 failures |
+| Vercel Production | READY for `9b6332d`; `/` and `/dashboard/identity-verification` answer 200 |
+| Working tree | clean (nothing uncommitted) |
