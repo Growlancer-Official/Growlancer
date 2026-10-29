@@ -32,7 +32,7 @@ import {
 const FAQ_ITEMS = [
   {
     q: 'What do the paid tiers include?',
-    a: 'Pro (Rs 299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day) and adds a Pro badge. Premium (Rs 499/month) includes all of Pro plus advanced analytics. Both are purely extra AI and analytics tools — your packages, proposals, visibility and matching score stay exactly the same.',
+    a: 'Pro (₹299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day) and adds a Pro badge. Premium (₹499/month) includes all of Pro plus advanced analytics. Both are purely extra AI and analytics tools — your packages, proposals, visibility and matching score stay exactly the same.',
   },
   {
     q: 'What is the difference between Pro and Premium?',
@@ -257,7 +257,7 @@ export function ProSubscriptionPage() {
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
-            <InfoTip title="Growlanzo paid tiers" text="There are two paid tiers, one above the other. Pro (Rs 299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Pro badge. Premium (Rs 499/month) includes everything in Pro plus advanced analytics: earnings and view trends, the full proposal funnel, your rating split and your top paying categories. Neither tier affects your packages, visibility, ranking or matching — those stay merit-based and free for everyone." />
+            <InfoTip title="Growlanzo paid tiers" text="There are two paid tiers, one above the other. Pro (₹299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Pro badge. Premium (₹499/month) includes everything in Pro plus advanced analytics: earnings and view trends, the full proposal funnel, your rating split and your top paying categories. Neither tier affects your packages, visibility, ranking or matching — those stay merit-based and free for everyone." />
           </h1>
           <p className="text-slate-500 mt-0.5 text-sm">Free to start — Pro and Premium add AI tools and analytics on top</p>
         </div>

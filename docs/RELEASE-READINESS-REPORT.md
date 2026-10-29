@@ -352,3 +352,33 @@ Code rollback is safe for all five items. The migrations are additive: new
 columns have defaults, the only destructive statement is a widened CHECK
 constraint and a `subscription_plans` rename of the canonical ₹299 row, which is
 idempotent and guarded by a `DO` block that does nothing when the row is absent.
+
+### 8e. Deployment record — 2026-10-29 (production)
+
+Everything in §8a is now **committed, pushed and deployed** to the live project.
+
+| What | Evidence |
+| --- | --- |
+| Commits | `ce275c9` (feature set) → `644f7fd` (KYC column-grant fix), branch `main`, remote `Growlancer-Official/Growlanzo` |
+| Frontend | Vercel Production deployment READY after each push; live `https://growlanzo.vercel.app` answers 200, deep route `/dashboard/identity-verification` answers 200, and the served chunk contains `refresh_light_kyc` + `phone_change` |
+| Migrations | `db push` applied `20270209000000`, `20270210000000`, `20270211000000`; `migration list` shows local = remote through `20270211000000` |
+| Edge Functions | `ai-ticket-responder`, `withdrawal`, `razorpay`, `razorpay-payout-webhook`, `paypal` deployed ACTIVE |
+| Backend Deploy CI | run `40841237256` **success** — 103 live pentest checks, 40 escapes attempted, **0 failures** |
+| KYC RPC in prod | `POST /rest/v1/rpc/refresh_light_kyc` as anon → 401 `42501 permission denied` (present, and not exposed to anon) |
+| Premium tier seed | `20270209000000` raises if the canonical Pro row is missing, so a successful apply proves the Premium row exists and is active |
+
+**One regression was caught by the live pentest and fixed, not waived.** The
+light-KYC migration added four columns to `profiles` without extending the
+14-column `authenticated` SELECT allowlist from `20270119000025`. PostgREST
+expands `PATCH … RETURNING *` and the `profiles!fk(*)` embeds to every column, so
+profile edits failed with 403/42501 ("own profile name still writable" 0/5).
+`20270211000000_light_kyc_profile_grants.sql` grants exactly the four KYC
+columns to `authenticated` (anon gets none), restates the security-detector
+allowlist so the hourly drift sweep stays clean, and proves the boundary before
+committing. A guard test now fails whenever any later migration adds a
+`profiles` column without its grant.
+
+**Still outstanding (founder action, not code):**
+- SMS provider for the phone criterion (name + email verify today).
+- `KYC_REQUIRED_FOR_ACTIONS` stays `false` until that provider is live.
+- Razorpay/PayPal live-key payment rehearsals remain untested (§4).

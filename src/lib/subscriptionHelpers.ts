@@ -56,7 +56,7 @@ export function isProSubscription(
 
 /**
  * True ONLY for the Premium tier — the one that unlocks advanced analytics.
- * Pro (the canonical Rs 299 premium_monthly plan, renamed to "Pro" by
+ * Pro (the canonical ₹299 premium_monthly plan, renamed to "Pro" by
  * 20270209000000_premium_analytics_tiers.sql) deliberately does not qualify, so
  * the ladder stays Free → Pro → Premium and nothing is sold twice.
  */
