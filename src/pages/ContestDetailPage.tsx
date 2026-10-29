@@ -45,7 +45,7 @@ export function ContestDetailPage() {
   const [certificates, setCertificates] = useState<{ submission_id: string; place: number; code: string }[]>([]);
 
   const fetchContestData = useCallback(async () => {
-    if (!contestId) return;
+    if (!contestId) { setLoading(false); return; }
     setLoading(true);
     
     const [contestData, submissionsData, commentsData] = await Promise.all([

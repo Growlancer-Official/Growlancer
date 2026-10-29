@@ -227,7 +227,7 @@ export function WalletPage() {
 
   /** Fetch wallet balance & total withdrawn from completed withdrawals */
   const fetchOverview = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setOverviewLoading(false); return; }
     setOverviewLoading(true);
     try {
       // Get wallet balance
@@ -256,7 +256,7 @@ export function WalletPage() {
 
   /** Fetch full transaction history — withdrawals (debits) + escrow releases (credits) */
   const fetchTransactions = useCallback(async (page: number, replace = false) => {
-    if (!user) return;
+    if (!user) { setTxLoading(false); return; }
     setTxLoading(true);
     setTxError(null);
     try {

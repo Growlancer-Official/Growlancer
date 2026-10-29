@@ -54,7 +54,7 @@ export default function SupportTicketsPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const loadTickets = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.id) { setLoading(false); return; }
     setLoading(true);
     const result = await ticketService.getUserTickets(user.id);
     if (result.success) setTickets(result.tickets);

@@ -20,7 +20,7 @@ export function ClientTeamProjectsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     const res = await teamProjectsService.listProjects(user.id);

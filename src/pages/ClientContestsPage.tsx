@@ -23,7 +23,7 @@ export function ClientContestsPage() {
   const toast = useToast();
 
   const fetchContests = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     const data = await contestService.getClientContests(user.id);
     setContests(data);

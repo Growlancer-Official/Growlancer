@@ -84,7 +84,7 @@ export function ClientMatchesPage() {
   }, [projectId]);
 
   const fetchMatches = useCallback(async () => {
-    if (!projectId) return;
+    if (!projectId) { setLoading(false); return; }
 
     setLoading(true);
     const data = await aiMatchingService.getProjectMatches(projectId);

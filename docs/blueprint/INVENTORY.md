@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **692 files** across 12 groups.
+Total tracked structure: **693 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -17,7 +17,7 @@ Total tracked structure: **692 files** across 12 groups.
 | Edge shared modules | 8 |
 | Database migrations | 307 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 69 |
+| Test suite | 70 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -651,7 +651,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (69)
+## Test suite (70)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -691,6 +691,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/iconPackConsolidation.test.ts`
 - `src/test/kycLightVerification.test.ts`
 - `src/test/launchSurfaceFixes.test.ts`
+- `src/test/loaderNeverHangs.test.ts`
 - `src/test/mobileMenuEscape.test.tsx`
 - `src/test/mvpScopeGuard.test.ts`
 - `src/test/noCommittedSecrets.test.ts`

@@ -35,7 +35,7 @@ export function ClientReviewsPage() {
   const toast = useToast();
 
   const fetchReviews = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const result = await reviewService.getUserReviews(user.id);

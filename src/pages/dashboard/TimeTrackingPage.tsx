@@ -111,7 +111,7 @@ export function TimeTrackingPage() {
   }, [user, fetchContracts]);
 
   const fetchTimeEntries = useCallback(async () => {
-    if (!user || !activeContract) return;
+    if (!user || !activeContract) { setLoading(false); return; }
     setLoading(true);
 
     const { data, error } = await supabase

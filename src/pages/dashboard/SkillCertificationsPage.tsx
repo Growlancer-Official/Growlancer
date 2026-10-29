@@ -17,7 +17,7 @@ export function SkillCertificationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     // Show the FULL catalog of skill assessments — every skill has its test
     // available in real time (already-earned ones appear locked/passed).

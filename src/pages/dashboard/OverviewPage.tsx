@@ -140,7 +140,7 @@ export function OverviewPage() {
 
   /** Fetch all dashboard data with forceRefetch=true to bypass cache */
   const fetchDashboardData = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     try {
       setLoading(true);

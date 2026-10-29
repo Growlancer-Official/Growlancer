@@ -74,7 +74,7 @@ export default function ClientDashboard() {
   const [profileCompletion, setProfileCompletion] = useState<ProfileCompletion | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
-    if (!user || role !== 'client') return;
+    if (!user || role !== 'client') { setLoading(false); return; }
 
     try {
       setLoading(true);

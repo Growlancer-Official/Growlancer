@@ -75,7 +75,7 @@ export function AdminUserReportsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const fetchReports = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {

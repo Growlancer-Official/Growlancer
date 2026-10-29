@@ -27,7 +27,7 @@ export function AnalyticsPage() {
   const toast = useToast();
 
   const fetchAnalytics = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const [result, advancedResult] = await Promise.all([

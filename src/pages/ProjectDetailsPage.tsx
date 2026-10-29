@@ -67,7 +67,7 @@ export function ProjectDetailsPage() {
   const [showReopenModal, setShowReopenModal] = useState(false);
 
   const fetchProject = useCallback(async () => {
-    if (!projectId) return;
+    if (!projectId) { setLoading(false); return; }
     setLoading(true);
     setError(null);
 

@@ -50,7 +50,7 @@ export function PortfolioPage() {
   const [formMediaUrls, setFormMediaUrls] = useState('');
 
   const fetchItems = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const result = await portfolioService.getByUser(user.id);

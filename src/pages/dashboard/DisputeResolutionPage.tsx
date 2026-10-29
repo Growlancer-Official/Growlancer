@@ -150,7 +150,7 @@ export function DisputeResolutionPage() {
 
   /* fetch disputes list */
   const fetchDisputes = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     try {
       const data = await disputeService.getUserDisputes(user.id);

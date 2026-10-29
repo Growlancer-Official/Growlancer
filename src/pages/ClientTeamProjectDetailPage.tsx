@@ -43,7 +43,7 @@ export function ClientTeamProjectDetailPage() {
   }, [user]);
 
   const load = useCallback(async () => {
-    if (!teamProjectId || !user) return;
+    if (!teamProjectId || !user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
