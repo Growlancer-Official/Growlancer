@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { IDENTITY_VERIFICATION_ENABLED } from './featureFlags';
+import { KYC_REQUIRED_FOR_ACTIONS } from './featureFlags';
 
 /**
  * KYC gate for CRITICAL actions only (orders, escrow funding, withdrawals).
@@ -7,17 +7,18 @@ import { IDENTITY_VERIFICATION_ENABLED } from './featureFlags';
  * action, returns whether the user may proceed, and hands back the KYC page
  * path (+ redirect target) when they can't.
  *
- * Identity verification is DEFERRED for launch (`IDENTITY_VERIFICATION_ENABLED`
- * is false), so the gate is open: users complete their profile instead. The
- * original check is kept below, unchanged, for the day the feature returns —
- * turning the flag on restores it without touching a single call site. Server
+ * The gate is switched by `KYC_REQUIRED_FOR_ACTIONS` (lib/featureFlags.ts),
+ * currently false: the light KYC flow is live for both roles, but the phone
+ * criterion depends on the project's SMS provider, so blocking escrow and
+ * withdrawals on it would strand real money. Flip that constant on in the same
+ * release that enables SMS — the check below already implements the rule. Server
  * ownership/permission checks are independent of this client-side gate.
  */
 export async function requireKycForAction(
   user: { id: string } | null | undefined
 ): Promise<{ verified: boolean; kycPath: string; status: string | null }> {
-  if (!IDENTITY_VERIFICATION_ENABLED) {
-    return { verified: true, kycPath: '', status: 'deferred' };
+  if (!KYC_REQUIRED_FOR_ACTIONS) {
+    return { verified: true, kycPath: '', status: 'not_required' };
   }
   if (!user?.id) {
     return { verified: false, kycPath: '/login', status: null };

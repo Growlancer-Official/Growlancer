@@ -41,30 +41,25 @@ const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60000;
 const ROUTE = 'razorpay';
 
-async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+async function checkRateLimit(supabaseAdmin: any, identifier: string): Promise<boolean> {
   const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
-  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* ignore */ }
+  const windowStart = new Date(Math.floor(now.getTime() / RATE_WINDOW_MS) * RATE_WINDOW_MS);
 
-  const { count, error } = await supabaseClient
-    .from('rate_limits')
-    .select('*', { count: 'exact', head: true })
-    .eq('identifier', identifier)
-    .eq('route', ROUTE)
-    .gte('window_start', windowStart.toISOString());
-
-  // FAIL CLOSED on a limiter error. This endpoint creates charges and refunds;
-  // if the store cannot be read we cannot prove the budget is respected, so the
-  // safe answer is to refuse rather than let an attacker induce the error and
-  // get unlimited attempts. The caller returns 429.
-  if (error) {
-    console.error('Rate limiter unavailable — refusing the request (fail closed):', error.message);
+  try {
+    const { data, error } = await supabaseAdmin.rpc('increment_rate_limit', {
+      p_identifier: identifier,
+      p_route: ROUTE,
+      p_window_start: windowStart.toISOString(),
+    });
+    if (error || typeof data !== 'number') {
+      console.error('Rate limiter unavailable — refusing the request (fail closed):', error?.message || 'invalid counter response');
+      return false;
+    }
+    return data <= RATE_LIMIT;
+  } catch (error) {
+    console.error('Rate limiter unavailable — refusing the request (fail closed):', error);
     return false;
   }
-  if (count !== null && count >= RATE_LIMIT) return false;
-
-  await supabaseClient.from('rate_limits').insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
-  return true;
 }
 
 function getBasicAuth(): string {
@@ -187,7 +182,7 @@ serve(async req => {
       // Razorpay payload is NEVER echoed (prevents leaking order metadata to
       // callers). Rate-limited like every other user action.
       const identifier = user?.id || req.headers.get('x-forwarded-for') || 'unknown';
-      if (!(await checkRateLimit(supabaseClient, identifier))) {
+      if (!(await checkRateLimit(supabaseAdmin, identifier))) {
         return new Response(JSON.stringify({ error: 'Too many requests' }), {
           status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -230,7 +225,7 @@ serve(async req => {
     // Rate limit user actions only (cron calls are low-volume + secret-guarded)
     if (!isCron) {
       const identifier = user.id || req.headers.get('x-forwarded-for') || 'unknown';
-      if (!(await checkRateLimit(supabaseClient, identifier))) {
+      if (!(await checkRateLimit(supabaseAdmin, identifier))) {
         return new Response(JSON.stringify({ error: 'Too many requests' }), {
           status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
+      { auth: { persistSession: false, autoRefreshToken: false } }
     )
 
     const eventType = event.event
@@ -93,11 +93,16 @@ Deno.serve(async (req) => {
     }
 
     // Find the withdrawal by razorpay_payout_id
-    const { data: withdrawal } = await supabaseClient
+    const { data: withdrawal, error: withdrawalLookupError } = await supabaseClient
       .from('withdrawals')
       .select('id, user_id, amount, status')
       .eq('razorpay_payout_id', razorpayPayoutId)
-      .single()
+      .maybeSingle()
+
+    if (withdrawalLookupError) {
+      console.error('Unable to resolve payout webhook to a withdrawal')
+      return new Response(JSON.stringify({ error: 'Unable to resolve payout' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
 
     if (!withdrawal) {
       console.log(`No withdrawal found for payout ID: ${razorpayPayoutId}`)
@@ -113,33 +118,38 @@ Deno.serve(async (req) => {
       })
     }
 
-    if (newStatus === 'failed') {
-      // Rollback: release wallet funds back to balance
-      await supabaseClient.rpc('release_wallet_funds', {
-        p_user_id: withdrawal.user_id,
-        p_amount: withdrawal.amount,
-      }).catch(e => console.error('Release funds error:', e))
+    if (newStatus === 'failed' || newStatus === 'completed') {
+      // Terminal payout statuses must go through the internal, service-role-only
+      // RPC so wallet, withdrawal, and transaction rows change atomically.
+      const { data: finalization, error: finalizationError } = newStatus === 'completed'
+        ? await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+        : await supabaseClient.rpc('process_withdrawal_failure', {
+          p_withdrawal_id: withdrawal.id,
+          p_failure_reason: failureReason || 'Payout failed at RazorpayX',
+        })
 
-      await supabaseClient.from('transactions').update({
-        status: 'failed',
-        description: `Withdrawal failed: ${failureReason || 'Payout failed at RazorpayX'}`,
-      }).eq('metadata->>withdrawal_id', withdrawal.id).catch(() => {})
-    } else if (newStatus === 'completed') {
-      await supabaseClient.from('transactions').update({
-        status: 'completed',
-      }).eq('metadata->>withdrawal_id', withdrawal.id).catch(() => {})
+      if (finalizationError || !finalization?.success) {
+        console.error(`Payout ${razorpayPayoutId} reached ${newStatus}, but ledger finalization failed; reconciliation required`)
+        return new Response(JSON.stringify({ error: 'Payout recorded for reconciliation' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    } else {
+      const { error: updateError } = await supabaseClient
+        .from('withdrawals')
+        .update({ status: newStatus, failure_reason: failureReason, updated_at: new Date().toISOString() })
+        .eq('id', withdrawal.id)
+        .in('status', ['pending', 'processing'])
+
+      if (updateError) {
+        console.error(`Payout ${razorpayPayoutId} nonterminal status could not be saved`)
+        return new Response(JSON.stringify({ error: 'Payout status update failed' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
-
-    // Update withdrawal status
-    await supabaseClient
-      .from('withdrawals')
-      .update({
-        status: newStatus,
-        failure_reason: failureReason,
-        processed_at: newStatus === 'completed' ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', withdrawal.id)
 
     return new Response(JSON.stringify({ received: true, withdrawal_id: withdrawal.id, new_status: newStatus }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

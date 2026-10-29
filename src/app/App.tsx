@@ -148,6 +148,8 @@ const AdminReportsPage = lazy(() => import('@pages/admin/AdminReportsPage').then
 const AdminInternshipsPage = lazy(() => import('@pages/admin/AdminInternshipsPage').then(m => ({ default: m.AdminInternshipsPage })));
 const AdminCertificatesPage = lazy(() => import('@pages/admin/AdminCertificatesPage').then(m => ({ default: m.AdminCertificatesPage })));
 const AdminIdentityVerificationPage = lazy(() => import('@pages/admin/AdminIdentityVerificationPage').then(m => ({ default: m.AdminIdentityVerificationPage })));
+// One light-KYC screen (name + email + phone) shared by both roles.
+const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const AdminSupportTicketsPage = lazy(() => import('@pages/admin/AdminSupportTicketsPage').then(m => ({ default: m.AdminSupportTicketsPage })));
 const AdminUserReportsPage = lazy(() => import('@pages/admin/AdminUserReportsPage').then(m => ({ default: m.AdminUserReportsPage })));
 const AdminWaitlistPage = lazy(() => import('@pages/admin/AdminWaitlistPage').then(m => ({ default: m.AdminWaitlistPage })));
@@ -354,9 +356,9 @@ function App() {
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
-                {/* Identity verification is deferred (lib/featureFlags.ts): an old
-                    link lands on the profile editor instead of a dead screen. */}
-                <Route path="identity-verification" element={<Navigate to="/dashboard/profile" replace />} />
+                {/* Light KYC (name + email + phone) for freelancers; the same
+                    component serves /client/verification. */}
+                <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route
                   path="certifications"
                   element={CERTIFICATES_ENABLED ? <SkillCertificationsPage /> : <FeatureUnavailablePage />}
@@ -398,9 +400,8 @@ function App() {
                 <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
-                {/* Identity verification is deferred — profile completion is the
-                    trust signal for launch; old links go to client settings. */}
-                <Route path="verification" element={<Navigate to="/client/settings" replace />} />
+                {/* Light KYC — the same three criteria as the freelancer screen. */}
+                <Route path="verification" element={<IdentityVerificationPage />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
                 {/* ROUTES.CLIENT.TICKETS pointed at /client/tickets, which had no
                     route — shared links landed on the 404 page. */}

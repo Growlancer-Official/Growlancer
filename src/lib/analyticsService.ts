@@ -40,6 +40,37 @@ export interface AnalyticsData {
   totalMatches: number;
 }
 
+/**
+ * Advanced analytics - Premium tier only (see isPremiumSubscription).
+ * Everything here is derived from rows the freelancer already owns, on the
+ * same timeframe picker as the simple dashboard, so it refreshes in real time
+ * alongside it. Nothing is estimated or fabricated: when a comparison period
+ * has no data the delta is reported as null, not as a flattering number.
+ */
+export interface AdvancedAnalyticsData {
+  /** Earnings in the selected period vs the equally long period before it. */
+  earningsDeltaPct: number | null;
+  earningsPreviousPeriod: number;
+  /** Profile views in the period vs the previous period. */
+  viewsDeltaPct: number | null;
+  views: number;
+  viewsPreviousPeriod: number;
+  /** Completed-contract value in the period. */
+  completedEarnings: number;
+  avgContractValue: number;
+  /** Proposal funnel for the period. */
+  proposalsSent: number;
+  proposalsAccepted: number;
+  proposalsRejected: number;
+  proposalsPending: number;
+  avgBidAmount: number;
+  acceptedBidValue: number;
+  /** Review rating distribution for the period. */
+  ratingBreakdown: { five: number; four: number; three: number; low: number };
+  /** Top categories by completed contract value, when projects are readable. */
+  topCategories: { category: string; contracts: number; earnings: number }[];
+}
+
 export const analyticsService = {
   /**
    * Get comprehensive analytics for a freelancer.
@@ -222,7 +253,174 @@ export const analyticsService = {
       return defaultData;
     }
   },
+
+  /**
+   * Premium-only advanced analytics for the same user + timeframe.
+   * Never throws: an unavailable comparison simply reports null deltas.
+   */
+  async getAdvancedAnalytics(
+    freelancerId: string,
+    timeframe: '7d' | '30d' | '90d' | '1y' = '30d',
+  ): Promise<AdvancedAnalyticsData> {
+    const empty: AdvancedAnalyticsData = {
+      earningsDeltaPct: null,
+      earningsPreviousPeriod: 0,
+      viewsDeltaPct: null,
+      views: 0,
+      viewsPreviousPeriod: 0,
+      completedEarnings: 0,
+      avgContractValue: 0,
+      proposalsSent: 0,
+      proposalsAccepted: 0,
+      proposalsRejected: 0,
+      proposalsPending: 0,
+      avgBidAmount: 0,
+      acceptedBidValue: 0,
+      ratingBreakdown: { five: 0, four: 0, three: 0, low: 0 },
+      topCategories: [],
+    };
+
+    try {
+      const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365;
+      const ms = days * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      const periodStart = new Date(now - ms).toISOString();
+      const previousStart = new Date(now - ms * 2).toISOString();
+
+      const [
+        contractsNow,
+        proposalsNow,
+        reviewsNow,
+        viewsNow,
+        viewsPrev,
+        earningsNow,
+        earningsPrev,
+      ] = await Promise.all([
+        supabase
+          .from('contracts')
+          .select('id, status, amount, created_at, projects(category)')
+          .eq('freelancer_id', freelancerId)
+          .gte('created_at', periodStart),
+        supabase
+          .from('proposals')
+          .select('id, status, proposed_rate, created_at')
+          .eq('freelancer_id', freelancerId)
+          .gte('created_at', periodStart),
+        supabase
+          .from('reviews')
+          .select('rating, created_at')
+          .eq('reviewee_id', freelancerId)
+          .gte('created_at', periodStart),
+        supabase
+          .from('usage_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', freelancerId)
+          .eq('feature', 'profile_view')
+          .gte('created_at', periodStart),
+        supabase
+          .from('usage_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', freelancerId)
+          .eq('feature', 'profile_view')
+          .gte('created_at', previousStart)
+          .lt('created_at', periodStart),
+        supabase
+          .from('transactions')
+          .select('amount, created_at')
+          .eq('user_id', freelancerId)
+          .eq('type', 'credit')
+          .gte('created_at', periodStart),
+        supabase
+          .from('transactions')
+          .select('amount, created_at')
+          .eq('user_id', freelancerId)
+          .eq('type', 'credit')
+          .gte('created_at', previousStart)
+          .lt('created_at', periodStart),
+      ]);
+
+      const sum = (rows: Array<{ amount?: number | null }> | null) =>
+        (rows || []).reduce((total, row) => total + (Number(row.amount) || 0), 0);
+
+      const periodEarnings = sum(earningsNow.data);
+      const previousEarnings = sum(earningsPrev.data);
+      // A trend is only claimed when there is a real previous period to compare
+      // against; a first-time period reports null instead of a fake +100%.
+      const earningsDeltaPct =
+        previousEarnings > 0
+          ? Math.round(((periodEarnings - previousEarnings) / previousEarnings) * 100)
+          : null;
+
+      const views = viewsNow.count ?? 0;
+      const viewsPreviousPeriod = viewsPrev.count ?? 0;
+      const viewsDeltaPct =
+        viewsPreviousPeriod > 0
+          ? Math.round(((views - viewsPreviousPeriod) / viewsPreviousPeriod) * 100)
+          : null;
+
+      const contracts = (contractsNow.data || []) as Array<{
+        status: string;
+        amount: number;
+        projects?: { category: string | null } | { category: string | null }[] | null;
+      }>;
+      const completed = contracts.filter((c) => c.status === 'completed');
+      const completedEarnings = completed.reduce((t, c) => t + (Number(c.amount) || 0), 0);
+
+      const proposals = (proposalsNow.data || []) as Array<{ status: string; proposed_rate: number | null }>;
+      const bids = proposals.map((p) => Number(p.proposed_rate) || 0);
+      const acceptedBids = proposals
+        .filter((p) => p.status === 'accepted')
+        .map((p) => Number(p.proposed_rate) || 0);
+
+      const ratings = (reviewsNow.data || []).map((r) => Number(r.rating) || 0);
+      const ratingBreakdown = {
+        five: ratings.filter((r) => r === 5).length,
+        four: ratings.filter((r) => r === 4).length,
+        three: ratings.filter((r) => r === 3).length,
+        low: ratings.filter((r) => r <= 2).length,
+      };
+
+      // Category split - projects are RLS-protected, so a join the freelancer
+      // cannot read yields null and is skipped rather than guessed.
+      const byCategory = new Map<string, { contracts: number; earnings: number }>();
+      for (const contract of completed) {
+        const joined = contract.projects;
+        const category = Array.isArray(joined) ? joined[0]?.category : joined?.category;
+        if (!category) continue;
+        const bucket = byCategory.get(category) || { contracts: 0, earnings: 0 };
+        bucket.contracts += 1;
+        bucket.earnings += Number(contract.amount) || 0;
+        byCategory.set(category, bucket);
+      }
+      const topCategories = [...byCategory.entries()]
+        .map(([category, stats]) => ({ category, ...stats }))
+        .sort((a, b) => b.earnings - a.earnings)
+        .slice(0, 5);
+
+      return {
+        earningsDeltaPct,
+        earningsPreviousPeriod: Math.round(previousEarnings),
+        viewsDeltaPct,
+        views,
+        viewsPreviousPeriod,
+        completedEarnings: Math.round(completedEarnings),
+        avgContractValue: completed.length > 0 ? Math.round(completedEarnings / completed.length) : 0,
+        proposalsSent: proposals.length,
+        proposalsAccepted: proposals.filter((p) => p.status === 'accepted').length,
+        proposalsRejected: proposals.filter((p) => p.status === 'rejected').length,
+        proposalsPending: proposals.filter((p) => p.status === 'pending').length,
+        avgBidAmount: bids.length > 0 ? Math.round(bids.reduce((t, b) => t + b, 0) / bids.length) : 0,
+        acceptedBidValue: Math.round(acceptedBids.reduce((t, b) => t + b, 0)),
+        ratingBreakdown,
+        topCategories,
+      };
+    } catch (error) {
+      console.error('Error fetching advanced analytics:', error);
+      return empty;
+    }
+  },
 };
+
 
 /**
  * Helper to aggregate transactions into monthly buckets.

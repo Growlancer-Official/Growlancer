@@ -15,18 +15,28 @@
  */
 
 /**
- * Identity verification (KYC document upload) is deferred from this release.
+ * Identity verification is ON for both roles — the light three-criteria check
+ * (name + confirmed email + confirmed phone), not the old document upload.
  *
- * The trust signal for launch is PROFILE COMPLETENESS instead — both roles can
- * reach 100% without uploading anything (see `src/lib/profileCompletion.ts`).
- * Nothing in the product requires a verified identity to browse, post, hire,
- * fund escrow, deliver or withdraw.
- *
- * The page, edge functions, tables and the admin review screen stay in the
- * repo so the feature can be switched on later; this switch only removes the
- * entry points (sidebar entries, header chip and the action-time KYC gate).
+ * `src/pages/dashboard/IdentityVerificationPage.tsx` is the single screen both
+ * roles share; it writes nothing itself and lets `refresh_light_kyc` derive
+ * `profiles.verification_status` from the auth record. This switch controls the
+ * ENTRY POINTS only: the sidebar link, the header chip and the routes.
  */
-export const IDENTITY_VERIFICATION_ENABLED = false;
+export const IDENTITY_VERIFICATION_ENABLED = true;
+
+/**
+ * Whether an unverified identity blocks critical money actions (orders, escrow
+ * funding, withdrawals).
+ *
+ * OFF deliberately: the phone criterion needs the project's SMS provider
+ * connected in Supabase (Auth → Providers → Phone). Until that credential is in
+ * place a newly verified user could not finish step three, and blocking escrow
+ * or withdrawals on it would lock real money out of the product. Flip this to
+ * `true` in the same release that turns SMS on — `requireKycForAction` already
+ * implements the check, so nothing else changes.
+ */
+export const KYC_REQUIRED_FOR_ACTIONS = false;
 
 export type ClientFeature = 'internships' | 'certificates' | 'contests';
 

@@ -248,3 +248,56 @@ describe('honest referral copy', () => {
     expect(REFERRALS_PAGE).not.toContain('leader.email');
   });
 });
+
+
+describe('referral pays BOTH sides, in real time', () => {
+  const BOTH = read('supabase/migrations/20270207000000_referee_referral_bonus.sql');
+
+  it('adds a dedicated referee reason and widens the ledger CHECK by exactly one value', () => {
+    expect(BOTH).toContain("'referee_referral_bonus'");
+    // Every original reason must survive the widening — a historical row can
+    // never be left violating the constraint.
+    for (const reason of [
+      'referral_bonus',
+      'kyc_bonus',
+      'first_project_bonus',
+      'redemption_premium',
+      'redemption_project_discount',
+      'withdrawal',
+      'admin_adjustment',
+    ]) {
+      expect(BOTH).toContain(`'${reason}'`);
+    }
+  });
+
+  it('pays the referee in the same transaction, idempotently', () => {
+    // The referee's ledger row is written inside the award function itself.
+    expect(BOTH).toMatch(/INSERT INTO public\.grow_coin_ledger/);
+    expect(BOTH).toMatch(/v_referee_bonus/);
+    expect(BOTH).toMatch(/ON CONFLICT DO NOTHING/);
+    // One referee payout per referral row, enforced by the database.
+    expect(BOTH).toContain('CREATE UNIQUE INDEX IF NOT EXISTS uq_grow_coin_referee_bonus_per_referral');
+    expect(BOTH).toMatch(/WHERE reason = 'referee_referral_bonus' AND reference_id IS NOT NULL/);
+  });
+
+  it('keeps every earlier guard: role gate, real-provider gate, server-only', () => {
+    expect(BOTH).toMatch(/'reason', 'role_mismatch'/);
+    expect(BOTH).toMatch(/NOT IN \('dev_mode', 'dev-sandbox'\)/);
+    expect(BOTH).toMatch(/v_cap constant integer := 20/);
+    expect(BOTH).toMatch(/bonus_claimed/);
+    expect(BOTH).toMatch(
+      /REVOKE ALL ON FUNCTION public\.award_referral_bonus_if_eligible\(uuid\) FROM PUBLIC, anon, authenticated/
+    );
+    // The referee's award is independent of the referrer's monthly cap.
+    expect(BOTH).toMatch(/referee_coins/);
+  });
+
+  it('notifies the referee on their own side of the marketplace', () => {
+    expect(BOTH).toContain("CASE WHEN v_referred_role = 'client' THEN '/client/referrals' ELSE '/referrals' END");
+  });
+
+  it('carries fail-closed assertions, including the referee award itself', () => {
+    expect(BOTH).toMatch(/referee referral migration failed its own assertions/);
+    expect(BOTH).toMatch(/the referee is no longer paid/);
+  });
+});

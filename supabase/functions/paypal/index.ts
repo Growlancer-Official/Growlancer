@@ -27,38 +27,25 @@ const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60000;
 const ROUTE = 'paypal';
 
-async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+async function checkRateLimit(supabaseAdmin: any, identifier: string): Promise<boolean> {
   const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
+  const windowStart = new Date(Math.floor(now.getTime() / RATE_WINDOW_MS) * RATE_WINDOW_MS);
 
   try {
-    await supabaseClient.rpc('cleanup_expired_rate_limits');
-  } catch {
-    // Non-critical
-  }
-
-  const { count, error } = await supabaseClient
-    .from('rate_limits')
-    .select('*', { count: 'exact', head: true })
-    .eq('identifier', identifier)
-    .eq('route', ROUTE)
-    .gte('window_start', windowStart.toISOString());
-
-  // Fail closed: a limiter read failure must not grant unlimited money calls.
-  if (error) {
-    console.error('Rate limiter unavailable — refusing the request (fail closed):', error.message);
+    const { data, error } = await supabaseAdmin.rpc('increment_rate_limit', {
+      p_identifier: identifier,
+      p_route: ROUTE,
+      p_window_start: windowStart.toISOString(),
+    });
+    if (error || typeof data !== 'number') {
+      console.error('Rate limiter unavailable — refusing the request (fail closed):', error?.message || 'invalid counter response');
+      return false;
+    }
+    return data <= RATE_LIMIT;
+  } catch (error) {
+    console.error('Rate limiter unavailable — refusing the request (fail closed):', error);
     return false;
   }
-  if (count !== null && count >= RATE_LIMIT) return false;
-
-  await supabaseClient.from('rate_limits').insert({
-    identifier,
-    route: ROUTE,
-    count: 1,
-    window_start: now.toISOString(),
-  });
-
-  return true;
 }
 
 function validateAmount(amount: any): number {
@@ -271,7 +258,7 @@ serve(async req => {
 
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user.id || clientIP;
-    const allowed = await checkRateLimit(supabaseClient, identifier);
+    const allowed = await checkRateLimit(supabaseAdmin, identifier);
     if (!allowed) {
       return new Response(JSON.stringify({ error: 'Too many requests' }), {
         status: 429,

@@ -41,7 +41,7 @@ function appSourceFiles(): string[] {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
-      else if (/\.tsx?$/.test(entry.name) && full !== THIS_FILE) out.push(full);
+      else if (/\.tsx?$/.test(entry.name) && full !== THIS_FILE && !full.includes(`${path.sep}test${path.sep}`)) out.push(full);
     }
   };
   walk(path.join(ROOT, 'src'));

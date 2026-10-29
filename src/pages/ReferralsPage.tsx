@@ -173,7 +173,7 @@ export function ReferralsPage() {
           <span className="font-bold">When do you get paid?</span> A referral pays{' '}
           <span className="font-bold">10 Grow Coins</span> only after your referred freelancer's{' '}
           <span className="font-bold">first project is completed</span> (or their identity verification is approved) —
-          never at signup. Nothing is paid for empty or fake accounts, which is what keeps the programme honest.
+          never at signup. Your referral is paid too — the moment that criteria completes, both of you receive 10 coins in the same transaction, live on both screens. Nothing is paid for empty or fake accounts, which is what keeps the programme honest.
           You also earn <span className="font-bold">milestones yourself</span>:{' '}
           <span className="font-bold">10 coins</span> when your own identity is verified and{' '}
           <span className="font-bold">20 coins</span> when your first project completes — each paid once, whether you work
@@ -384,7 +384,7 @@ export function ReferralsPage() {
                   <GrowCoinIcon size={22} />
                 </div>
                 <h4 className="font-bold mb-2">Grow Coins (₹ value)</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Each successful referral pays 10 Grow Coins — real ₹1-each value you can redeem to your wallet or use for Premium. Your own milestones pay too: 10 coins on verified KYC, 20 on your first completed project. Up to 20 referral bonuses per month.</p>
+                <p className="text-xs text-slate-500 leading-relaxed">Each successful referral pays 10 Grow Coins to you and 10 Grow Coins to your referral, at the same instant — real ₹1-each value you can redeem to your wallet or use for Premium. Your own milestones pay too: 10 coins on verified KYC, 20 on your first completed project. Up to 20 referral bonuses per month.</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-2">

@@ -31,6 +31,24 @@ const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
 );
 
+async function finalizeProviderWithdrawal(
+  withdrawalId: string,
+  providerPayoutId: string,
+  status: 'completed' | 'failed',
+  failureReason?: string,
+): Promise<void> {
+  const result = status === 'completed'
+    ? await supabaseAdmin.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawalId })
+    : await supabaseAdmin.rpc('process_withdrawal_failure', {
+      p_withdrawal_id: withdrawalId,
+      p_failure_reason: failureReason || 'Payout failed at provider',
+    });
+
+  if (result.error || !result.data?.success) {
+    throw new Error(`Provider payout ${providerPayoutId} was ${status}, but withdrawal finalization failed; reconciliation required`);
+  }
+}
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount);
 }
@@ -137,11 +155,17 @@ async function paypalFetch(path: string, options: RequestInit = {}): Promise<any
 
 async function rollbackWithdrawal(withdrawalId: string, userId: string, amount: number, errorReason: string): Promise<void> {
   console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`, { userId, amount });
-  // Money RPCs run on the service-role client: 20270119000012 revoked EXECUTE
-  // from anon/authenticated, and the amounts/ids here are server-derived.
-  try { await supabaseAdmin.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
-  try { await supabaseAdmin.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
-  try { await supabaseAdmin.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
+  // Wallet, withdrawal, and transaction state must roll back together. This
+  // service-role-only RPC locks the rows and validates the held amount before
+  // returning funds, then marks the withdrawal/ledger failed atomically.
+  const { data, error } = await supabaseAdmin.rpc('process_withdrawal_failure', {
+    p_withdrawal_id: withdrawalId,
+    p_failure_reason: errorReason,
+  });
+  if (error || !data?.success) {
+    console.error(`[ROLLBACK] Atomic withdrawal finalization failed for ${withdrawalId}; reconciliation required`, error?.message || data?.error);
+    throw new Error(`Withdrawal ${withdrawalId} could not be rolled back atomically; reconciliation required`);
+  }
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
@@ -150,15 +174,25 @@ const RATE_LIMIT = 10;
 const RATE_WINDOW_MS = 3600000;
 const ROUTE = 'withdrawal';
 
-async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+async function checkRateLimit(supabaseAdminClient: any, identifier: string): Promise<boolean> {
   const now = new Date();
-  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
-  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* ignore */ }
-  const { count, error } = await supabaseClient.from('rate_limits').select('*', { count: 'exact', head: true }).eq('identifier', identifier).eq('route', ROUTE).gte('window_start', windowStart.toISOString());
-  if (error) return true;
-  if (count !== null && count >= RATE_LIMIT) return false;
-  await supabaseClient.from('rate_limits').insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
-  return true;
+  const windowStart = new Date(Math.floor(now.getTime() / RATE_WINDOW_MS) * RATE_WINDOW_MS);
+
+  try {
+    const { data, error } = await supabaseAdminClient.rpc('increment_rate_limit', {
+      p_identifier: identifier,
+      p_route: ROUTE,
+      p_window_start: windowStart.toISOString(),
+    });
+    if (error || typeof data !== 'number') {
+      console.error('Rate limiter unavailable — refusing the request (fail closed):', error?.message || 'invalid counter response');
+      return false;
+    }
+    return data <= RATE_LIMIT;
+  } catch (error) {
+    console.error('Rate limiter unavailable — refusing the request (fail closed):', error);
+    return false;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -196,7 +230,7 @@ Deno.serve(async (req) => {
     // Check rate limit (DB-backed, using user ID as identifier)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user.id || clientIP;
-    const allowed = await checkRateLimit(supabaseClient, identifier);
+    const allowed = await checkRateLimit(supabaseAdmin, identifier);
     if (!allowed) {
       return new Response(JSON.stringify({ error: 'Too many withdrawal requests. Please try again later.' }), {
         status: 429,
@@ -328,24 +362,26 @@ Deno.serve(async (req) => {
           else if (rpStatus === 'failed' || rpStatus === 'cancelled') payoutStatus = 'failed'
           else payoutStatus = 'processing'
 
-          await supabaseAdmin.from('withdrawals').update({
+          const { error: payoutStateError } = await supabaseAdmin.from('withdrawals').update({
             razorpay_payout_id: providerPayoutId,
-            status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
+            status: payoutStatus === 'completed' || payoutStatus === 'failed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
           }).eq('id', withdrawal.id)
-
-          // 🛡️ Finalize completed payouts: process_withdrawal_complete marks the
-          // withdrawal 'completed' AND deducts the held amount from pending_balance.
-          // Without this, completed payouts left the money stuck in pending_balance
-          // forever (freelancer's available balance under-counted by the amount).
-          if (payoutStatus === 'completed') {
-            await supabaseAdmin.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+          if (payoutStateError) {
+            throw new Error(`Provider payout ${providerPayoutId} was accepted, but its withdrawal state could not be saved; reconciliation required`)
           }
 
-          await supabaseAdmin.from('transactions').update({
-            status: payoutStatus === 'completed' ? 'completed' : 'pending',
-            description: `Withdrawal via Razorpay Payout (${payoutResult.id})`,
-          }).eq('metadata->>withdrawal_id', withdrawal.id)
+          if (payoutStatus === 'completed' || payoutStatus === 'failed') {
+            await finalizeProviderWithdrawal(withdrawal.id, providerPayoutId, payoutStatus, payoutResult.error_description || payoutResult.failure_reason)
+          } else {
+            const { error: transactionError } = await supabaseAdmin.from('transactions').update({
+              status: 'pending',
+              description: `Withdrawal via Razorpay Payout (${providerPayoutId})`,
+            }).eq('metadata->>withdrawal_id', withdrawal.id)
+            if (transactionError) {
+              throw new Error(`Provider payout ${providerPayoutId} was accepted, but its transaction state could not be saved; reconciliation required`)
+            }
+          }
 
         } else if (wdMethod === 'paypal') {
           // ── PayPal Payouts API: POST /v1/payments/payouts ──
@@ -375,25 +411,54 @@ Deno.serve(async (req) => {
           else if (['DENIED', 'CANCELED'].includes(ppStatus)) payoutStatus = 'failed'
           else payoutStatus = 'processing'
 
-          await supabaseAdmin.from('withdrawals').update({
+          const { error: payoutStateError } = await supabaseAdmin.from('withdrawals').update({
             paypal_payout_id: providerPayoutId,
-            status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
+            status: payoutStatus === 'completed' || payoutStatus === 'failed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
           }).eq('id', withdrawal.id)
-
-          // 🛡️ Finalize completed payouts (see razorpay path above)
-          if (payoutStatus === 'completed') {
-            await supabaseAdmin.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+          if (payoutStateError) {
+            throw new Error(`Provider payout ${providerPayoutId} was accepted, but its withdrawal state could not be saved; reconciliation required`)
           }
 
-          await supabaseAdmin.from('transactions').update({
-            status: payoutStatus === 'completed' ? 'completed' : 'pending',
-            description: `Withdrawal via PayPal (${paypal_email})`,
-          }).eq('metadata->>withdrawal_id', withdrawal.id)
+          if (payoutStatus === 'completed' || payoutStatus === 'failed') {
+            await finalizeProviderWithdrawal(withdrawal.id, providerPayoutId, payoutStatus, batchHeader?.errors?.[0]?.message)
+          } else {
+            const { error: transactionError } = await supabaseAdmin.from('transactions').update({
+              status: 'pending',
+              description: `Withdrawal via PayPal (${providerPayoutId})`,
+            }).eq('metadata->>withdrawal_id', withdrawal.id)
+            if (transactionError) {
+              throw new Error(`Provider payout ${providerPayoutId} was accepted, but its transaction state could not be saved; reconciliation required`)
+            }
+          }
         }
 
       } catch (payoutError: any) {
         const errorMsg = payoutError?.message || 'Payout API call failed'
+
+        // Once the provider returns a payout ID, money may already have moved.
+        // Do not restore the wallet balance or describe this as an ordinary
+        // provider failure when only local reconciliation failed.
+        if (providerPayoutId && errorMsg.includes('reconciliation required')) {
+          await supabaseAdmin.from('withdrawals').update({
+            status: 'processing',
+            failure_reason: errorMsg,
+            updated_at: new Date().toISOString(),
+          }).eq('id', withdrawal.id)
+          await supabaseAdmin.from('transactions').update({
+            status: 'pending',
+            description: `Provider payout ${providerPayoutId} accepted; ledger reconciliation required`,
+          }).eq('metadata->>withdrawal_id', withdrawal.id)
+          console.error(`[RECONCILIATION REQUIRED] Withdrawal ${withdrawal.id}, provider payout ${providerPayoutId}`)
+          return new Response(JSON.stringify({
+            success: false,
+            payout_completed: payoutStatus === 'completed',
+            reconciliation_required: true,
+            withdrawal_id: withdrawal.id,
+            payout_id: providerPayoutId,
+            message: 'The payout provider accepted this transfer, but the wallet ledger could not be finalized. Funds remain held while the transfer is reconciled.',
+          }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
 
         // ── CONFIG / NOT-READY errors → QUEUE, don't hard-fail ──────────────
         // RazorpayX may not be enabled on the account yet ("The requested URL
@@ -449,16 +514,33 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: false, error: errorMsg, withdrawal_id: withdrawal.id, rollback: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Send success notification email (fire-and-forget)
-      sendNotificationEmail(
-        user.email || '',
-        user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-        `Withdrawal of ${formatCurrency(amount)} Processed Successfully ✅`,
-        buildWithdrawalEmail(
+      if (payoutStatus === 'completed') {
+        sendNotificationEmail(
+          user.email || '',
           user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-          amount, netAmount, wdMethod, 'completed'
-        ),
-      );
+          `Withdrawal of ${formatCurrency(amount)} Processed Successfully ✅`,
+          buildWithdrawalEmail(
+            user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            amount, netAmount, wdMethod, 'completed'
+          ),
+        );
+      } else if (payoutStatus === 'failed') {
+        sendNotificationEmail(
+          user.email || '',
+          user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          `Withdrawal of ${formatCurrency(amount)} Failed — Funds Returned 💔`,
+          buildWithdrawalEmail(
+            user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            amount, amount, wdMethod, 'failed', 'The payout provider declined the transfer.'
+          ),
+        );
+        return new Response(JSON.stringify({
+          success: false,
+          payout_completed: false,
+          withdrawal: { id: withdrawal.id, amount: withdrawal.amount, fee: withdrawal.fee, net_amount: withdrawal.net_amount, status: 'failed', method: withdrawal.method, payout_id: providerPayoutId },
+          message: 'The payout provider declined this transfer. The held funds were returned to your wallet.',
+        }), { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
 
       return new Response(JSON.stringify({
         success: true, payout_completed: payoutStatus === 'completed',

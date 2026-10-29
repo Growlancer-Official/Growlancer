@@ -3,10 +3,10 @@ import { PageSkeleton } from '../../components/PageSkeleton';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Headphones, Plus, ChevronDown, ChevronUp, MessageSquare,
-  Clock, CheckCircle2, AlertCircle, Send, LifeBuoy,
+  Clock, CheckCircle2, AlertCircle, Send, LifeBuoy, Loader2, Mail,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ticketService, type SupportTicket, type TicketCategory, type TicketPriority } from '../../lib/supportTicketService';
+import { ticketService, type SupportTicket, type TicketCategory, type TicketPriority, type TicketMessage } from '../../lib/supportTicketService';
 
 const CATEGORIES: { value: TicketCategory; label: string; desc: string }[] = [
   { value: 'general', label: 'General', desc: 'Platform questions, how-to, general help' },
@@ -38,6 +38,11 @@ export default function SupportTicketsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [ticketThreads, setTicketThreads] = useState<Record<string, TicketMessage[]>>({});
+  const [replyText, setReplyText] = useState('');
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadSending, setThreadSending] = useState(false);
+  const [threadError, setThreadError] = useState('');
 
   // Create form state
   const [subject, setSubject] = useState('');
@@ -58,8 +63,13 @@ export default function SupportTicketsPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    loadTickets();
-  }, [user?.id, loadTickets]);
+    void loadTickets();
+    const channel = ticketService.subscribeToTickets(user.id, () => {
+      void loadTickets();
+      if (expandedId) void loadThread(expandedId);
+    });
+    return () => { void channel.unsubscribe(); };
+  }, [user?.id, loadTickets, expandedId]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -97,8 +107,68 @@ export default function SupportTicketsPage() {
     }
   }
 
+  async function loadThread(ticketId: string) {
+    setThreadLoading(true);
+    setThreadError('');
+    const result = await ticketService.getTicket(ticketId);
+    if (result.success) {
+      setTicketThreads((current) => ({ ...current, [ticketId]: result.messages || [] }));
+      if (result.ticket) setTickets((current) => current.map((item) => item.id === ticketId ? result.ticket! : item));
+    } else {
+      setThreadError(result.error || 'Could not load this ticket conversation.');
+    }
+    setThreadLoading(false);
+  }
+
   function toggleExpand(id: string) {
-    setExpandedId(expandedId === id ? null : id);
+    const next = expandedId === id ? null : id;
+    setExpandedId(next);
+    setReplyText('');
+    setThreadError('');
+    if (next) void loadThread(next);
+  }
+
+  async function handleReply(ticket: SupportTicket) {
+    if (!user?.id || !replyText.trim() || threadSending) return;
+    setThreadSending(true);
+    setThreadError('');
+    const text = replyText.trim();
+    if (ticket.status === 'resolved' || ticket.status === 'closed') {
+      const reopened = await ticketService.reopenTicket(ticket.id, user.id);
+      if (!reopened.success) {
+        setThreadError(reopened.error || 'Could not reopen this conversation.');
+        setThreadSending(false);
+        return;
+      }
+      setTickets((current) => current.map((item) => item.id === ticket.id ? { ...item, status: 'open' } : item));
+    }
+    const added = await ticketService.addMessage({ ticketId: ticket.id, userId: user.id, message: text });
+    if (!added.success) {
+      setThreadError(added.error || 'Your message could not be saved.');
+      setThreadSending(false);
+      return;
+    }
+    setReplyText('');
+    await loadThread(ticket.id);
+    const answer = await ticketService.askAI(ticket);
+    setThreadSending(false);
+    if (!answer.success) {
+      setThreadError(answer.error || 'AI Support is temporarily unavailable. Email growlanzo.own@gmail.com for human help.');
+      return;
+    }
+    await loadThread(ticket.id);
+    await loadTickets();
+  }
+
+  async function handleResolve(ticket: SupportTicket) {
+    if (!user?.id) return;
+    const result = await ticketService.resolveTicket(ticket.id, user.id);
+    if (!result.success) {
+      setThreadError(result.error || 'Could not mark this issue resolved.');
+      return;
+    }
+    await loadTickets();
+    await loadThread(ticket.id);
   }
 
   const isFreelancer = user?.role === 'freelancer';
@@ -112,8 +182,8 @@ export default function SupportTicketsPage() {
             <Headphones className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Support Tickets <InfoTip title="How support works" text="Submit a ticket and our team responds within 24 hours. For instant help with common questions, try the AI Assistant in your sidebar. Each ticket has a status — Open means our team is reviewing it, Resolved means it's been addressed." /></h1>
-            <p className="text-slate-500 text-xs">Get help from our support team</p>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Support Tickets <InfoTip title="How support works" text="Create an in-app ticket and Growlanzo AI will work through the issue with you. Your conversation stays saved and updates live; mark it resolved only after the solution works for you. If AI cannot safely handle it, email growlanzo.own@gmail.com. Other support channels are coming soon." /></h1>
+            <p className="text-slate-500 text-xs">In-app AI support · email fallback · other channels coming soon</p>
           </div>
         </div>
         <button
@@ -161,7 +231,7 @@ export default function SupportTicketsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
                   <select
@@ -285,15 +355,46 @@ export default function SupportTicketsPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-slate-100 pt-3">
-                    <div className="bg-slate-50 rounded-xl p-4 mb-3">
-                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{ticket.description}</p>
+                  <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                    <div className="rounded-xl border border-slate-200 p-3 sm:p-4 bg-slate-50">
+                      <p className="text-xs font-semibold text-slate-500 mb-1">Your issue</p>
+                      <p className="text-sm text-slate-700 whitespace-pre-wrap break-words">{ticket.description}</p>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                    {threadLoading && !(ticketThreads[ticket.id]?.length) ? (
+                      <div className="flex items-center gap-2 text-sm text-slate-500 py-3"><Loader2 className="w-4 h-4 animate-spin" /> Loading conversation…</div>
+                    ) : (
+                      <div className="space-y-2" aria-live="polite" aria-label="Support conversation">
+                        {(ticketThreads[ticket.id] || []).map((message) => (
+                          <div key={message.id} className={`max-w-[92%] rounded-xl p-3 ${message.sender_type === 'assistant' ? 'mr-auto bg-emerald-50 border border-emerald-100' : 'ml-auto bg-white border border-slate-200'}`}>
+                            <p className="text-[11px] font-semibold text-slate-500 mb-1">{message.sender_type === 'assistant' ? 'Growlanzo AI Support' : message.sender_type === 'support' ? 'Growlanzo Support' : 'You'}</p>
+                            <p className="text-sm text-slate-700 whitespace-pre-wrap break-words">{message.message}</p>
+                            <time className="block text-[10px] text-slate-400 mt-1">{new Date(message.created_at).toLocaleString()}</time>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {threadError && (
+                      <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 space-y-2">
+                        <p>{threadError}</p>
+                        <a className="inline-flex items-center gap-1 underline font-semibold" href={`mailto:growlanzo.own@gmail.com?subject=${encodeURIComponent(`Support ticket ${ticket.id.slice(0, 8)}: ${ticket.subject}`)}`}><Mail className="w-3.5 h-3.5" /> Email support</a>
+                      </div>
+                    )}
+                    <form onSubmit={(event) => { event.preventDefault(); void handleReply(ticket); }} className="space-y-2">
+                      <label className="sr-only" htmlFor={`reply-${ticket.id}`}>Reply to AI Support</label>
+                      <textarea id={`reply-${ticket.id}`} value={replyText} onChange={(event) => setReplyText(event.target.value)} rows={3} maxLength={8000} placeholder="Describe what is still wrong or ask a follow-up question…" className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y" />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button type="submit" disabled={threadSending || !replyText.trim()} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                          {threadSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}{threadSending ? 'Getting AI help…' : 'Send to AI Support'}
+                        </button>
+                        {ticket.status !== 'resolved' && ticket.status !== 'closed' && (
+                          <button type="button" onClick={() => void handleResolve(ticket)} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-white"><CheckCircle2 className="w-4 h-4" /> My issue is resolved</button>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500">AI cannot access or change your account, payment, or verification. For those issues, email is available now; other channels are coming soon.</p>
+                    </form>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                       <span>Created: {new Date(ticket.created_at).toLocaleString()}</span>
-                      {ticket.updated_at && (
-                        <span>Updated: {new Date(ticket.updated_at).toLocaleString()}</span>
-                      )}
+                      {ticket.updated_at && <span>Updated: {new Date(ticket.updated_at).toLocaleString()}</span>}
                     </div>
                   </div>
                 )}

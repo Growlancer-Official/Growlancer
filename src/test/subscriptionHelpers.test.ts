@@ -5,6 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
+  isPremiumSubscription,
   isProSubscription,
   subscriptionIsActive,
   type SubscriptionWithPlan,
@@ -152,5 +153,44 @@ describe('subscriptionIsActive', () => {
     const sub = makeSub('active');
     (sub as any).status = undefined;
     expect(subscriptionIsActive(sub)).toBe(false);
+  });
+});
+
+
+describe('isPremiumSubscription', () => {
+  function withPlan(plan: Partial<NonNullable<SubscriptionWithPlan['subscription_plans']>> | null) {
+    const sub = makeSub('active');
+    sub.subscription_plans = (plan ?? undefined) as SubscriptionWithPlan['subscription_plans'];
+    return sub;
+  }
+
+  it('returns false without a subscription', () => {
+    expect(isPremiumSubscription(null)).toBe(false);
+    expect(isPremiumSubscription(undefined)).toBe(false);
+  });
+
+  it('returns true for the dedicated Premium tier row', () => {
+    const sub = withPlan({ id: 'premium_advanced_monthly', name: 'Premium', price: 499 });
+    expect(isPremiumSubscription(sub)).toBe(true);
+  });
+
+  it('never treats the canonical Pro row as Premium, even under its old name', () => {
+    // Before the tier migration ran, premium_monthly was labelled "Premium
+    // Monthly" — a Pro subscriber must not silently gain Premium features.
+    const renamed = withPlan({ id: 'premium_monthly', name: 'Premium Monthly', price: 299 });
+    expect(isPremiumSubscription(renamed)).toBe(false);
+    const proNow = withPlan({ id: 'premium_monthly', name: 'Pro', price: 299 });
+    expect(isPremiumSubscription(proNow)).toBe(false);
+  });
+
+  it('returns false for a Pro-named plan on another id', () => {
+    expect(isPremiumSubscription(withPlan({ id: 'other', name: 'Pro Plus', price: 999 }))).toBe(false);
+  });
+
+  it('requires the subscription itself to be active or an unexpired trial', () => {
+    const premium = { id: 'premium_advanced_monthly', name: 'Premium', price: 499 };
+    const expired = makeSub('cancelled');
+    expired.subscription_plans = premium as never;
+    expect(isPremiumSubscription(expired)).toBe(false);
   });
 });

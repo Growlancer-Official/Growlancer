@@ -7,6 +7,8 @@ import {
   PlusCircle,
   FolderKanban,
   Sparkles,
+  Users,
+  Gift,
   MailCheck,
   FileText,
   Handshake,
@@ -14,7 +16,6 @@ import {
   Settings,
   Search,
   User,
-  Users2,
   LogOut,
   Home,
   Laptop,
@@ -25,6 +26,7 @@ import {
   Trophy,
   HelpCircle,
   LifeBuoy,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -34,6 +36,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
+import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
 import { BrandLogo } from '../components/BrandLogo';
@@ -67,7 +70,7 @@ const sidebarGroups: SidebarGroup[] = [
     label: 'PROJECTS',
     links: [
       { id: 'projects', path: '/client/projects', icon: FolderKanban, label: 'My Projects' },
-      { id: 'team-projects', path: '/client/team-projects', icon: Users2, label: 'Team Projects' },
+      { id: 'team-projects', path: '/client/team-projects', icon: Users, label: 'Team Projects' },
       { id: 'contests', path: '/client/contests', icon: Trophy, label: 'Contests' },
     ],
   },
@@ -81,7 +84,7 @@ const sidebarGroups: SidebarGroup[] = [
   {
     label: 'GROWTH',
     links: [
-      { id: 'referrals', path: '/client/referrals', icon: Users2, label: 'Refer & Hire' },
+      { id: 'referrals', path: '/client/referrals', icon: Gift, label: 'Refer & Hire' },
     ],
   },
 ];
@@ -91,8 +94,7 @@ const accountLinks: SidebarLink[] = [
   { id: 'reviews', path: '/client/reviews', icon: Star, label: 'Reviews' },
   { id: 'payments', path: '/client/payments', icon: CreditCard, label: 'Payments' },
   { id: 'settings', path: '/client/settings', icon: Settings, label: 'Settings' },
-  // Identity verification is deferred (see lib/featureFlags.ts): no entry here
-  // until KYC ships. Profile completeness is the trust signal instead.
+  { id: 'verification', path: '/client/verification', icon: ShieldCheck, label: 'Verification' },
 ];
 
 /**
@@ -621,6 +623,9 @@ export function ClientDashboardLayout() {
                 AI Active
               </span>
             </div>
+
+            {/* Light KYC nudge — disappears in real time once verified. */}
+            <VerifyNowHeaderButton />
 
             <GrowCoinBadge userId={user?.id} role={user?.role} />
 

@@ -6,6 +6,7 @@ import { useProStatus } from '../hooks/useProStatus';
 import { useToast } from './Toast';
 import { TipNote } from './TipNote';
 import type { SupportOption, SupportTopic } from '../lib/supportTopics';
+import { ticketService } from '../lib/supportTicketService';
 import {
   Bot,
   Check,
@@ -58,6 +59,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [modelName, setModelName] = useState(() => (import.meta.env.VITE_AI_MODEL as string | undefined) || 'Growlanzo AI');
   const toast = useToast();
   const [verifyCta, _setVerifyCta] = useState(false);
+  // Escalation: a chat answer that does not fix the issue must not evaporate.
+  // After a "still stuck" follow-up, the user can turn the conversation into a
+  // saved support ticket that keeps getting worked on.
+  const [stuckAsked, setStuckAsked] = useState(false);
+  const [escalation, setEscalation] = useState<{ busy: boolean; ticketId: string | null; error: string | null }>({ busy: false, ticketId: null, error: null });
   const [resendingVerification, setResendingVerification] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -253,7 +259,9 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             user_id: user.id,
             user_role: context,
             messages: history,
-            context: undefined,
+            context: chatMode === 'support'
+              ? { mode: 'support', topic: activeTopic?.title || undefined }
+              : undefined,
           }),
           signal: abortControllerRef.current.signal,
         }
@@ -380,15 +388,16 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  const sendText = async (rawText: string) => {
+    const text = rawText.trim();
+    if (!text || loading) return;
     setSelectionMode(false);
     setSelectedIds(new Set());
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: text,
       timestamp: new Date(),
     };
 
@@ -417,6 +426,36 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     await getStreamingAIResponse(userMessage.content);
 
     setLoading(false);
+  };
+
+  const handleSend = () => {
+    void sendText(input);
+  };
+
+  const supportTicketPath = user?.role === 'client' ? '/client/support-tickets' : '/dashboard/support-tickets';
+
+  const handleOpenTicket = async () => {
+    if (!user?.id || escalation.busy || escalation.ticketId) return;
+    setEscalation({ busy: true, ticketId: null, error: null });
+    const transcript = messages
+      .slice(-8)
+      .map((m) => `${m.role === 'user' ? 'User' : 'AI'}: ${m.content}`)
+      .join('\n\n')
+      .slice(0, 4000);
+    const result = await ticketService.create({
+      userId: user.id,
+      userRole: user.role === 'client' ? 'client' : 'freelancer',
+      subject: activeTopic ? `Still stuck: ${activeTopic.title}` : 'AI chat follow-up needed',
+      description: `Raised from the in-app AI support chat because the issue was not resolved.\n\nConversation so far:\n${transcript}`,
+      category: 'technical',
+      priority: 'high',
+    });
+    if (!result.success || !result.ticket) {
+      setEscalation({ busy: false, ticketId: null, error: result.error || 'Could not open a ticket. Email growlanzo.own@gmail.com instead.' });
+      return;
+    }
+    setEscalation({ busy: false, ticketId: result.ticket.id, error: null });
+    toast.success('Support ticket opened', 'Your conversation was saved — AI will keep working the issue with you there.');
   };
 
   // ── Guided support flow: pick a topic ──
@@ -754,6 +793,51 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
           </div>
         )}
 
+        {chatMode === 'support' && activeTopic && flowEnded && !loading && (
+          <div className="pl-1">
+            <button
+              type="button"
+              onClick={() => {
+                setStuckAsked(true);
+                void sendText(
+                  `I followed the "${activeTopic.title}" steps above but my issue is not solved yet. Please help me fix it step by step.`
+                );
+              }}
+              className="px-4 py-2 rounded-full border border-emerald-500 bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-all"
+            >
+              Still stuck? Ask AI Support for a step-by-step fix
+            </button>
+          </div>
+        )}
+
+        {chatMode === 'support' && stuckAsked && !loading && (
+          <div className="pl-1 space-y-2">
+            {escalation.ticketId ? (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                Your issue is saved as a support ticket and stays open until <strong>you</strong> confirm it is fixed.{' '}
+                <Link to={supportTicketPath} className="font-semibold underline">Continue in Support Tickets →</Link>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void handleOpenTicket()}
+                  disabled={escalation.busy}
+                  className="px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 inline-flex items-center gap-2"
+                >
+                  {escalation.busy ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Headphones className="w-4 h-4" aria-hidden="true" />}
+                  Still not fixed? Open a saved support ticket
+                </button>
+                <a href="mailto:growlanzo.own@gmail.com" className="text-xs font-semibold text-emerald-700 underline inline-flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5" aria-hidden="true" /> Email support
+                </a>
+              </div>
+            )}
+            {escalation.error && (
+              <p className="text-xs text-red-600">{escalation.error}</p>
+            )}
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
@@ -832,7 +916,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
             aria-label="Message to AI support"
-            placeholder={user ? 'Ask me anything in any language...' : 'Type your question — we’ll help you get started...'}
+            placeholder={!user
+              ? 'Type your question — we’ll help you get started...'
+              : chatMode === 'support'
+                ? 'Tell AI Support what is still wrong…'
+                : 'Ask me anything in any language...'}
             className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
             disabled={loading}
           />

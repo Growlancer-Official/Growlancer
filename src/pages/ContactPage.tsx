@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AIChatSupport } from '../components/AIChatSupport';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Clock, Headphones, Shield, Sparkles, Zap,  } from 'lucide-react';
+import { ArrowLeft, Clock, Headphones, Mail, MessageSquare, Phone, Shield, Sparkles, Zap,  } from 'lucide-react';
 import { BrandLogo } from '../components/BrandLogo';
 
 export function ContactPage() {
@@ -134,6 +134,44 @@ export function ContactPage() {
               <Link to="/status" className="block text-xs py-1.5 text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
                 → System Status
               </Link>
+            </div>
+
+            {/* Support channels — honest availability, no invented channels */}
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
+              <h2 className="font-bold text-slate-900 text-sm">Support channels</h2>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900">In-app AI support</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">Real-time, 24/7 — open a ticket above and AI works the issue with you until it is actually fixed. Available to freelancers and clients.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900">Email support</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    For account, payment or verification changes AI cannot make:{' '}
+                    <a className="font-semibold text-emerald-600 hover:text-emerald-700 underline" href="mailto:growlanzo.own@gmail.com">growlanzo.own@gmail.com</a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 opacity-70">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900">Phone & live chat <span className="ml-1 align-middle text-[10px] font-bold uppercase tracking-wide rounded-full bg-slate-100 text-slate-500 px-2 py-0.5">Coming soon</span></p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">We are an early-stage team — these channels are not live yet, so we will not pretend otherwise.</p>
+                </div>
+              </div>
             </div>
           </div>
 

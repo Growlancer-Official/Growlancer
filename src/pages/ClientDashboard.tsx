@@ -256,7 +256,7 @@ export default function ClientDashboard() {
 
   const quickActions = [
     { label: 'Post a Project', path: '/client/post', icon: Plus, color: 'bg-emerald-500' },
-    { label: 'Find Talent', path: '/client/matches', icon: Users, color: 'bg-blue-500' },
+    { label: 'Find Talent', path: '/client/matches', icon: Sparkles, color: 'bg-blue-500' },
     { label: 'View Contracts', path: '/client/contracts', icon: FileText, color: 'bg-purple-500' },
     { label: 'Payments', path: '/client/payments', icon: CreditCard, color: 'bg-orange-500' },
   ];

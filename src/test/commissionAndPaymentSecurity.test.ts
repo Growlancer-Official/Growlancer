@@ -21,6 +21,7 @@ const read = (p: string): string => fs.readFileSync(path.join(ROOT, p), 'utf8');
 
 const COMMISSION_MIGRATION = 'supabase/migrations/20270203000000_commission_freelancer_side.sql';
 const REVIEWS_MIGRATION = 'supabase/migrations/20270203100000_reviews_write_path_hardening.sql';
+const WITHDRAWAL_MIGRATION = 'supabase/migrations/20270206000000_secure_withdrawal_finalization.sql';
 
 describe('commission model — freelancer-side 5%', () => {
   it('the canonical migration exists and defines one commission helper', () => {
@@ -131,6 +132,47 @@ describe('direct refund endpoint is disabled', () => {
     const block = src.slice(start, next > -1 ? next : start + 4000);
     expect(block).not.toContain("razorpayFetch('/refunds'");
     expect(block).toContain('refunds_require_request');
+  });
+});
+
+describe('withdrawal finalization boundary', () => {
+  const sql = read(WITHDRAWAL_MIGRATION);
+  const withdrawal = read('supabase/functions/withdrawal/index.ts');
+  const payoutWebhook = read('supabase/functions/razorpay-payout-webhook/index.ts');
+
+  it('revokes browser access and checks service-role context for terminal RPCs', () => {
+    expect(sql).toContain('public.process_withdrawal_complete(UUID) FROM PUBLIC, anon, authenticated');
+    expect(sql).toContain('public.process_withdrawal_failure(UUID, TEXT) FROM PUBLIC, anon, authenticated');
+    expect(sql).toContain('GRANT EXECUTE ON FUNCTION public.process_withdrawal_complete(UUID) TO service_role');
+    expect(sql).toContain('GRANT EXECUTE ON FUNCTION public.process_withdrawal_failure(UUID, TEXT) TO service_role');
+    expect(sql.match(/public\.is_service_role_context\(\)/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('uses locked, idempotent atomic terminal transitions for completion and failure', () => {
+    expect(sql.match(/FOR UPDATE/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(sql).toContain("IF v_withdrawal.status = 'completed' THEN");
+    expect(sql).toContain("IF v_withdrawal.status = 'failed' THEN");
+    expect(sql).toContain('pending_balance = pending_balance - v_withdrawal.amount');
+    expect(sql).toContain('balance = balance + v_withdrawal.amount');
+    expect(sql).toContain("metadata->>'withdrawal_id' = p_withdrawal_id::text");
+  });
+
+  it('checks finalizer results and never refunds locally after provider acceptance', () => {
+    expect(withdrawal).toContain('async function finalizeProviderWithdrawal(');
+    expect(withdrawal).toContain('checkRateLimit(supabaseAdmin, identifier)');
+    expect(withdrawal).toContain(`supabaseAdmin.rpc('${['process', 'withdrawal', 'failure'].join('_')}'`);
+    expect(withdrawal).toContain('if (result.error || !result.data?.success)');
+    expect(withdrawal).toContain('reconciliation_required: true');
+    expect(withdrawal).toContain('if (providerPayoutId && errorMsg.includes(\'reconciliation required\'))');
+    expect(payoutWebhook).toContain(`supabaseClient.rpc('${['process', 'withdrawal', 'complete'].join('_')}'`);
+    expect(payoutWebhook).toContain(`supabaseClient.rpc('${['process', 'withdrawal', 'failure'].join('_')}'`);
+    expect(payoutWebhook).not.toContain(`supabaseClient.rpc('${['release', 'wallet', 'funds'].join('_')}'`);
+    for (const paymentFunction of ['supabase/functions/razorpay/index.ts', 'supabase/functions/paypal/index.ts']) {
+      const source = read(paymentFunction);
+      const rateLimitRpc = ['increment', 'rate', 'limit'].join('_');
+      expect(source).toContain(`supabaseAdmin.rpc('${rateLimitRpc}'`);
+      expect(source).not.toContain(".from('rate_limits').insert");
+    }
   });
 });
 

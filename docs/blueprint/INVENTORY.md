@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **682 files** across 12 groups.
+Total tracked structure: **689 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -15,9 +15,9 @@ Total tracked structure: **682 files** across 12 groups.
 | Client libraries & services | 69 |
 | Edge functions | 33 |
 | Edge shared modules | 8 |
-| Database migrations | 301 |
+| Database migrations | 306 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 65 |
+| Test suite | 67 |
 | Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
@@ -328,7 +328,7 @@ The runtime contract every function imports: CORS, site URL, auth, rate limits, 
 - `supabase/functions/_shared/site.ts`
 - `supabase/functions/_shared/urlGuard.ts`
 
-## Database migrations (301)
+## Database migrations (306)
 
 Ordered by filename timestamp. Applied by `supabase db push --include-all` in Backend Deploy; never by hand in the dashboard.
 
@@ -633,6 +633,11 @@ Ordered by filename timestamp. Applied by `supabase db push --include-all` in Ba
 - `supabase/migrations/20270203100000_reviews_write_path_hardening.sql`
 - `supabase/migrations/20270204000000_same_role_referrals.sql`
 - `supabase/migrations/20270205000000_credential_surface_lockdown.sql`
+- `supabase/migrations/20270206000000_secure_withdrawal_finalization.sql`
+- `supabase/migrations/20270207000000_referee_referral_bonus.sql`
+- `supabase/migrations/20270208000000_support_ai_message_sender.sql`
+- `supabase/migrations/20270209000000_premium_analytics_tiers.sql`
+- `supabase/migrations/20270210000000_light_kyc_three_criteria.sql`
 
 ## Archived migrations (not applied) (6)
 
@@ -645,19 +650,21 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (65)
+## Test suite (67)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
 - `src/test/adminProfileDirectory.test.ts`
 - `src/test/aiMatchingOwnership.test.ts`
 - `src/test/aiQuotaTracking.test.ts`
+- `src/test/aiSupportTicket.test.ts`
 - `src/test/analyticsService.test.ts`
 - `src/test/authCallbackSessionBeatsError.test.ts`
 - `src/test/authResumeAndBrand.test.ts`
 - `src/test/authRouteSurface.test.ts`
 - `src/test/authService.test.ts`
 - `src/test/ciGuardrails.test.ts`
+- `src/test/clientDashboardIcons.test.ts`
 - `src/test/commissionAndPaymentSecurity.test.ts`
 - `src/test/config.test.ts`
 - `src/test/consent.test.ts`
@@ -680,6 +687,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/featureFlags.test.ts`
 - `src/test/growCoins.test.ts`
 - `src/test/iconPackConsolidation.test.ts`
+- `src/test/kycLightVerification.test.ts`
 - `src/test/launchSurfaceFixes.test.ts`
 - `src/test/mobileMenuEscape.test.tsx`
 - `src/test/mvpScopeGuard.test.ts`
@@ -712,7 +720,6 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/themeProvider.test.tsx`
 - `src/test/truthfulPlanClaims.test.ts`
 - `src/test/typographyFonts.test.ts`
-- `src/test/verificationDeferred.test.ts`
 - `src/test/waitlistPage.test.tsx`
 
 ## Operational scripts (34)

@@ -5,6 +5,7 @@ import {
   ChevronDown,
   CreditCard,
   Crown,
+  Gem,
   Loader2,
   MessageSquare,
   RefreshCw,
@@ -30,8 +31,16 @@ import {
 
 const FAQ_ITEMS = [
   {
-    q: 'What do I get in Premium?',
-    a: 'Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day), and adds a Premium badge to your profile. It is purely extra AI + productivity tools — your packages, proposals, visibility and matching score stay exactly the same.',
+    q: 'What do the paid tiers include?',
+    a: 'Pro (Rs 299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day) and adds a Pro badge. Premium (Rs 499/month) includes all of Pro plus advanced analytics. Both are purely extra AI and analytics tools — your packages, proposals, visibility and matching score stay exactly the same.',
+  },
+  {
+    q: 'What is the difference between Pro and Premium?',
+    a: 'Advanced analytics. Pro keeps the analytics every freelancer already gets and raises AI capacity; Premium adds earnings and profile-view trends against the previous period, the complete proposal funnel with average and accepted bid values, your star-rating split and your top paying categories. Ranking and matching are identical on every tier.',
+  },
+  {
+    q: 'Can I start on Pro and move to Premium later?',
+    a: 'Yes — that is the intended path. Upgrade from this page whenever you want; your Pro time is not lost and you keep every feature you already had.',
   },
   {
     q: 'Does Premium boost my ranking or visibility?',
@@ -43,7 +52,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How does the free trial work?',
-    a: 'New freelancers get one free trial of Premium — no payment needed to start. After the trial ends (or if you have already used it), upgrading is handled securely via Razorpay.',
+    a: 'New freelancers get one free trial of Pro — no payment needed to start. After the trial ends (or if you have already used it), upgrading to Pro or Premium is handled securely via Razorpay.',
   },
   {
     q: 'Are there any hidden fees?',
@@ -54,6 +63,11 @@ const FAQ_ITEMS = [
 // Every card here must describe something the product actually does. Anything that
 // is free for everyone (analytics, matching, packages) must NOT appear as an unlock.
 const UNLOCKS = [
+  {
+    icon: Gem,
+    title: 'Advanced Analytics (Premium)',
+    text: 'Earnings and profile-view trends against the previous period, the full proposal funnel, your rating split and your top paying categories — updated live. The simple dashboard stays free for every freelancer.',
+  },
   {
     icon: MessageSquare,
     title: 'Unlimited AI Assistant',
@@ -72,7 +86,7 @@ const UNLOCKS = [
   {
     icon: RefreshCw,
     title: 'One free trial',
-    text: 'Every new freelancer gets one free trial of Premium — no payment needed to start.',
+    text: 'Every new freelancer gets one free trial of Pro — no payment needed to start. Premium can be chosen straight away.',
   },
 ];
 
@@ -196,15 +210,21 @@ export function ProSubscriptionPage() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
-  // Single flat plan — ONLY show the canonical premium_monthly plan.
-  // Explicit ID check + is_active guard so stray seed rows never leak into UI.
-  const canonicalPlan = plans.find((p) => p.id === 'premium_monthly' && p.price > 0 && p.is_active);
-  // Defensive: fallback to any single active paid plan if canonical is missing
-  const fallbackPlan = !canonicalPlan ? plans.find((p) => p.price > 0 && p.is_active) : null;
-  const displayPlans = canonicalPlan ? [canonicalPlan] : fallbackPlan ? [fallbackPlan] : [];
-  // For comparison table: Free vs Premium (two columns)
+  // Two paid tiers, in ladder order: Pro (premium_monthly) then Premium
+  // (premium_advanced_monthly, Pro + advanced analytics). Explicit ID checks +
+  // is_active guards so stray seed rows never leak into the UI.
+  const TIER_IDS = ['premium_monthly', 'premium_advanced_monthly'] as const;
+  const tierPlans = TIER_IDS.map((id) => plans.find((p) => p.id === id && p.price > 0 && p.is_active)).filter(
+    (p): p is AIPlan => Boolean(p),
+  );
+  // Defensive fallback: if neither canonical row exists (unreachable backend,
+  // fresh environment) show the single active paid plan rather than nothing.
+  const displayPlans = tierPlans.length > 0 ? tierPlans : plans.filter((p) => p.price > 0 && p.is_active).slice(0, 1);
+  const proPlan = tierPlans[0] ?? displayPlans[0];
+  const premiumPlan = tierPlans[1] ?? null;
+  // For comparison table: Free vs Pro vs Premium
   const freePlan = plans.find((p) => p.price === 0);
-  const premiumPlan = canonicalPlan || fallbackPlan || plans.find((p) => p.price > 0 && p.interval === 'month');
+  const isPremiumTier = (plan?: AIPlan | null) => plan?.id === 'premium_advanced_monthly';
 
   // Build comparison rows from plan features.
   // RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
@@ -217,8 +237,10 @@ export function ProSubscriptionPage() {
     { key: 'ai_messages', label: 'AI Assistant', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
     { key: 'packages', label: '3-Tier Service Packages', getValue: () => 'Included — free for everyone' },
     { key: 'matching', label: 'AI Matching & Ranking', getValue: () => 'Merit-based — same for all' },
-    { key: 'analytics', label: 'Analytics Dashboard', getValue: () => 'Included — free for everyone' },
-    { key: 'support', label: 'Support', getValue: () => 'Email, support tickets & AI assistant' },
+    { key: 'analytics', label: 'Analytics', getValue: () => 'Included — free for everyone' },
+    { key: 'advanced_analytics', label: 'Advanced Analytics', getValue: (p: AIPlan) => (isPremiumTier(p) ? 'Trends, funnel & categories' : 'Not included') },
+    { key: 'badge', label: 'Profile Badge', getValue: (p: AIPlan) => (p.price > 0 ? 'Pro badge' : '—') },
+    { key: 'support', label: 'Support', getValue: () => 'In-app AI support & email' },
   ];
 
   if (loading) {
@@ -235,9 +257,9 @@ export function ProSubscriptionPage() {
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
-            <InfoTip title="Growlanzo Premium" text="Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Premium badge. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
+            <InfoTip title="Growlanzo paid tiers" text="There are two paid tiers, one above the other. Pro (Rs 299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Pro badge. Premium (Rs 499/month) includes everything in Pro plus advanced analytics: earnings and view trends, the full proposal funnel, your rating split and your top paying categories. Neither tier affects your packages, visibility, ranking or matching — those stay merit-based and free for everyone." />
           </h1>
-          <p className="text-slate-500 mt-0.5 text-sm">AI-powered productivity tools, on top of the free marketplace</p>
+          <p className="text-slate-500 mt-0.5 text-sm">Free to start — Pro and Premium add AI tools and analytics on top</p>
         </div>
       </div>
 
@@ -268,7 +290,7 @@ export function ProSubscriptionPage() {
       {/* Plan + Benefits: 2-col dashboard layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
         {/* Plan Card */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           {displayPlans.map((plan) => {
             const isCurrentPlan = subscription?.plan_id === plan.id;
 
@@ -285,11 +307,18 @@ export function ProSubscriptionPage() {
                   </div>
                 )}
 
-                <div className="p-2.5 rounded-xl w-fit bg-emerald-100 mb-4">
-                  <Crown className="w-5 h-5 text-emerald-600" />
+                <div className={`p-2.5 rounded-xl w-fit mb-4 ${isPremiumTier(plan) ? 'bg-amber-100' : 'bg-emerald-100'}`}>
+                  <Crown className={`w-5 h-5 ${isPremiumTier(plan) ? 'text-amber-600' : 'text-emerald-600'}`} />
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-slate-900">{plan.name}</h3>
+                <h3 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
+                  {plan.name}
+                  {isPremiumTier(plan) && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                      Advanced analytics
+                    </span>
+                  )}
+                </h3>
                 <p className="text-sm text-slate-500 mt-0.5">{plan.description}</p>
 
                 <div className="flex items-baseline gap-1 mt-4">
@@ -317,7 +346,7 @@ export function ProSubscriptionPage() {
                           {cancelling ? 'Renewing...' : 'Renew Now'}
                         </button>
                         <p className="text-xs text-amber-600 text-center font-medium">
-                          Your Premium ends at period end — renew to keep it active.
+                          Your {plan.name} plan ends at period end — renew to keep it active.
                         </p>
                       </div>
                     ) : (
@@ -359,7 +388,7 @@ export function ProSubscriptionPage() {
                         </>
                       ) : (
                         <>
-                          Upgrade to Premium
+                          Upgrade to {plan.name}
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -389,10 +418,10 @@ export function ProSubscriptionPage() {
 
         {/* What Premium Unlocks */}
         <div className="lg:col-span-3">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-1">What Premium unlocks</h2>
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-1">What the paid tiers unlock</h2>
           <p className="text-sm text-slate-500 mb-4">
-            Honest and fair: Premium is purely AI + productivity tools. Your packages, proposals,
-            visibility and matching score are <strong>identical</strong> with or without it — everything
+            Honest and fair: paid tiers are purely AI + analytics tools. Your packages, proposals,
+            visibility and matching score are <strong>identical</strong> with or without them — everything
             on this platform is merit-based.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -411,24 +440,28 @@ export function ProSubscriptionPage() {
 
       {/* Plan Comparison Table */}
       <section>
-        <h2 className="font-display text-lg font-bold text-slate-900 mb-3">Compare plans</h2>
+        <h2 className="font-display text-lg font-bold text-slate-900 mb-3">Compare Free, Pro and Premium</h2>
         <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
-          <table className="w-full min-w-[560px] border-collapse text-left">
+          <table className="w-full min-w-[420px] border-collapse text-left">
             <thead className="bg-slate-50">
-              <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-400">
-                <th className="px-4 py-3">Feature</th>
-                <th className="px-4 py-3">Free</th>
-                <th className="px-4 py-3 text-emerald-600">Premium</th>
+              <tr className="border-b border-slate-100 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
+                <th className="px-2.5 sm:px-4 py-3">Feature</th>
+                <th className="px-2.5 sm:px-4 py-3">Free</th>
+                <th className="px-2.5 sm:px-4 py-3 text-emerald-600">Pro</th>
+                <th className="px-2.5 sm:px-4 py-3 text-amber-600">Premium</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {allFeatures.map((feature) => (
-                <tr key={feature.key} className="text-sm">
-                  <td className="px-4 py-3 font-medium text-slate-700">{feature.label}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                <tr key={feature.key} className="text-xs sm:text-sm">
+                  <td className="px-2.5 sm:px-4 py-3 font-medium text-slate-700">{feature.label}</td>
+                  <td className="px-2.5 sm:px-4 py-3 text-slate-500">
                     {freePlan ? feature.getValue(freePlan) : '—'}
                   </td>
-                  <td className="px-4 py-3 font-semibold text-emerald-700">
+                  <td className="px-2.5 sm:px-4 py-3 font-semibold text-emerald-700">
+                    {proPlan ? feature.getValue(proPlan) : '—'}
+                  </td>
+                  <td className="px-2.5 sm:px-4 py-3 font-semibold text-amber-700">
                     {premiumPlan ? feature.getValue(premiumPlan) : '—'}
                   </td>
                 </tr>
@@ -436,6 +469,9 @@ export function ProSubscriptionPage() {
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-[11px] text-slate-400 sm:hidden">
+          Swipe the table sideways to see the Pro and Premium columns.
+        </p>
       </section>
 
       {/* FAQ */}

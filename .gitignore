@@ -39,3 +39,6 @@ tests/e2e-artifacts/
 .e2e/
 .env.e2e
 screenshots/
+
+# Packaged release archives (built artefacts, not source) — never commit.
+release/

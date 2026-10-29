@@ -27,6 +27,7 @@ import {
   Trophy,
   HelpCircle,
   LifeBuoy,
+  ShieldCheck,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +38,7 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
+import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
 import { useProStatus } from '../hooks/useProStatus';
@@ -97,8 +99,7 @@ const sidebarGroups: SidebarGroup[] = [
 const accountLinks: SidebarLink[] = [
   { id: 'wallet', path: '/dashboard/wallet', icon: Wallet, label: 'Wallet' },
   { id: 'profile', path: '/dashboard/profile', icon: User, label: 'Profile' },
-  // Identity verification is deferred (see lib/featureFlags.ts): no entry here
-  // until KYC ships. Profile completeness is the trust signal instead.
+  { id: 'identity-verification', path: '/dashboard/identity-verification', icon: ShieldCheck, label: 'Verification' },
 ];
 
 const supportLinks: SidebarLink[] = [
@@ -712,6 +713,9 @@ export function DashboardLayout() {
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-xs font-bold text-emerald-700">AI Ready</span>
             </div>
+
+            {/* Light KYC nudge — disappears in real time once verified. */}
+            <VerifyNowHeaderButton />
 
             <GrowCoinBadge userId={user?.id} role={user?.role} />
 

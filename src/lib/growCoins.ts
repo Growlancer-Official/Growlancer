@@ -123,17 +123,19 @@ export function previewCoinDiscount(
  * Freelancer referrals pay when their referral completes a contract as freelancer.
  * Client referrals pay when their referral passes KYC verification.
  * Admin sees the default freelancer description.
- * Both pay only after real engagement, never on signup.
+ * Both pay only after real engagement, never on signup. BOTH SIDES are paid
+ * at that moment: the referee earns their own 10 coins in the same
+ * transaction (reason 'referee_referral_bonus').
  */
 export function getReferralBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
   if (role === 'freelancer') {
-    return '10 Grow Coins when a freelancer you refer completes their first contract (or passes KYC verification) — never at signup. Codes are same-side: you can only refer other freelancers.';
+    return '10 Grow Coins when a freelancer you refer completes their first contract (or passes KYC verification) — never at signup. Your referral earns 10 coins too, at the same moment. Codes are same-side: you can only refer other freelancers.';
   }
   if (role === 'client') {
-    return '10 Grow Coins when a client you refer passes KYC verification — never at signup. Codes are same-side: you can only refer other clients.';
+    return '10 Grow Coins when a client you refer passes KYC verification — never at signup. Your referral earns 10 coins too, at the same moment. Codes are same-side: you can only refer other clients.';
   }
   // admin
-  return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup.';
+  return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup. Your referral earns 10 coins too, at the same moment.';
 }
 
 /**

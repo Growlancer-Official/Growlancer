@@ -4,6 +4,7 @@ import { sendAdminNotification } from './emailNotificationService';
 export type TicketCategory = 'general' | 'billing' | 'account' | 'technical' | 'dispute' | 'feature_request' | 'other';
 export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
 export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
+export type TicketSender = 'user' | 'assistant' | 'support';
 
 export interface SupportTicket {
   id: string;
@@ -26,6 +27,7 @@ export interface TicketMessage {
   user_id: string;
   message: string;
   is_internal: boolean;
+  sender_type?: TicketSender;
   created_at: string;
 }
 
@@ -131,7 +133,9 @@ const ticketService = {
         .order('created_at', { ascending: true }),
     ]);
 
-    if (ticketResult.error) return { success: false, error: ticketResult.error.message };    return { success: true, ticket: ticketResult.data as unknown as SupportTicket, messages: (messagesResult.data || []) as unknown as TicketMessage[], };
+    if (ticketResult.error) return { success: false, error: ticketResult.error.message };
+    if (messagesResult.error) return { success: false, error: messagesResult.error.message };
+    return { success: true, ticket: ticketResult.data as unknown as SupportTicket, messages: (messagesResult.data || []) as unknown as TicketMessage[] };
   },
 
   /**
@@ -149,6 +153,7 @@ const ticketService = {
         user_id: params.userId,
         message: params.message.trim(),
         is_internal: false,
+        sender_type: 'user',
       })
       .select()
       .single();
@@ -177,36 +182,44 @@ const ticketService = {
     return { success: true, message: data as unknown as TicketMessage };
   },
 
-  /**
-   * Close a ticket
-   */
-  async closeTicket(ticketId: string, userId: string): Promise<{ success: boolean; error?: string }> {
+  /** Ask authenticated AI responder to answer this ticket from its stored conversation. */
+  async askAI(ticket: SupportTicket): Promise<{ success: boolean; message?: string; error?: string }> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return { success: false, error: 'Please sign in again to continue this support conversation.' };
+
+    const { data, error } = await supabase.functions.invoke('ai-ticket-responder', {
+      body: { ticket_id: ticket.id },
+    });
+
+    if (error) {
+      const context = (error as any).context;
+      const payload = context?.json ? await context.json().catch(() => null) : null;
+      return { success: false, error: payload?.error || error.message || 'AI Support could not respond. Please try again or email support.' };
+    }
+    if (!data?.success || typeof data.message !== 'string' || !data.message.trim()) {
+      return { success: false, error: 'AI Support did not return a reply. Please try again or email support.' };
+    }
+    return { success: true, message: data.message };
+  },
+
+  /** A ticket is resolved only after the user confirms their issue is fixed. */
+  async resolveTicket(ticketId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
       .from('support_tickets' as any)
-      .update({
-        status: 'closed',
-        updated_at: new Date().toISOString(),
-      })
+      .update({ status: 'resolved', resolved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', ticketId)
       .eq('user_id', userId);
-
     if (error) return { success: false, error: error.message };
     return { success: true };
   },
 
-  /**
-   * Reopen a closed ticket
-   */
+  /** Reopen a closed or resolved conversation so the user can continue it. */
   async reopenTicket(ticketId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
       .from('support_tickets' as any)
-      .update({
-        status: 'open',
-        updated_at: new Date().toISOString(),
-      })
+      .update({ status: 'open', resolved_at: null, updated_at: new Date().toISOString() })
       .eq('id', ticketId)
       .eq('user_id', userId);
-
     if (error) return { success: false, error: error.message };
     return { success: true };
   },
@@ -231,14 +244,19 @@ const ticketService = {
       )
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'ticket_messages',
-          filter: `ticket_id=in.(select id from support_tickets where user_id=eq.${userId})`,
-        },
-        () => {
-          callback();
+        { event: 'INSERT', schema: 'public', table: 'ticket_messages' },
+        async (payload) => {
+          // Realtime filters do not support the needed subquery; RLS on the
+          // joined ticket lookup scopes these global message events to the user.
+          const ticketId = (payload.new as { ticket_id?: string }).ticket_id;
+          if (!ticketId) return;
+          const { data: owned } = await supabase
+            .from('support_tickets' as any)
+            .select('id')
+            .eq('id', ticketId)
+            .eq('user_id', userId)
+            .maybeSingle();
+          if (owned) callback();
         }
       )
       .subscribe();

@@ -10,8 +10,10 @@ import path from 'node:path';
  *   "Unlimited AI writing"      -> ai-writer caps Pro at PRO_DAILY_LIMIT (100/day)
  *   "Priority AI responses"     -> no priority/queue mechanism exists at all
  *   "Priority support 24/7"     -> there is no 24/7 human support team
- *   "Advanced analytics"        -> the analytics dashboard is FREE for everyone,
- *                                  so it can never be sold as a Premium unlock
+ *   "Advanced analytics"        -> (since the tier split) ALLOWED ONLY when the
+ *                                  advanced section really exists behind
+ *                                  isPremiumSubscription; the plain analytics
+ *                                  dashboard must still read as free for all
  *   "AI profile optimization"   -> no such feature exists anywhere in the code
  *   "Priority AI project matching" / "Featured profile placement"
  *                               -> pay-to-win. Ranking and matching are 100%
@@ -48,7 +50,10 @@ const FORBIDDEN: Array<{ label: string; re: RegExp }> = [
   { label: 'priority AI responses', re: /priority\s+ai\s+responses?/i },
   { label: 'priority support', re: /priority\s+(human\s+)?support/i },
   { label: '24/7 priority', re: /24\/7\s*priority/i },
-  { label: 'advanced analytics', re: /advanced\s+(earnings\s+|project\s+|talent\s+)?analytics/i },
+  // The advanced analytics CLAIM is checked against real code below rather than
+  // banned outright — but the free dashboard can still never be sold as paid.
+  { label: 'free dashboard sold as paid', re: /analytics\s+dashboard[^.\n]{0,40}(premium|pro\b|paid|unlock)/i },
+  { label: 'basic/free analytics upsell', re: /(?:basic|free)\s+analytics[^.\n]{0,40}(upgrade|premium|unlock)/i },
   { label: 'AI profile optimization', re: /(ai|profile)\s+optimi[sz]ation/i },
   { label: 'priority matching', re: /priority[-\s]+(ai\s+)?(project\s+|freelancer\s+)?matching/i },
   { label: 'featured profile placement', re: /featured\s+(profile\s+)?placement/i },
@@ -96,12 +101,40 @@ describe('plan claims are truthful', () => {
     }
   });
 
-  it('analytics is never sold as a Premium unlock (it is free for everyone)', () => {
-    // A Premium-gated analytics claim would be a false differentiator.
-    expect(read('src/pages/ProSubscriptionPage.tsx')).not.toMatch(
-      /analytics[^.\n]{0,40}(premium|pro\b)/i
-    );
+  it('the plain analytics dashboard is still advertised as free for everyone', () => {
     expect(read('src/pages/ProSubscriptionPage.tsx')).toContain('Included — free for everyone');
+    expect(read('src/pages/ProSubscriptionPage.tsx')).not.toMatch(
+      /analytics\s+dashboard[^.\n]{0,40}(premium|pro\b)/i
+    );
+  });
+
+  it('every advanced-analytics claim is backed by shipped, gated code', () => {
+    // The claim may only exist because the feature does: a Premium-only section
+    // fetched by a real service method. If either disappears, the copy becomes
+    // the exact false differentiator this guard was written to prevent.
+    const service = read('src/lib/analyticsService.ts');
+    const page = read('src/pages/dashboard/AnalyticsPage.tsx');
+    expect(service).toContain('async getAdvancedAnalytics(');
+    expect(service).toContain('export interface AdvancedAnalyticsData');
+    expect(page).toContain('isPremiumSubscription(');
+    expect(page).toContain('analyticsService.getAdvancedAnalytics(');
+    // The advanced query must never run for a non-Premium freelancer.
+    expect(page).toMatch(/isPremium\s*\n?\s*\? analyticsService\.getAdvancedAnalytics\(|isPremium\s*\?\s*analyticsService\.getAdvancedAnalytics/);
+    // And the simple dashboard must remain reachable without a subscription.
+    expect(page).toContain('analyticsService.getFreelancerAnalytics(');
+    expect(page).toContain('Advanced analytics is a Premium feature');
+  });
+
+  it('only the Premium tier unlocks advanced analytics (Pro does not)', () => {
+    const helpers = read('src/lib/subscriptionHelpers.ts');
+    expect(helpers).toContain('export function isPremiumSubscription(');
+    // The canonical Pro row must never qualify, whatever its label is.
+    expect(helpers).toContain("if (plan.id === 'premium_monthly') return false;");
+    expect(helpers).toContain("if (plan.id === 'premium_advanced_monthly') return true;");
+    // The two-tier seed exists and asserts exactly two paid freelancer tiers.
+    const seed = read('supabase/migrations/20270209000000_premium_analytics_tiers.sql');
+    expect(seed).toContain("'premium_advanced_monthly'");
+    expect(seed).toContain('expected exactly two active paid freelancer tiers');
   });
 
   it('the seed-data migration scrubs the DB plan rows and fails closed', () => {
@@ -124,7 +157,8 @@ describe('the claim detector itself (negative control)', () => {
       'AI writing (titles, descriptions, cover letters) — unlimited',
       'Priority AI responses',
       'Priority support 24/7',
-      'Advanced earnings analytics',
+      'Analytics Dashboard — Premium only',
+      'Your analytics dashboard is a Premium unlock',
       'AI profile optimization',
       'Priority AI project matching',
       'Featured profile placement',
@@ -149,6 +183,7 @@ describe('the claim detector itself (negative control)', () => {
       'Merit-based — same for all',
       'Analytics Dashboard',
       'Included — free for everyone',
+      'Advanced analytics — earnings trends and proposal conversion (Premium)',
       'Cancel anytime — no lock-in',
       'Email, support tickets & AI assistant',
       'Escrow Protected',
