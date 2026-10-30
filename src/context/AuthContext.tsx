@@ -810,6 +810,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let consecutiveFailures = 0;
 
+    /**
+     * End the session ONLY when the auth server says the account is gone.
+     *
+     * A profile read can fail for a dozen reasons that have nothing to do with
+     * the account: a network blip, a cold database, a transient 5xx, a tab that
+     * woke from sleep. Signing out for those is exactly what walked a signed-in
+     * person back through GitHub/LinkedIn on an account that was perfectly fine.
+     * So ask the auth server before destroying a valid session.
+     */
+    const endSessionOnlyIfAccountIsGone = async (reason: string) => {
+      let sessionIsDead = false;
+      try {
+        const { error } = await supabase.auth.getUser();
+        sessionIsDead = isStaleSessionError(error);
+      } catch {
+        sessionIsDead = false;
+      }
+
+      if (!sessionIsDead) {
+        devWarn(`[Auth] ${reason} — session is still valid, keeping the user signed in`);
+        consecutiveFailures = 0;
+        return;
+      }
+
+      devLog(`[Auth] ${reason} — auth server reports the account is gone, signing out`);
+      await supabase.auth.signOut().catch(() => {});
+      clearSupabaseAuthStorage();
+      // Profile is gone — the account was deleted; drop the stale same-browser marker too.
+      clearBrowserAccount();
+      broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
+      setUser(null);
+      setSession(null);
+      setSupabaseUser(null);
+    };
+
     const checkProfileExists = async () => {
       // 🚫 Skip check if offline — prevents unnecessary failures when network is down
       if (!navigator.onLine) {
@@ -823,15 +858,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!profile) {
           consecutiveFailures++;
           if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
-            devLog('[Auth] Periodic check: Profile not found after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
-            await supabase.auth.signOut().catch(() => {});
-            clearSupabaseAuthStorage();
-            // Profile is gone — the account was deleted; drop the stale same-browser marker too.
-            clearBrowserAccount();
-            broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
-            setUser(null);
-            setSession(null);
-            setSupabaseUser(null);
+            await endSessionOnlyIfAccountIsGone(
+              `Periodic check: profile not found ${MAX_PROFILE_CHECK_FAILURES} times`
+            );
           } else {
             devLog('[Auth] Periodic check: Profile fetch returned null (failure', consecutiveFailures, '/', MAX_PROFILE_CHECK_FAILURES, ') — retrying');
           }
@@ -842,15 +871,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         consecutiveFailures++;
         if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
-          devLog('[Auth] Periodic check: Profile fetch error after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
-          await supabase.auth.signOut().catch(() => {});
-          clearSupabaseAuthStorage();
-          // Profile is gone — the account was deleted; drop the stale same-browser marker too.
-          clearBrowserAccount();
-          broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
-          setUser(null);
-          setSession(null);
-          setSupabaseUser(null);
+          await endSessionOnlyIfAccountIsGone(
+            `Periodic check: profile fetch errored ${MAX_PROFILE_CHECK_FAILURES} times`
+          );
         }
       } finally {
         isChecking = false;

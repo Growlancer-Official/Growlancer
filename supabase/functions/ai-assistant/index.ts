@@ -401,9 +401,12 @@ Deno.serve(async (req: Request) => {
     const prefersStreaming = acceptHeader.includes('text/event-stream');
 
     // Sanitize messages
+    // Each turn is capped: a pasted 50KB brief used to be re-sent verbatim on
+    // every single message, and prompt size is the biggest lever on time-to-
+    // first-token. 2000 chars is far more context than a chat turn needs.
     const sanitizedMessages = messages.map((msg) => ({
       ...msg,
-      content: sanitizeInput(msg.content),
+      content: sanitizeInput(msg.content).slice(0, 2000),
     }));
 
     // Build system prompt

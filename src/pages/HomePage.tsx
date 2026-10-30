@@ -40,7 +40,23 @@ function HeroSection({
   countries: number | null;
 }) {
   const [videoFailed, setVideoFailed] = useState(false);
+  // 🔥 The hero clip is 9MB. Loading it alongside the CSS/JS a visitor actually
+  // needs is what made the homepage feel slow on a phone. Keep the 109KB poster
+  // first and attach the video only once the page is idle — never on save-data,
+  // and never on a 2G/3G phone where the poster is the whole experience.
+  const [videoReady, setVideoReady] = useState(false);
   const { isAuthenticated, role } = useAuth();
+
+  useEffect(() => {
+    const conn = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    if (conn?.saveData) return;
+    if (conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType)) return;
+    if (window.matchMedia('(max-width: 767px)').matches && conn?.effectiveType === '3g') return;
+    const id = window.setTimeout(() => startTransition(() => setVideoReady(true)), 1500);
+    return () => window.clearTimeout(id);
+  }, []);
   const navigate = useNavigate();
 
   const handleStartHiring = () => {
@@ -149,18 +165,29 @@ function HeroSection({
 
               <div className="relative rounded-xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-slate-900">
                 {!videoFailed ? (
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    className="w-full aspect-video object-cover"
-                    poster="/hero-poster.png"
-                    onError={() => startTransition(() => setVideoFailed(true))}
-                  >
-                    <source src="/videos/hero-demo.mp4" type="video/mp4" />
-                  </video>
+                  videoReady ? (
+                    <video
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="w-full aspect-video object-cover"
+                      poster="/hero-poster.png"
+                      onError={() => startTransition(() => setVideoFailed(true))}
+                    >
+                      <source src="/videos/hero-demo.mp4" type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src="/hero-poster.png"
+                      alt="Growlanzo product preview"
+                      width={1280}
+                      height={720}
+                      fetchPriority="high"
+                      className="w-full aspect-video object-cover"
+                    />
+                  )
                 ) : (
                   <div className="w-full aspect-video flex flex-col justify-center p-6 sm:p-8 bg-gradient-to-br from-slate-800 to-emerald-900">
                     <div className="flex items-center gap-3 mb-5">
@@ -695,8 +722,8 @@ function PricingSection() {
       highlight: true,
     },
     {
-      audience: 'Optional Pro',
-      price: '₹299',
+      audience: 'Optional Premium',
+      price: '₹199',
       unit: 'per month',
       desc: 'Extra AI writing capacity for freelancers. Everything core stays free.',
       points: ['Cancel anytime', 'No lock-in', 'Never affects ranking'],

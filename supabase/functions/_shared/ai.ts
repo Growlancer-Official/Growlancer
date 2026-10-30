@@ -26,18 +26,29 @@ export interface AIMessage {
   content: string;
 }
 
-/** Call the OpenAI-compatible chat completions endpoint. */
+/**
+ * Call the OpenAI-compatible chat completions endpoint.
+ *
+ * Latency matters more than a huge ceiling here: chat replies are short, so the
+ * default cap is 1200 tokens (ai-writer asks for its own 1500). A long ceiling
+ * only let a confused model ramble for tens of seconds after the answer was
+ * already useful.
+ */
 export async function callAI(
   messages: AIMessage[],
-  options: { stream?: boolean; maxTokens?: number } = {}
+  options: { stream?: boolean; maxTokens?: number; timeoutMs?: number } = {}
 ): Promise<Response> {
   const body: Record<string, unknown> = {
     model: AI_MODEL,
     messages,
     temperature: 0.7,
-    max_tokens: options.maxTokens ?? 8192,
+    max_tokens: options.maxTokens ?? 1200,
     top_p: 0.95,
   };
+  // OpenRouter routes the SAME model to whichever provider answers fastest and
+  // falls back when one is saturated. Without this the gateway can sit in a
+  // slow provider's queue and the user reads it as "the AI is dead".
+  body.provider = { sort: 'throughput', allow_fallbacks: true };
   if (options.stream) {
     body.stream = true;
   }
@@ -52,9 +63,15 @@ export async function callAI(
     headers['X-Title'] = 'Growlanzo AI';
   }
 
+  // Fail fast instead of hanging: a stalled upstream used to leave the chat on
+  // its typing dots forever. Streaming gets a longer budget because the clock
+  // covers the whole body read, not just the headers.
+  const timeoutMs = options.timeoutMs ?? (options.stream ? 90000 : 45000);
+
   return await fetch(`${AI_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers,
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 }
