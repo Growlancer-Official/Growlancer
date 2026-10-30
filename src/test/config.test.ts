@@ -27,8 +27,8 @@ describe('PLATFORM_CONFIG', () => {
     expect(PLATFORM_CONFIG.limits.min_project_budget).toBe(2000);
   });
 
-  it('premium plan price is ₹299/month', () => {
-    expect(PLATFORM_CONFIG.subscriptions.premium_monthly.price).toBe(299);
+  it('premium plan price is ₹199/month — the only paid price', () => {
+    expect(PLATFORM_CONFIG.subscriptions.premium_monthly.price).toBe(199);
   });
 
   it('premium plan proposals_per_month is 50', () => {

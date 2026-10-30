@@ -31,16 +31,16 @@ import {
 
 const FAQ_ITEMS = [
   {
-    q: 'What do the paid tiers include?',
-    a: 'Pro (₹299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day) and adds a Pro badge. Premium (₹499/month) includes all of Pro plus advanced analytics. Both are purely extra AI and analytics tools — your packages, proposals, visibility and matching score stay exactly the same.',
+    q: 'What does Premium include?',
+    a: 'Premium is ₹199/month, flat — one plan, everything included. It removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day), unlocks advanced analytics and adds a Premium badge. It is purely extra AI and analytics capacity — your packages, proposals, visibility and matching score stay exactly the same.',
   },
   {
-    q: 'What is the difference between Pro and Premium?',
-    a: 'Advanced analytics. Pro keeps the analytics every freelancer already gets and raises AI capacity; Premium adds earnings and profile-view trends against the previous period, the complete proposal funnel with average and accepted bid values, your star-rating split and your top paying categories. Ranking and matching are identical on every tier.',
+    q: 'Is there a second, higher tier?',
+    a: 'No. ₹199/month is the only paid price in the product. There is no costlier tier to compare against and nothing is held back for a bigger plan — every paid feature ships in this one subscription.',
   },
   {
-    q: 'Can I start on Pro and move to Premium later?',
-    a: 'Yes — that is the intended path. Upgrade from this page whenever you want; your Pro time is not lost and you keep every feature you already had.',
+    q: 'Can I subscribe or cancel later?',
+    a: 'Yes — subscribe from this page whenever you want and cancel just as easily. Nothing about your free freelancer account changes while you decide.',
   },
   {
     q: 'Does Premium boost my ranking or visibility?',
@@ -65,7 +65,7 @@ const FAQ_ITEMS = [
 const UNLOCKS = [
   {
     icon: Gem,
-    title: 'Advanced Analytics (Premium)',
+    title: 'Advanced Analytics',
     text: 'Earnings and profile-view trends against the previous period, the full proposal funnel, your rating split and your top paying categories — updated live. The simple dashboard stays free for every freelancer.',
   },
   {
@@ -86,7 +86,7 @@ const UNLOCKS = [
   {
     icon: RefreshCw,
     title: 'One free trial',
-    text: 'Every new freelancer gets one free trial of Pro — no payment needed to start. Premium can be chosen straight away.',
+    text: 'Every new freelancer gets one free trial of Premium — no payment needed to start.',
   },
 ];
 
@@ -210,21 +210,20 @@ export function ProSubscriptionPage() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
-  // Two paid tiers, in ladder order: Pro (premium_monthly) then Premium
-  // (premium_advanced_monthly, Pro + advanced analytics). Explicit ID checks +
+  // ONE paid tier: premium_monthly (₹199/month) carries every paid feature —
+  // advanced analytics included. There is no second tier, so there is no ladder
+  // to render and nothing held back for a costlier plan. Explicit ID checks +
   // is_active guards so stray seed rows never leak into the UI.
-  const TIER_IDS = ['premium_monthly', 'premium_advanced_monthly'] as const;
+  const TIER_IDS = ['premium_monthly'] as const;
   const tierPlans = TIER_IDS.map((id) => plans.find((p) => p.id === id && p.price > 0 && p.is_active)).filter(
     (p): p is AIPlan => Boolean(p),
   );
-  // Defensive fallback: if neither canonical row exists (unreachable backend,
+  // Defensive fallback: if the canonical row is missing (unreachable backend,
   // fresh environment) show the single active paid plan rather than nothing.
   const displayPlans = tierPlans.length > 0 ? tierPlans : plans.filter((p) => p.price > 0 && p.is_active).slice(0, 1);
   const proPlan = tierPlans[0] ?? displayPlans[0];
-  const premiumPlan = tierPlans[1] ?? null;
-  // For comparison table: Free vs Pro vs Premium
+  // For comparison table: Free vs Premium
   const freePlan = plans.find((p) => p.price === 0);
-  const isPremiumTier = (plan?: AIPlan | null) => plan?.id === 'premium_advanced_monthly';
 
   // Build comparison rows from plan features.
   // RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
@@ -238,7 +237,7 @@ export function ProSubscriptionPage() {
     { key: 'packages', label: '3-Tier Service Packages', getValue: () => 'Included — free for everyone' },
     { key: 'matching', label: 'AI Matching & Ranking', getValue: () => 'Merit-based — same for all' },
     { key: 'analytics', label: 'Analytics', getValue: () => 'Included — free for everyone' },
-    { key: 'advanced_analytics', label: 'Advanced Analytics', getValue: (p: AIPlan) => (isPremiumTier(p) ? 'Trends, funnel & categories' : 'Not included') },
+    { key: 'advanced_analytics', label: 'Advanced Analytics', getValue: (p: AIPlan) => (p.price > 0 ? 'Trends, funnel & categories' : 'Not included') },
     { key: 'badge', label: 'Profile Badge', getValue: (p: AIPlan) => (p.price > 0 ? 'Pro badge' : '—') },
     { key: 'support', label: 'Support', getValue: () => 'In-app AI support & email' },
   ];
@@ -257,9 +256,9 @@ export function ProSubscriptionPage() {
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
-            <InfoTip title="Growlanzo paid tiers" text="There are two paid tiers, one above the other. Pro (₹299/month) removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Pro badge. Premium (₹499/month) includes everything in Pro plus advanced analytics: earnings and view trends, the full proposal funnel, your rating split and your top paying categories. Neither tier affects your packages, visibility, ranking or matching — those stay merit-based and free for everyone." />
+            <InfoTip title="Growlanzo Premium" text="One plan, ₹199/month, everything included. Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day, adds advanced analytics (earnings and view trends, the full proposal funnel, your rating split and your top paying categories) and a Premium badge. There is no higher tier. It never affects your packages, visibility, ranking or matching — those stay merit-based and free for everyone." />
           </h1>
-          <p className="text-slate-500 mt-0.5 text-sm">Free to start — Pro and Premium add AI tools and analytics on top</p>
+          <p className="text-slate-500 mt-0.5 text-sm">One plan — ₹199/month. Everything paid is included.</p>
         </div>
       </div>
 
@@ -290,7 +289,7 @@ export function ProSubscriptionPage() {
       {/* Plan + Benefits: 2-col dashboard layout */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
         {/* Plan Card */}
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+        <div className="lg:col-span-2 grid grid-cols-1 gap-4">
           {displayPlans.map((plan) => {
             const isCurrentPlan = subscription?.plan_id === plan.id;
 
@@ -307,17 +306,15 @@ export function ProSubscriptionPage() {
                   </div>
                 )}
 
-                <div className={`p-2.5 rounded-xl w-fit mb-4 ${isPremiumTier(plan) ? 'bg-amber-100' : 'bg-emerald-100'}`}>
-                  <Crown className={`w-5 h-5 ${isPremiumTier(plan) ? 'text-amber-600' : 'text-emerald-600'}`} />
+                <div className="p-2.5 rounded-xl w-fit mb-4 bg-emerald-100">
+                  <Crown className="w-5 h-5 text-emerald-600" />
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="font-display text-lg font-bold text-slate-900 flex flex-wrap items-center gap-2">
                   {plan.name}
-                  {isPremiumTier(plan) && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                      Advanced analytics
-                    </span>
-                  )}
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                    Everything included
+                  </span>
                 </h3>
                 <p className="text-sm text-slate-500 mt-0.5">{plan.description}</p>
 
@@ -440,15 +437,14 @@ export function ProSubscriptionPage() {
 
       {/* Plan Comparison Table */}
       <section>
-        <h2 className="font-display text-lg font-bold text-slate-900 mb-3">Compare Free, Pro and Premium</h2>
+        <h2 className="font-display text-lg font-bold text-slate-900 mb-3">Compare Free and Premium</h2>
         <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
-          <table className="w-full min-w-[420px] border-collapse text-left">
+          <table className="w-full border-collapse text-left">
             <thead className="bg-slate-50">
               <tr className="border-b border-slate-100 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">
                 <th className="px-2.5 sm:px-4 py-3">Feature</th>
                 <th className="px-2.5 sm:px-4 py-3">Free</th>
-                <th className="px-2.5 sm:px-4 py-3 text-emerald-600">Pro</th>
-                <th className="px-2.5 sm:px-4 py-3 text-amber-600">Premium</th>
+                <th className="px-2.5 sm:px-4 py-3 text-emerald-600">Premium</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -461,16 +457,13 @@ export function ProSubscriptionPage() {
                   <td className="px-2.5 sm:px-4 py-3 font-semibold text-emerald-700">
                     {proPlan ? feature.getValue(proPlan) : '—'}
                   </td>
-                  <td className="px-2.5 sm:px-4 py-3 font-semibold text-amber-700">
-                    {premiumPlan ? feature.getValue(premiumPlan) : '—'}
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <p className="mt-2 text-[11px] text-slate-400 sm:hidden">
-          Swipe the table sideways to see the Pro and Premium columns.
+          Both columns fit on this screen — no sideways scrolling needed.
         </p>
       </section>
 

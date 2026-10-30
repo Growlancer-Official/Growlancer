@@ -113,7 +113,7 @@ export function EscrowPolicyPage() {
             </p>
           </div>
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Freelancer Premium: {formatCurrency(299)}/month</h3>
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Freelancer Premium: {formatCurrency(199)}/month</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Optional, no lock-in, cancel anytime. It unlocks only <strong>AI tools and analytics</strong> —
               building packages, getting work, and your ranking are identical with or without it.
@@ -141,7 +141,7 @@ export function EscrowPolicyPage() {
             <h3 className="font-display text-lg font-bold text-slate-900 mb-2">How we make money</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Only the <strong>5% commission when work is successfully released</strong>. No listing fee,
-              no hidden charge, no forced subscription. Premium ({formatCurrency(299)}/month) is
+              no hidden charge, no forced subscription. Premium ({formatCurrency(199)}/month) is
               optional and only unlocks AI tools and analytics — never ranking or visibility.
             </p>
           </div>

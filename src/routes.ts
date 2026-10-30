@@ -188,8 +188,9 @@ export const NAVIGATION = {
 // Platform configuration (India-first — all pricing in INR)
 export const PLATFORM_CONFIG = {
   FEE_PERCENTAGE: 5,
-  // Single flat Freelancer Premium plan (₹299/month) — optional, AI + tools only.
-  PRO_PRICE: 299,
+  // Single flat Freelancer Premium plan (₹199/month) — optional, AI + tools only.
+  // ONE price for everything: there is no second, costlier tier.
+  PRO_PRICE: 199,
   CURRENCY: 'INR',
 } as const;
 

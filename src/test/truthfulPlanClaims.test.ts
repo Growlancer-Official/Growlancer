@@ -125,16 +125,24 @@ describe('plan claims are truthful', () => {
     expect(page).toContain('Advanced analytics is a Premium feature');
   });
 
-  it('only the Premium tier unlocks advanced analytics (Pro does not)', () => {
+  it('the single ₹199 plan unlocks advanced analytics and no costlier tier exists', () => {
     const helpers = read('src/lib/subscriptionHelpers.ts');
     expect(helpers).toContain('export function isPremiumSubscription(');
-    // The canonical Pro row must never qualify, whatever its label is.
-    expect(helpers).toContain("if (plan.id === 'premium_monthly') return false;");
-    expect(helpers).toContain("if (plan.id === 'premium_advanced_monthly') return true;");
-    // The two-tier seed exists and asserts exactly two paid freelancer tiers.
-    const seed = read('supabase/migrations/20270209000000_premium_analytics_tiers.sql');
-    expect(seed).toContain("'premium_advanced_monthly'");
-    expect(seed).toContain('expected exactly two active paid freelancer tiers');
+    // ONE paid plan means Pro and Premium are the same thing: anyone who pays
+    // gets advanced analytics, and no code path may gate on a retired tier.
+    expect(helpers).toContain('return isProSubscription(subscription);');
+    expect(helpers).not.toContain('premium_advanced_monthly');
+
+    const page = read('src/pages/ProSubscriptionPage.tsx');
+    expect(page).toContain("const TIER_IDS = ['premium_monthly'] as const;");
+    expect(page).not.toContain('₹299');
+    expect(page).not.toContain('₹499');
+
+    // The collapsing migration prices the one plan at 199 and retires the 499
+    // tier instead of deleting it, so existing subscribers keep a readable row.
+    const migration = read('supabase/migrations/20270301000000_single_premium_plan_199.sql');
+    expect(migration).toContain('price = 199');
+    expect(migration).toContain("WHERE id = 'premium_advanced_monthly'");
   });
 
   it('the seed-data migration scrubs the DB plan rows and fails closed', () => {

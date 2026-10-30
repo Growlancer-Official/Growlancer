@@ -169,26 +169,24 @@ describe('isPremiumSubscription', () => {
     expect(isPremiumSubscription(undefined)).toBe(false);
   });
 
-  it('returns true for the dedicated Premium tier row', () => {
-    const sub = withPlan({ id: 'premium_advanced_monthly', name: 'Premium', price: 499 });
+  it('returns true for the single ₹199 Premium plan', () => {
+    const sub = withPlan({ id: 'premium_monthly', name: 'Premium', price: 199 });
     expect(isPremiumSubscription(sub)).toBe(true);
   });
-
-  it('never treats the canonical Pro row as Premium, even under its old name', () => {
-    // Before the tier migration ran, premium_monthly was labelled "Premium
-    // Monthly" — a Pro subscriber must not silently gain Premium features.
-    const renamed = withPlan({ id: 'premium_monthly', name: 'Premium Monthly', price: 299 });
-    expect(isPremiumSubscription(renamed)).toBe(false);
-    const proNow = withPlan({ id: 'premium_monthly', name: 'Pro', price: 299 });
-    expect(isPremiumSubscription(proNow)).toBe(false);
+  
+  it('also covers a row still carrying its old Pro label', () => {
+    // One plan means Pro == Premium: an existing subscriber who bought under the
+    // old "Pro" label keeps advanced analytics instead of losing it on rename.
+    const renamed = withPlan({ id: 'premium_monthly', name: 'Pro', price: 199 });
+    expect(isPremiumSubscription(renamed)).toBe(true);
   });
 
-  it('returns false for a Pro-named plan on another id', () => {
-    expect(isPremiumSubscription(withPlan({ id: 'other', name: 'Pro Plus', price: 999 }))).toBe(false);
+  it('returns true for any other paid plan row', () => {
+    expect(isPremiumSubscription(withPlan({ id: 'other', name: 'Pro Plus', price: 999 }))).toBe(true);
   });
 
   it('requires the subscription itself to be active or an unexpired trial', () => {
-    const premium = { id: 'premium_advanced_monthly', name: 'Premium', price: 499 };
+    const premium = { id: 'premium_monthly', name: 'Premium', price: 199 };
     const expired = makeSub('cancelled');
     expired.subscription_plans = premium as never;
     expect(isPremiumSubscription(expired)).toBe(false);

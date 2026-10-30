@@ -59,11 +59,13 @@ describe('no rendered copy spells currency as a literal prefix', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('the ₹ glyph the product does use is present on the paid plans', () => {
+  it('the ₹ glyph the product does use is present on the paid plan', () => {
     const page = fs
       .readFileSync(path.join(ROOT, 'src/pages/ProSubscriptionPage.tsx'), 'utf8')
       .replace(/\r\n/g, '\n');
-    expect(page).toContain('₹299/month');
-    expect(page).toContain('₹499/month');
+    expect(page).toContain('₹199/month');
+    // 199 is the ONLY paid price — the costlier tier must stay gone.
+    expect(page).not.toContain('₹299');
+    expect(page).not.toContain('₹499');
   });
 });

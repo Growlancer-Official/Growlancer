@@ -57,7 +57,7 @@ export function PricingPage() {
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             One flat 5% commission, deducted from each freelancer payout. Nothing is added to what clients pay, and one optional
-            Premium plan ({formatCurrency(299)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
+            Premium plan ({formatCurrency(199)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mt-8">
@@ -78,7 +78,7 @@ export function PricingPage() {
               <p className="text-sm text-slate-300">
                 <strong className="text-white">{formatCurrency(0)} to start</strong> — no upfront fees. A flat
                 5% commission is deducted only when your work is paid out, never before. 3-tier service packages are free for everyone. Optional Premium
-                ({formatCurrency(299)}/month) adds extra AI capacity and a Pro badge — never ranking or visibility.
+                ({formatCurrency(199)}/month) adds extra AI capacity and a Premium badge — never ranking or visibility.
               </p>
             </div>
           </div>
@@ -151,13 +151,13 @@ export function PricingPage() {
               FOR FREELANCERS
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-              Growlanzo Pro — Optional Upgrade
+              Growlanzo Premium — Optional Upgrade
             </h2>
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
               Join free, earn 100% of every payment, and build services with <strong>3 package
               tiers (Basic / Standard / Premium)</strong> — completely free for every freelancer.
-              Upgrade to <strong>Premium ({formatCurrency(299)}/month, optional)</strong> for higher AI writing
-              limits, unlimited AI assistant messages and a Pro badge. Packages, visibility and matching stay
+              Upgrade to <strong>Premium ({formatCurrency(199)}/month, optional)</strong> for higher AI writing
+              limits, unlimited AI assistant messages and a Premium badge. Packages, visibility and matching stay
               <strong> merit-based and identical</strong> — never a commission on your earnings.
             </p>
           </div>
@@ -200,10 +200,10 @@ export function PricingPage() {
                   MOST POPULAR
                 </div>
                 <h3 className="font-display text-2xl font-bold mb-2">Premium</h3>
-                <p className="text-sm text-slate-400 mb-3">AI writing, unlimited AI assistant messages & a Pro badge</p>
+                <p className="text-sm text-slate-400 mb-3">AI writing, unlimited AI assistant messages & a Premium badge</p>
                 <div className="mb-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="font-display text-4xl font-bold">{formatCurrency(299)}</span>
+                    <span className="font-display text-4xl font-bold">{formatCurrency(199)}</span>
                     <span className="text-sm font-bold text-slate-400">/month</span>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export function PricingPage() {
                   <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI assistant messages</span></li>
                   <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">AI writing — 100 generations per day</span></li>
                   <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">AI-powered project matching</span></li>
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Pro badge on your public profile</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Premium badge on your public profile</span></li>
                   <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Cancel anytime — no lock-in</span></li>
                 </ul>
                 <Link to="/dashboard/pro" className="block w-full py-3 rounded-xl font-bold text-center bg-emerald-500 text-slate-900 hover:bg-emerald-400 transition-colors">Try Premium Free</Link>
@@ -302,7 +302,7 @@ export function PricingPage() {
                         <>
                           <li className="flex items-start gap-3">
                             <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-                            <span className="text-sm text-slate-300">Pro badge on your public profile</span>
+                            <span className="text-sm text-slate-300">Premium badge on your public profile</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
@@ -312,7 +312,7 @@ export function PricingPage() {
                       ) : (
                         <li className="flex items-start gap-3">
                           <span className={`text-sm ${isPopular ? 'text-slate-500' : 'text-slate-400'}`}>
-                            Premium features with Pro
+                            Everything paid, in one plan
                           </span>
                         </li>
                       )}
@@ -367,7 +367,7 @@ export function PricingPage() {
                 No. Creating a profile, building 3-tier packages, applying to projects, and
                 receiving payments are completely free — including <strong>5 free AI-written
                 titles, descriptions and cover messages every day</strong>. The optional{' '}
-                <strong>Premium plan ({formatCurrency(299)}/month, flat)</strong> raises AI writing to{' '}
+                <strong>Premium plan ({formatCurrency(199)}/month, flat)</strong> raises AI writing to{' '}
                 <strong>100 generations per day</strong> and removes the monthly cap on AI assistant
                 messages. It is{' '}
                 <strong>not</strong> a commission, never touches your earnings, and never affects
@@ -397,7 +397,7 @@ export function PricingPage() {
               <h3 className="font-bold text-slate-900 mb-1">Is the Premium plan worth it for me?</h3>
               <p className="text-sm text-slate-600">
                 Premium is optional and purely about extra AI capacity: AI writing up to 100
-                generations per day, no monthly cap on AI assistant messages, and a Pro badge.
+                generations per day, no monthly cap on AI assistant messages, and a Premium badge.
                 It does <strong>not</strong> boost your ranking or visibility — matches are
                 merit-based for everyone. Cancel anytime, no lock-in.
               </p>
@@ -448,7 +448,7 @@ export function PricingPage() {
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
-                  <strong className="text-slate-900">Optional Premium {formatCurrency(299)}/month</strong> —
+                  <strong className="text-slate-900">Optional Premium {formatCurrency(199)}/month</strong> —
                   freelancers who want extra AI capacity. Purely optional, no lock-in.
                 </p>
               </li>

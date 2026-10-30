@@ -55,24 +55,14 @@ export function isProSubscription(
 }
 
 /**
- * True ONLY for the Premium tier — the one that unlocks advanced analytics.
- * Pro (the canonical ₹299 premium_monthly plan, renamed to "Pro" by
- * 20270209000000_premium_analytics_tiers.sql) deliberately does not qualify, so
- * the ladder stays Free → Pro → Premium and nothing is sold twice.
+ * True for any paid plan — advanced analytics is included in the single paid
+ * plan (₹199/month). There is no second tier any more, so this can never
+ * disagree with isProSubscription: a subscriber always gets everything paid.
  */
 export function isPremiumSubscription(
   subscription: SubscriptionWithPlan | null | undefined
 ): boolean {
-  if (!isProSubscription(subscription) || !subscription) return false;
-  const plan = subscription.subscription_plans;
-  if (!plan) return false;
-  if (plan.id === 'premium_advanced_monthly') return true;
-  // premium_monthly IS the Pro tier whatever it is called (before the tier
-  // migration ran it still carried its old "Premium Monthly" name), so it must
-  // never qualify as Premium.
-  if (plan.id === 'premium_monthly') return false;
-  const name = (plan.name ?? '').trim().toLowerCase();
-  return (name === 'premium' || name.startsWith('premium')) && !name.includes('pro');
+  return isProSubscription(subscription);
 }
 
 export function subscriptionIsActive(

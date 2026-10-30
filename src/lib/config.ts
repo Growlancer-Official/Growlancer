@@ -29,7 +29,8 @@ export const PLATFORM_CONFIG = {
   },
   
   // Subscription Plans (prices in INR — India-first, affordable)
-  // FINAL MODEL: ONE flat plan — Freelancer Premium ₹299/month, purely optional.
+  // FINAL MODEL: ONE flat plan — Freelancer Premium ₹199/month, purely optional.
+  // ₹199 is the ONLY paid price in the product: no second tier exists at all.
   // It unlocks ONLY AI capacity: a higher AI writing cap and no monthly cap on AI
   // assistant messages, plus a Premium badge. It NEVER gates packaging, visibility,
   // ranking or matching (merit-based, free for everyone) and analytics is NOT a
@@ -42,7 +43,7 @@ export const PLATFORM_CONFIG = {
       portfolio_items: 3,
     },
     premium_monthly: {
-      price: 299,
+      price: 199,
       proposals_per_month: 50,
       ai_matches_per_month: 100,
       portfolio_items: 20,

@@ -26,8 +26,8 @@ export const GROW_COIN = {
   firstProjectBonus: 20,
   minRedemption: 100,
   monthlyBonusCap: 20,
-  /** Premium (₹299/month) is priced in coins 1:1. Display fallback only. */
-  premiumCost: 299,
+  /** Premium (₹199/month) is priced in coins 1:1. Display fallback only. */
+  premiumCost: 199,
 } as const;
 
 export type GrowCoinState = {
