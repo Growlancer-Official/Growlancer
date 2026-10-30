@@ -26,11 +26,16 @@ describe('getCorsHeaders allowlist', () => {
       'https://growlancer.com',
       'https://www.growlancer.com',
       'https://growlancer.vercel.app',
+      // The alias the site actually serves on today. A live CORS failure on
+      // this origin left every admin-data section spinning in production.
+      'https://growlanzo.vercel.app',
       'https://growlancer-mrkhan154212s-projects.vercel.app',
       // Vercel preview deployment of this project (project-hash-team)
       'https://growlancer-abc123def-mrkhan154212s-projects.vercel.app',
       // Vercel branch alias of this project (project-git-branch-team)
       'https://growlancer-git-main-mrkhan154212s-projects.vercel.app',
+      // Same project after the rename — new slug, same team suffix
+      'https://growlanzo-abc123def-mrkhan154212s-projects.vercel.app',
       // Loopback dev / E2E on ANY port — not just the default 5173
       'http://localhost:5173',
       'http://localhost:4174',
@@ -47,6 +52,9 @@ describe('getCorsHeaders allowlist', () => {
       // growlancer-*. The team-slug suffix is required for exactly this case.
       'https://growlancer-evil.vercel.app',
       'https://growlancer-abc123-other-team.vercel.app',
+      // The renamed slug must not widen the pattern to other teams either
+      'https://growlanzo-abc123-other-team.vercel.app',
+      'https://growlanzo.vercel.app.evil.com',
       // Suffix / prefix tricks must not slip past the anchored pattern
       'https://growlancer-abc123-mrkhan154212s-projects.vercel.app.evil.com',
       'https://evil.com/https://growlancer-abc123-mrkhan154212s-projects.vercel.app',

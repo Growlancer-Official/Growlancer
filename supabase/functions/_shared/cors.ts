@@ -8,6 +8,11 @@
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
+  // The alias the site is actually served on today (growlancer.vercel.app
+  // 307-redirects here, and growlanzo.com does not resolve yet). Without this
+  // entry every browser call from the live site to an edge function is blocked
+  // by CORS, and the sections that depend on one stay on their spinner forever.
+  'https://growlanzo.vercel.app',
   'https://growlanzo.com',
   'https://www.growlanzo.com',
   // The former brand domain. Kept until its DNS points at the new deployment:
@@ -31,6 +36,9 @@ const ALLOWED_ORIGINS = [
 // readability of a response it already had to authenticate for.
 const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
   /^https:\/\/growlancer-[a-z0-9-]+-mrkhan154212s-projects\.vercel\.app$/,
+  // Same project after the Growlanzo rename; preview/branch aliases now carry
+  // the new slug. The team suffix keeps third-party projects out.
+  /^https:\/\/growlanzo-[a-z0-9-]+-mrkhan154212s-projects\.vercel\.app$/,
   /^http:\/\/localhost:\d+$/,
   /^http:\/\/127\.0\.0\.1:\d+$/,
 ];
