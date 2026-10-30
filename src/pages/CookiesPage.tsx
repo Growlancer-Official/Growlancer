@@ -13,7 +13,7 @@ export function CookiesPage() {
       icon: Lock,
       title: 'Strictly necessary — always on',
       description:
-        'Required for the platform to function. These keep you signed in, protect your session, and remember the choice you make on the cookie notice. They cannot be switched off, because GitHub/LinkedIn sign-in cannot work without them.',
+        'Required for the platform to function. These keep you signed in, protect your session, and remember the analytics choice you make in cookie preferences. They cannot be switched off, because GitHub/LinkedIn sign-in cannot work without them.',
       examples:
         'sb-<project>-auth-token (Supabase session in localStorage), growlancer_last_activity (24-hour inactivity sign-out), growlancer_consent (this choice), growlancer_oauth_provider / growlancer_oauth_role (survive the provider round-trip)',
     },
@@ -110,9 +110,11 @@ export function CookiesPage() {
 
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Your Consent Choices</h2>
             <p className="text-slate-600 mb-4">
-              On your first visit the cookie notice asks which categories you allow. Essential
-              storage is always on; analytics is optional and starts switched off. Your choice is
-              stored on your device under{' '}
+              On your first visit a short notice explains this policy. Closing it records the safe
+              default — essential storage only, analytics off — so dismissing the notice is never
+              treated as agreement. Analytics is optional, starts switched off, and is only ever
+              turned on deliberately in the preferences panel. Your choice is stored on your device
+              under{' '}
               <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">growlancer_consent</code>{' '}
               so we do not ask again, and reopening the preferences panel shows exactly what you
               chose and when. Withdrawing analytics consent stops new measurements immediately; it
