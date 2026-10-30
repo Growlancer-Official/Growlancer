@@ -49,74 +49,76 @@ describe('Cookie consent notice', () => {
     localStorage.clear();
   });
 
-  it('leads with the approved copy', async () => {
+  it('leads with plain, professional copy', async () => {
     await showNotice();
-    // The heading is the playful "we ate your cookies" line; the required
-    // sentence is carried directly beneath it as the promise.
-    expect(screen.getByRole('heading', { name: /we ate your cookies/i })).toBeTruthy();
-    expect(document.body.textContent).toContain('For a better experience.');
+    expect(screen.getByRole('heading', { name: /^cookies$/i })).toBeTruthy();
+    expect(document.body.textContent).toContain('keep you signed in');
   });
 
-  it('explains necessary vs optional storage and promises nothing it does not do', async () => {
+  it('states its real scope and promises nothing it does not do', async () => {
     await showNotice();
     const text = document.body.textContent || '';
-    expect(text).toMatch(/sign-in and security storage stays on/i);
-    expect(text).toMatch(/nothing optional runs unless you allow it/i);
+    expect(text).toMatch(/essential storage/i);
     expect(text).toMatch(/no advertising or cross-site tracking/i);
     // Nothing in the product implements advertising/retargeting, so the notice
     // must not present it as a category the visitor is opting into.
     expect(text).not.toMatch(/personalized advertisements/i);
   });
 
-  it('offers the accept, reject, manage and close actions', async () => {
+  it('offers exactly one action: a proper close', async () => {
     await showNotice();
-    expect(screen.getByRole('button', { name: /^accept all$/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /^reject optional$/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /^manage$/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /close — reject optional cookies/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /close cookie notice/i })).toBeTruthy();
+    // The popup must not ask the visitor to accept/reject/manage anything.
+    expect(screen.queryByRole('button', { name: /^accept/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^reject/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^manage$/i })).toBeNull();
+    expect(screen.queryByRole('switch')).toBeNull();
   });
 
-  it('accept all records analytics consent and dismisses', async () => {
+  it('the cross records the safe default and dismisses', async () => {
+    // Dismissing can never be read as agreement, so it takes the same decision
+    // as "Reject optional": necessary only, analytics off.
     await showNotice();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^accept all$/i }));
-      vi.advanceTimersByTime(400);
-    });
-
-    expect(storedConsent()?.analytics).toBe(true);
-    expect(readConsent()?.analytics).toBe(true);
-    expect(screen.queryByRole('heading', { name: /we ate your cookies/i })).toBeNull();
-  });
-
-  it('reject optional keeps analytics off and still remembers the answer', async () => {
-    await showNotice();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^reject optional$/i }));
+      fireEvent.click(screen.getByRole('button', { name: /close cookie notice/i }));
       vi.advanceTimersByTime(400);
     });
 
     expect(storedConsent()?.analytics).toBe(false);
     expect(storedConsent()?.necessary).toBe(true);
-    expect(screen.queryByRole('heading', { name: /we ate your cookies/i })).toBeNull();
+    expect(readConsent()?.analytics).toBe(false);
+    expect(screen.queryByRole('heading', { name: /^cookies$/i })).toBeNull();
   });
 
-  it('the cross dismisses AND keeps optional storage off', async () => {
-    // A dismissed box must never be readable as consent, so the close button
-    // takes the same decision as "Reject optional".
+  it('does not appear again once a decision is stored', async () => {
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      JSON.stringify({ necessary: true, analytics: false, version: 2, updatedAt: new Date().toISOString() })
+    );
     await showNotice();
+    expect(screen.queryByRole('heading', { name: /^cookies$/i })).toBeNull();
+  });
+
+  it('can be reopened later from the footer, keeping the stored answer', async () => {
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      JSON.stringify({ necessary: true, analytics: true, version: 2, updatedAt: new Date().toISOString() })
+    );
+    await showNotice();
+    expect(screen.queryByRole('dialog')).toBeNull();
+
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /close — reject optional cookies/i }));
-      vi.advanceTimersByTime(400);
+      openConsentPreferences();
     });
 
-    expect(storedConsent()?.analytics).toBe(false);
-    expect(screen.queryByRole('heading', { name: /we ate your cookies/i })).toBeNull();
+    const dialog = screen.getByRole('dialog', { name: /cookie preferences/i });
+    expect(within(dialog).getByRole('switch', { name: /analytics/i }).getAttribute('aria-checked')).toBe('true');
   });
 
-  it('manage opens a real panel with only the categories that exist', async () => {
+  it('the panel exposes only the categories that exist', async () => {
     await showNotice();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^manage$/i }));
+      openConsentPreferences();
     });
 
     const dialog = screen.getByRole('dialog', { name: /cookie preferences/i });
@@ -130,7 +132,7 @@ describe('Cookie consent notice', () => {
   it('saving a hand-picked choice persists exactly that choice', async () => {
     await showNotice();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^manage$/i }));
+      openConsentPreferences();
     });
 
     const toggle = screen.getByRole('switch', { name: /analytics/i });
@@ -149,35 +151,10 @@ describe('Cookie consent notice', () => {
     expect(storedConsent()?.analytics).toBe(true);
   });
 
-  it('does not appear again once a decision is stored', async () => {
-    localStorage.setItem(
-      CONSENT_STORAGE_KEY,
-      JSON.stringify({ necessary: true, analytics: false, version: 2, updatedAt: new Date().toISOString() })
-    );
-    await showNotice();
-    expect(screen.queryByRole('heading', { name: /we ate your cookies/i })).toBeNull();
-  });
-
-  it('can be reopened later, keeping the stored answer', async () => {
-    localStorage.setItem(
-      CONSENT_STORAGE_KEY,
-      JSON.stringify({ necessary: true, analytics: true, version: 2, updatedAt: new Date().toISOString() })
-    );
-    await showNotice();
-    expect(screen.queryByRole('dialog')).toBeNull();
-
-    await act(async () => {
-      openConsentPreferences();
-    });
-
-    const dialog = screen.getByRole('dialog', { name: /cookie preferences/i });
-    expect(within(dialog).getByRole('switch', { name: /analytics/i }).getAttribute('aria-checked')).toBe('true');
-  });
-
   it('closes the panel on Escape', async () => {
     await showNotice();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^manage$/i }));
+      openConsentPreferences();
     });
     expect(screen.getByRole('dialog', { name: /cookie preferences/i })).toBeTruthy();
 

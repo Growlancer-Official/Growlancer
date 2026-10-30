@@ -51,8 +51,8 @@ describe('CookieConsent reserves space for full-height sidebars', () => {
       vi.advanceTimersByTime(700);
     });
 
-    // The banner's own action button proves it is on screen.
-    expect(screen.getByRole('button', { name: /accept all/i })).toBeTruthy();
+    // The banner's own close button proves it is on screen.
+    expect(screen.getByRole('button', { name: /close cookie notice/i })).toBeTruthy();
     expect(document.documentElement.style.getPropertyValue(BANNER_VAR)).not.toBe('');
     vi.useRealTimers();
   });
@@ -66,9 +66,9 @@ describe('CookieConsent reserves space for full-height sidebars', () => {
     });
     expect(document.documentElement.style.getPropertyValue(BANNER_VAR)).not.toBe('');
 
-    const accept = screen.getByRole('button', { name: /accept all/i });
+    const close = screen.getByRole('button', { name: /close cookie notice/i });
     await act(async () => {
-      fireEvent.click(accept);
+      fireEvent.click(close);
       vi.advanceTimersByTime(1000);
     });
 

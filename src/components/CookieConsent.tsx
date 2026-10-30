@@ -5,8 +5,6 @@ import {
   Check,
   Cookie,
   Lock,
-  Settings2,
-
   X,
 } from 'lucide-react';
 import {
@@ -140,17 +138,7 @@ export function CookieConsent() {
     [dismissBanner]
   );
 
-  const handleAcceptAll = useCallback(() => commit(true), [commit]);
   const handleRejectOptional = useCallback(() => commit(false), [commit]);
-
-  const openPanel = useCallback(() => {
-    const stored = readConsent();
-    setDraftAnalytics(stored?.analytics === true);
-    setStorageError(null);
-    previouslyFocused.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setPanelOpen(true);
-  }, []);
 
   const closePanel = useCallback(() => {
     setPanelOpen(false);
@@ -349,112 +337,69 @@ export function CookieConsent() {
       )}
 
       {/* ── The notice ────────────────────────────────────────────────────── */}
-      {/* A small, playful box rather than a wall of legal text: the mascot has
-          already eaten the cookies, the promise is one sentence long, and the
-          cross is a first-class action (it dismisses AND keeps optional storage
-          off — hiding the box can never be mistaken for "allowed everything"). */}
+      {/* Deliberately small: one sentence, one cross, no choice buttons. The
+          cross takes the safe decision (optional storage stays off), so
+          dismissing can never be read as agreement. The full switches remain
+          reachable from the footer and the Cookie Policy page — they are not
+          offered here on purpose. */}
       {showNotice && (
         <div
           ref={bannerRef}
           role="dialog"
           aria-labelledby="cookie-notice-title"
           aria-describedby="cookie-notice-body"
-          className={`fixed bottom-0 left-0 right-0 z-[60] px-3 pb-3 sm:px-6 sm:pb-5 transition-all duration-300 ease-out ${
-            animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+          className={`fixed z-[60] bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-auto sm:w-[22rem] transition-all duration-300 ease-out ${
+            animateIn ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
           }`}
         >
-          <div className="mx-auto max-w-[62rem]">
-            <div className="relative overflow-hidden rounded-2xl bg-[#08110D] ring-1 ring-emerald-500/25 shadow-2xl shadow-black/40">
-              <div className="pointer-events-none absolute -top-20 -right-12 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-2xl bg-[#08110D] ring-1 ring-emerald-500/25 shadow-2xl shadow-black/40">
+            <div className="pointer-events-none absolute -top-16 -right-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
 
-              <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-3.5 sm:px-5">
-                {/* Identity: the cookie icon + the joke, kept to two lines */}
-                <div className="flex items-start gap-3 sm:flex-1 min-w-0">
-                  <div className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
-                    <Cookie className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2
-                      id="cookie-notice-title"
-                      className="text-sm font-bold text-white leading-snug"
-                    >
-                      We ate your cookies <span aria-hidden="true">🍪</span>
-                    </h2>
-                    <p
-                      id="cookie-notice-body"
-                      className="mt-0.5 text-xs text-emerald-100/60 leading-relaxed"
-                    >
-                      For a better experience. Sign-in and security storage stays on; nothing
-                      optional runs unless you allow it.
-                    </p>
-                    <p className="mt-1 text-[11px] text-emerald-100/40">
-                      No advertising or cross-site tracking.{' '}
-                      <Link
-                        to="/cookies"
-                        className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 font-medium"
-                      >
-                        Cookie Policy
-                      </Link>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions.
-                    Mobile: full-width, stacked column-reverse so the primary
-                    "Accept all" sits ABOVE the secondary control, with padding
-                    reserved on the right for the absolutely-positioned cross.
-                    `flex-wrap` means any future label change degrades into a
-                    second line instead of pushing past the card edge.
-                    ≥sm: back to a normal horizontal row that hugs the right. */}
-                <div className="w-full sm:w-auto flex flex-col-reverse sm:flex-row flex-wrap items-center justify-center sm:justify-end gap-2 sm:shrink-0 pr-12 sm:pr-0">
-                  <button
-                    type="button"
-                    onClick={openPanel}
-                    className="hidden sm:inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3 rounded-xl text-xs font-semibold text-emerald-100/70 hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                  >
-                    <Settings2 className="w-3.5 h-3.5" aria-hidden="true" />
-                    Manage
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRejectOptional}
-                    className="inline-flex items-center justify-center min-h-[40px] px-3.5 rounded-xl text-xs font-semibold text-emerald-50 bg-white/5 ring-1 ring-white/10 hover:bg-white/10 hover:ring-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                  >
-                    Reject optional
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleAcceptAll}
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-colors shadow-lg shadow-emerald-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                  >
-                    <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                    Accept all
-                  </button>
-                  {/* The cross: same decision as "Reject optional", so it can
-                      never be read as agreement. Parked in the card's
-                      bottom-right corner on mobile so it does not consume any
-                      of the button row's width; inline again from `sm`. */}
-                  <button
-                    type="button"
-                    onClick={handleRejectOptional}
-                    aria-label="Close — reject optional cookies"
-                    title="Close"
-                    className="absolute bottom-2 right-2 sm:static inline-flex items-center justify-center h-10 w-10 sm:-mr-1 rounded-xl text-emerald-100/60 hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                  >
-                    <X className="w-4 h-4" aria-hidden="true" />
-                  </button>
-                </div>
+            <div className="relative flex items-start gap-3 p-4 pr-12">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/25 flex items-center justify-center">
+                <Cookie className="w-4 h-4 text-emerald-400" aria-hidden="true" />
               </div>
-
-              {storageError && (
-                <p
-                  role="alert"
-                  className="relative mx-4 mb-3 sm:mx-5 rounded-lg bg-amber-500/10 ring-1 ring-amber-500/30 p-2.5 text-[11px] text-amber-200 leading-relaxed"
+              <div className="min-w-0">
+                <h2
+                  id="cookie-notice-title"
+                  className="text-sm font-semibold text-white leading-snug"
                 >
-                  {storageError}
+                  Cookies
+                </h2>
+                <p
+                  id="cookie-notice-body"
+                  className="mt-1 text-xs text-emerald-100/70 leading-relaxed"
+                >
+                  We use essential storage to keep you signed in and your session
+                  secure. No advertising or cross-site tracking.
                 </p>
-              )}
+                <Link
+                  to="/cookies"
+                  className="mt-1.5 inline-block text-[11px] font-medium text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+                >
+                  Cookie Policy
+                </Link>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleRejectOptional}
+              aria-label="Close cookie notice"
+              title="Close"
+              className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-xl text-emerald-100/60 hover:text-white hover:bg-white/5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <X className="w-4 h-4" aria-hidden="true" />
+            </button>
+
+            {storageError && (
+              <p
+                role="alert"
+                className="relative mx-4 mb-3 rounded-lg bg-amber-500/10 ring-1 ring-amber-500/30 p-2.5 text-[11px] text-amber-200 leading-relaxed"
+              >
+                {storageError}
+              </p>
+            )}
           </div>
         </div>
       )}
