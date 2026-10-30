@@ -167,10 +167,11 @@ export function MainLayout() {
               <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contact</Link>
               <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Help</Link>
               {isFeatureEnabled('internships') && <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Internships</Link>}
-              <Link to={ROUTES.PHILOSOPHY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Philosophy</Link>
-              <Link to={ROUTES.SAFETY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Safety</Link>
-              <Link to={ROUTES.GUIDELINES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Guidelines</Link>
-              <Link to={ROUTES.STATUS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Status</Link>
+              {/* Philosophy / Safety / Guidelines / Status live in the footer.
+                  Keeping them in the bar too pushed the row past its track at
+                  1280px, where the last link was clipped mid-word — that reads
+                  as a broken header, not a menu. Nine links fit with room to
+                  spare on every font stack. */}
             </nav>
 
             {/* Right actions */}
